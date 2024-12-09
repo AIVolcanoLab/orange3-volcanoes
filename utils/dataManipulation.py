@@ -1,7 +1,5 @@
 import numpy as np
-import Thermobar as pt
 import pandas as pd
-
 from Thermobar.core import *
 
 def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False, suffix=None):

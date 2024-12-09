@@ -1,34 +1,14 @@
 import numpy as np
-
-from typing import Optional, Union
-
+import pandas as pd
+from Orange.data import Table, ContinuousVariable, Domain
+from Orange.widgets.settings import Setting, ContextSetting, DomainContextHandler
+from Orange.widgets.widget import OWWidget, Input, Output
+from Orange.widgets import gui
+from orangewidget.widget import Msg
+from Orange.data.pandas_compat import table_from_frame, table_to_frame
+import Thermobar as pt
 from AnyQt.QtCore import Qt
 
-import Orange.data
-from Orange.data import Table, ContinuousVariable, StringVariable, Domain
-from Orange.widgets.settings import Setting, ContextSetting, DomainContextHandler
-from Orange.widgets.utils.itemmodels import DomainModel
-from Orange.widgets.utils.widgetpreview import WidgetPreview
-from Orange.widgets.widget import OWWidget
-from Orange.widgets import gui
-from Orange.widgets.widget import Input, Output
-from orangewidget.widget import Msg
-
-
-from Orange.data.pandas_compat import table_from_frame,table_to_frame
-
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-from functools import partial
-import inspect
-import warnings as w
-import numbers
-import pandas as pd
-
-
-import Thermobar as pt
 
 ## This specifies the default order for each dataframe type used in calculations
 liq_cols = ['SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq',

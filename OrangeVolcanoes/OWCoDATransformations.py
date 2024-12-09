@@ -1,12 +1,7 @@
 import numpy as np
-
-from typing import Optional, Union
-
-import Orange.data
-from Orange.data import Table, ContinuousVariable, StringVariable, Domain
+from Orange.data import Table, ContinuousVariable, Domain
 from Orange.widgets.settings import Setting, ContextSetting, DomainContextHandler
 from Orange.widgets.utils.itemmodels import DomainModel
-from Orange.widgets.utils.widgetpreview import WidgetPreview
 from Orange.widgets.widget import OWWidget
 from Orange.widgets import gui
 from Orange.widgets.widget import Input, Output

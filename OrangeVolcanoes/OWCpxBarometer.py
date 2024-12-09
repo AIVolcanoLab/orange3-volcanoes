@@ -1,24 +1,13 @@
 import numpy as np
-import Thermobar as pt
 import pandas as pd
-
-from typing import Optional, Union
-
-from AnyQt.QtCore import Qt
-
-import Orange.data
-from Orange.data import Table, ContinuousVariable, StringVariable, Domain
-from Orange.widgets.settings import Setting, ContextSetting, DomainContextHandler
-from Orange.widgets.utils.itemmodels import DomainModel
-from Orange.widgets.utils.widgetpreview import WidgetPreview
-from Orange.widgets.widget import OWWidget
+from Orange.data import Table, ContinuousVariable, Domain
+from Orange.widgets.settings import Setting, ContextSetting
+from Orange.widgets.widget import OWWidget, Input, Output
 from Orange.widgets import gui
-from Orange.widgets.widget import Input, Output
 from orangewidget.widget import Msg
-
-from Thermobar.core import *
-
+from Thermobar import calculate_cpx_only_press, calculate_cpx_only_press_temp, calculate_cpx_liq_press, calculate_cpx_liq_press_temp
 from utils import dataManipulation as dm
+from AnyQt.QtCore import Qt
     
 
 liq_cols = ['SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq',

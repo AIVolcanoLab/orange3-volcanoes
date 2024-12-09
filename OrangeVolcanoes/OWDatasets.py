@@ -1,24 +1,12 @@
-import numpy as np
-import Thermobar as pt
 import pandas as pd
-
-from typing import Optional, Union
-
-from AnyQt.QtCore import Qt
-
-import Orange.data
-from Orange.data import Table, ContinuousVariable, StringVariable, Domain
+from Orange.data import Table
 from Orange.widgets.settings import Setting, ContextSetting, DomainContextHandler
-from Orange.widgets.utils.itemmodels import DomainModel
-from Orange.widgets.utils.widgetpreview import WidgetPreview
-from Orange.widgets.widget import OWWidget
+from Orange.widgets.widget import OWWidget, Output
 from Orange.widgets import gui
-from Orange.widgets.widget import Input, Output
 from orangewidget.widget import Msg
-import os
 from Orange.data.io import FileFormat
-
-from Orange.data.pandas_compat import table_from_frame,table_to_frame
+from Orange.data.pandas_compat import table_from_frame
+import Orange.data
 
 DATASETS_PATHS = [
     ('Ágreda-López 2024', FileFormat.locate("Ágreda-López_2024-starting_dataset.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
