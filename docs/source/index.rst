@@ -16,7 +16,7 @@ documentation for details.
    :caption: Contents:
 
    dataset
-   filtering
+   data_cleaning
    coda_transformations
    cpx_barometer
    cpx_thermometer

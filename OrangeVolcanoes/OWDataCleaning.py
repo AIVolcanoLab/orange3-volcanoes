@@ -17,7 +17,7 @@ liq_cols = ['SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq',
  'CO2_Liq']
 
 cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
-'FeOt_Cpx','MnO_Cpx', 'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', 'K2O_Cpx',
+'FeOt_Cpx','MnO_Cpx', 'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', #'K2O_Cpx',
 'Cr2O3_Cpx']
 
 
@@ -32,12 +32,12 @@ FILTERS_ET = [
 ]
 
 
-class OWFiltering(OWWidget):
-    name = "Filtering"
-    description = "Filtering"
-    icon = "icons/Filtering.png"
+class OWDataCleaning(OWWidget):
+    name = "DataCleaning"
+    description = "DataCleaning"
+    icon = "icons/DataCleaning.png"
     priority = 2
-    keywords = ['Filtering', 'Oxides', 'Equilibrium', 'Test', 'Cations']
+    keywords = ['DataCleaning', 'Oxides', 'Equilibrium', 'Test', 'Cations']
 
 
     class Inputs:
@@ -85,14 +85,14 @@ class OWFiltering(OWWidget):
         button_0 = gui.appendRadioButton(box, "Oxides-Totals")
 
         self.threshold_value_box_tot = gui.spin(
-            gui.indentedBox(box, gui.checkButtonOffsetHint(button_0)), self, "threshold_tot", 1, 100, label="Delta_%",
+            gui.indentedBox(box, gui.checkButtonOffsetHint(button_0)), self, "threshold_tot", 1, 100, label="100 ± Delta",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
 
         button_1 = gui.appendRadioButton(box, "Cations-Filter")
 
         self.threshold_value_box_cat = gui.spin(
-            gui.indentedBox(box, gui.checkButtonOffsetHint(button_1)), self, "threshold_cat", spinType=float, minv=0,maxv=100,step=0.001, label="Delta_abs",
+            gui.indentedBox(box, gui.checkButtonOffsetHint(button_1)), self, "threshold_cat", spinType=float, minv=0,maxv=4,step=0.001, label="4 ± Delta",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
        
@@ -107,7 +107,7 @@ class OWFiltering(OWWidget):
         _, self.filter_et = FILTERS_ET[self.filter_idx_et]
 
         self.threshold_value_box_et = gui.spin(
-            gui.indentedBox(box, gui.checkButtonOffsetHint(button_2)), self, "threshold_et", spinType=float, minv=0,maxv=100,step=0.001, label="Delta_abs",
+            gui.indentedBox(box, gui.checkButtonOffsetHint(button_2)), self, "threshold_et", spinType=float, minv=0,maxv=10,step=0.001, label="0 ± Delta",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
 
@@ -199,8 +199,9 @@ class OWFiltering(OWWidget):
 
             elif self.filter_type == 1:
                 df_temp = df.copy()
-                df_temp['cations'] = pt.calculate_clinopyroxene_components(df_temp)['CaTs']
-                out = df_temp[df_temp['cations']>=self.threshold_cat].drop(['cations'],axis=1)
+                df_temp['cations'] = pt.calculate_clinopyroxene_components(df_temp)['Cation_Sum_Cpx']
+                #out = df_temp[df_temp['cations']>=self.threshold_cat].drop(['cations'],axis=1)
+                out = df_temp[(df_temp['cations']-4).abs()<=self.threshold_cat].drop(['cations'],axis=1)
 
             elif self.filter_type == 2:
 
@@ -214,7 +215,7 @@ class OWFiltering(OWWidget):
                 df_temp[self.filter_et] = pt.calculate_cpx_liq_eq_tests(meltmatch=None, liq_comps=df_temp[liq_cols],
                                                               cpx_comps=df_temp[cpx_cols],Fe3Fet_Liq=None,
                                                               P=self.pressure, T=self.temperature, sigma=1, Kd_Err=0.03)[self.filter_et] 
-                out = df_temp[df_temp[self.filter_et]>=self.threshold_et].drop([self.filter_et],axis=1)
+                out = df_temp[df_temp[self.filter_et].abs()<=self.threshold_et].drop([self.filter_et],axis=1)
 
             out = table_from_frame(out)
 
