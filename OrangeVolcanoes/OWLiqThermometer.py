@@ -5,7 +5,7 @@ from Orange.widgets.settings import Setting, ContextSetting
 from Orange.widgets.widget import OWWidget, Input, Output
 from Orange.widgets import gui
 from orangewidget.widget import Msg
-import Thermobar as pt
+from Thermobar import calculate_liq_only_temp
 from utils import dataManipulation as dm
 from AnyQt.QtCore import Qt
 
@@ -197,9 +197,9 @@ class OWLiqThermometer(OWWidget):
                 P = self.pressure_value 
 
             if self.pressure == False:
-                temperature = pt.calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model)-273.15
+                temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model)-273.15
             else:
-                temperature = pt.calculate_liq_only_temp(liq_comps=df[liq_cols], equationT=self.model, P=P)-273.15 
+                temperature = calculate_liq_only_temp(liq_comps=df[liq_cols], equationT=self.model, P=P)-273.15 
 
 
             my_domain = Domain([ContinuousVariable(name=a.name) for i, a in enumerate(self.data.domain.attributes)],

@@ -376,30 +376,29 @@ class OWCpxThermometer(OWWidget):
                 df = dm.preprocessing(df, my_output='cpx_only')
 
                 if self.pressure == False:
-                    temperature = pt.calculate_cpx_only_temp(cpx_comps=df[cpx_cols],  equationT=self.model)-273.15
+                    temperature = calculate_cpx_only_temp(cpx_comps=df[cpx_cols],  equationT=self.model)-273.15
                 else:
                     if self.pressure_type == 2:
-                        temperature = pt.calculate_cpx_only_press_temp(cpx_comps=df[cpx_cols],
+                        temperature = calculate_cpx_only_press_temp(cpx_comps=df[cpx_cols],
                                                                        equationP=self.model_pressure,
                                                                        equationT=self.model).iloc[:,1]-273.15 
                     else:
-                        temperature = pt.calculate_cpx_only_temp(cpx_comps=df[cpx_cols], equationT=self.model, P=P)-273.15 
+                        temperature = calculate_cpx_only_temp(cpx_comps=df[cpx_cols], equationT=self.model, P=P)-273.15 
 
             elif self.model_type == 1: 
 
                 df = dm.preprocessing(df, my_output='cpx_liq')
 
                 if self.pressure == False:
-                    temperature = pt.calculate_cpx_liq_temp(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationT=self.model)-273.15
+                    temperature = calculate_cpx_liq_temp(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationT=self.model)-273.15
                 else:
                     if  self.pressure_type == 2:
-                        temperature = pt.calculate_cpx_liq_press_temp(cpx_comps=df[cpx_cols],
+                        temperature = calculate_cpx_liq_press_temp(cpx_comps=df[cpx_cols],
                                                                       liq_comps=df[liq_cols],
                                                                       equationP=self.model_pressure,
                                                                       equationT=self.model).iloc[:,1]-273.15
                     else:
-                        print(P)
-                        temperature = pt.calculate_cpx_liq_temp(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationT=self.model, P=P)-273.15 
+                        temperature = calculate_cpx_liq_temp(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationT=self.model, P=P)-273.15 
 
 
 

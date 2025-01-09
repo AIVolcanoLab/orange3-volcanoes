@@ -26,7 +26,7 @@ MODELS_CO = [
     ('P_Put2008_eq32b', 'P_Put2008_eq32b',True),
     #('P_Petrelli2020_Cpx_only_(ML)', 'P_Petrelli2020_Cpx_only',False),
     ('P_Petrelli2020_Cpx_only(ML)', 'P_Petrelli2020_Cpx_only_onnx',False),
-    ('P_Jorgenson2022_Cpx_only_Norm_(ML)', 'P_Jorgenson2022_Cpx_only_Norm',False),
+    #('P_Jorgenson2022_Cpx_only_Norm_(ML)', 'P_Jorgenson2022_Cpx_only_Norm',False),
     #('P_Jorgenson2022_Cpx_only_(ML)', 'P_Jorgenson2022_Cpx_only',False),
     ('P_Jorgenson2022_Cpx_only(ML)', 'P_Jorgenson2022_Cpx_only_onnx',False),
     ('P_Petrelli2020_Cpx_only_withH2O_(ML)', 'P_Petrelli2020_Cpx_only_withH2O',False),
@@ -380,29 +380,29 @@ class OWCpxBarometer(OWWidget):
                 df = dm.preprocessing(df, my_output='cpx_only')
 
                 if self.temperature == False:
-                    pressure = pt.calculate_cpx_only_press(cpx_comps=df[cpx_cols],  equationP=self.model)
+                    pressure = calculate_cpx_only_press(cpx_comps=df[cpx_cols],  equationP=self.model)
                 else:
                     if self.temperature_type == 2:
-                        pressure = pt.calculate_cpx_only_press_temp(cpx_comps=df[cpx_cols],
+                        pressure = calculate_cpx_only_press_temp(cpx_comps=df[cpx_cols],
                                                                        equationP=self.model_temperature,
                                                                        equationT=self.model).iloc[:,0] 
                     else:
-                        pressure = pt.calculate_cpx_only_press(cpx_comps=df[cpx_cols], equationP=self.model, T=T) 
+                        pressure = calculate_cpx_only_press(cpx_comps=df[cpx_cols], equationP=self.model, T=T) 
 
             elif self.model_type == 1: 
 
                 df = dm.preprocessing(df, my_output='cpx_liq')
 
                 if self.temperature == False:
-                    presssure = pt.calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model)
+                    presssure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model)
                 else:
                     if  self.temperature_type == 2:
-                        pressure = pt.calculate_cpx_liq_press_temp(cpx_comps=df[cpx_cols],
+                        pressure = calculate_cpx_liq_press_temp(cpx_comps=df[cpx_cols],
                                                                       liq_comps=df[liq_cols],
                                                                       equationP=self.model_temperature,
                                                                       equationT=self.model).iloc[:,0]
                     else:
-                        pressure = pt.calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model, T=T)
+                        pressure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model, T=T)
 
 
 
