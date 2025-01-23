@@ -1,0 +1,16 @@
+Metadata-Version: 2.2
+Name: orange3-volcanoes
+Version: 1.0.0
+Summary: Orange-Volcanoes is an extension (add-on) of the open-source Orange data mining platform, specifically designed to support data-driven investigations in petrology and volcanology.
+Author-email: Murizio Petrelli <muripetre@gmail.com>
+Project-URL: Source, https://github.com/AIVolcanoLab/orange3-volcanoes
+License-File: LICENCE
+Requires-Dist: requests>=2.0
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: Orange3
+Requires-Dist: Thermobar==1.0.30
+Requires-Dist: AnyQt
+Requires-Dist: scikit-learn==1.2.2
+Requires-Dist: matplotlib
+Requires-Dist: Thermobar-onnx@ https://github.com/PennyWieser/Thermobar_onnx/archive/refs/tags/v.0.0.4.zip#sha256=2bedacaeea097a031efc7366bd41b8c37cd3895f319febcc24a429b210bf8e9a
