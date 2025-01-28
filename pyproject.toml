@@ -6,19 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "orange3-volcanoes"           
 version = "1.0.0"                   
 license = { file = "LICENSE" }
-description = "Orange-Volcanoes is an extension (add-on) of the open-source Orange data mining platform, specifically designed to support data-driven investigations in petrology and volcanology."
+description = """Orange-Volcanoes is an extension (add-on) of the open-source Orange data mining platform, specifically designed to support data-driven investigations in petrology and volcanology."""
 authors = [
     { name = "Murizio Petrelli", email = "muripetre@gmail.com" }
 ]
 dependencies = [
   "requests>=2.0",             
-  "numpy",
-  "pandas",
-  "Orange3",
-  "Thermobar==1.0.30",
-  "AnyQt",
-  "scikit-learn==1.2.2",
-  "matplotlib",
+  "Thermobar,
   "Thermobar-onnx @ https://github.com/PennyWieser/Thermobar_onnx/archive/refs/tags/v.0.0.4.zip#sha256=2bedacaeea097a031efc7366bd41b8c37cd3895f319febcc24a429b210bf8e9a"
 ]
 
