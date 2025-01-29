@@ -1,6 +1,6 @@
 Metadata-Version: 2.2
 Name: orange3-volcanoes
-Version: 1.0.0
+Version: 1.0.1
 Summary: Orange-Volcanoes is an extension (add-on) of the open-source Orange data mining platform, specifically designed to support data-driven investigations in petrology and volcanology.
 Author-email: Murizio Petrelli <muripetre@gmail.com>
 Project-URL: Source, https://github.com/AIVolcanoLab/orange3-volcanoes
