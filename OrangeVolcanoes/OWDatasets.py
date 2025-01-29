@@ -9,7 +9,7 @@ from Orange.data.pandas_compat import table_from_frame
 import Orange.data
 
 DATASETS_PATHS = [
-    ('Ágreda-López 2024', FileFormat.locate("Agreda-Lopez_2024-starting_dataset.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
+    ('Agreda-Loopez 2024', FileFormat.locate("Agreda-Lopez_2024-starting_dataset.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
     ('Smith 2021', FileFormat.locate("Smith_glass_post-NYT_1.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
     ('Smith 2021 (Thermobar)', FileFormat.locate("Smith_glass_post-NYT_2.xlsx",Orange.data.table.dataset_dirs),'xlsx')
 ]
