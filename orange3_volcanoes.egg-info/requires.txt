@@ -1,9 +1,3 @@
 requests>=2.0
-numpy
-pandas
-Orange3
-Thermobar==1.0.30
-AnyQt
-scikit-learn==1.2.2
-matplotlib
+Thermobar
 Thermobar-onnx@ https://github.com/PennyWieser/Thermobar_onnx/archive/refs/tags/v.0.0.4.zip#sha256=2bedacaeea097a031efc7366bd41b8c37cd3895f319febcc24a429b210bf8e9a
