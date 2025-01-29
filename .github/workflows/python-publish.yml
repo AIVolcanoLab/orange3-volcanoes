@@ -1,37 +1,38 @@
-name: Build and Publish Python Package
+name: Publish Python Package
 
+# Esegue il workflow quando effettui un push di un tag con formato "vX.Y.Z"
 on:
   push:
-    branches:
-      - main  # Esegui il workflow quando c'è un push sul ramo "main"
-  pull_request:
-    branches:
-      - main  # Esegui il workflow anche quando c'è una pull request sul ramo "main"
+    tags:
+      - "v*.*.*"
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Check out the repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.9'  # Specifica la versione di Python da usare
+          python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install build tools
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install build twine
 
-      - name: Build the package
+      - name: Build package
         run: |
-          python3 -m build
+          python -m build
 
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.4.0
-        with:
-          user: ${{ secrets.PYPI_USERNAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}
+      - name: Publish package to PyPI
+        run: |
+          twine upload dist/*
+        env:
+          # PyPI vuole come username la stringa speciale __token__
+          TWINE_USERNAME: "__token__"
+          # Questo segreto è il tuo API token di PyPI
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
