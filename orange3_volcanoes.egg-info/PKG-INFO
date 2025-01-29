@@ -7,4 +7,3 @@ Project-URL: Source, https://github.com/AIVolcanoLab/orange3-volcanoes
 License-File: LICENCE
 Requires-Dist: requests>=2.0
 Requires-Dist: Thermobar
-Requires-Dist: Thermobar-onnx@ https://github.com/PennyWieser/Thermobar_onnx/archive/refs/tags/v.0.0.4.zip#sha256=2bedacaeea097a031efc7366bd41b8c37cd3895f319febcc24a429b210bf8e9a
