@@ -48,6 +48,38 @@ This can be done via [pip install] with the easy command `pip install orange3-vo
 
 [pip install]: https://pypi.org/project/orange3-volcanoes/
 
+## Running
+
+Make sure you have activated the correct virtual environment. If you follow the conda instructions in [orange3 GitHub]:
+
+```Shell
+conda activate orange3
+``` 
+
+Run `orange-canvas` or `python3 -m Orange.canvas`. Add `--help` for a list of program options.
+
+Starting up for the first time may take a while.
+
+By running Orange, you will find all the widgets of the Orange-Volcanoes add-on on the left side the main Orange interface where all the other widgets are, grouped under the name of "Volcanoes".
+
+## Developing
+
+Are you interested in developing, expanding Orange Volcanoes?
+To contribute, you can either submit a request or report an issue directly on the GitHub Issues page, or reach out via
+email at XXX
+
+Are you interested in devoloping your own add-on? Get in touch with the Orange community and follow the instruction listed in [orange3 GitHub]
+or summerised here below:
+
+[![GitHub Actions](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fbiolab%2Forange3%2Fbadge&label=build)](https://actions-badge.atrox.dev/biolab/orange3/goto) [![codecov](https://img.shields.io/codecov/c/github/biolab/orange3)](https://codecov.io/gh/biolab/orange3) [![Contributor count](https://img.shields.io/github/contributors-anon/biolab/orange3)](https://github.com/biolab/orange3/graphs/contributors) [![Latest GitHub commit](https://img.shields.io/github/last-commit/biolab/orange3)](https://github.com/biolab/orange3/commits/master)
+
+Want to write a widget? [Use the Orange3 example add-on template.](https://github.com/biolab/orange3-example-addon)
+
+Want to get involved? Join us on [Discord](https://discord.gg/FWrfeXV), introduce yourself in #general! 
+
+Take a look at our [contributing guide](https://github.com/irgolic/orange3/blob/README-shields/CONTRIBUTING.md) and [style guidelines](https://github.com/biolab/orange-widget-base/wiki/Widget-UI).
+
+Check out our widget development [docs](https://orange-widget-base.readthedocs.io/en/latest/?badge=latest) for a comprehensive guide on writing Orange widgets.
 
 
 
