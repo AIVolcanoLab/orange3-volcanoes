@@ -32,7 +32,7 @@ This add-on enhances the basic functionality of Orange by introducing specialize
 
 ## Installing
 
-To install Orange-Volcanoes, Orange should be first installed in our computer.
+To install Orange-Volcanoes, Orange should be first installed in your computer.
 
 ### Installing Orange
 
