@@ -64,7 +64,7 @@ By running Orange, you will find all the widgets of the Orange-Volcanoes add-on 
 
 ## Developing
 
-Are you interested in developing, expanding Orange Volcanoes?
+Are you interested in developing, expanding or suggest changes in Orange Volcanoes?
 To contribute, you can either submit a request or report an issue directly on the GitHub Issues page, or reach out via
 email at XXX
 
