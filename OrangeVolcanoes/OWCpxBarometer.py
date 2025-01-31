@@ -6,7 +6,7 @@ from Orange.widgets.widget import OWWidget, Input, Output
 from Orange.widgets import gui
 from orangewidget.widget import Msg
 from Thermobar import calculate_cpx_only_press, calculate_cpx_only_press_temp, calculate_cpx_liq_press, calculate_cpx_liq_press_temp
-from utils import dataManipulation as dm
+from OrangeVolcanoes.utils import dataManipulation as dm
 from AnyQt.QtCore import Qt
     
 

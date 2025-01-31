@@ -1,0 +1,8 @@
+# Ref https://docs.python.org/2/distutils/sourcedist.html#commands
+recursive-include OrangeVolcanoes *.ows icons/* datasets/* utils/*.py *.txt
+
+global-exclude __pycache__
+
+# Include it in the source package
+include README.md
+include LICENSE
