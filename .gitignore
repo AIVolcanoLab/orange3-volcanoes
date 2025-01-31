@@ -1,0 +1,35 @@
+# Build files
+build
+dist
+*.egg-info/*
+*.so
+*.la
+*.o
+*.py[doc]
+MANIFEST
+.tox
+.eggs
+
+# Cython generated files
+__pycache__
+
+# Editor files
+.vscode/
+.idea
+.idea/*
+*~
+.project
+.pydevproject
+.settings/*
+.DS_Store
+
+# Coverage reports
+htmlcov/*
+.coverage
+
+# check_pylint_diff
+.pylint_cache
+
+# dask lcok files
+*.lock
+*.dirlock
