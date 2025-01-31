@@ -43,7 +43,7 @@ In order to install orange follow the procedure on the [Orange download page], o
 
 ### Installing Orange-Volcanoes with pip
 
-Once Orange have been correctly installed in a dedicated enviroment, we can proceed installing the Orange-Volcanoes add-on in the same enviroment.
+Once Orange have been correctly installed in a dedicated enviroment, we can proceed installing the Orange-Volcanoes add-on within the same enviroment.
 This can be done via [pip install] with the easy command `pip install orange3-volcanoes`
 
 [pip install]: https://pypi.org/project/orange3-volcanoes/
