@@ -10,6 +10,7 @@ name = "orange3-volcanoes"
 version = "1.0.4"                   
 license = { file = "LICENSE" }
 description = """Orange-Volcanoes is an extension (add-on) of the open-source Orange data mining platform, specifically designed to support data-driven investigations in petrology and volcanology."""
+readme = "README.md"
 authors = [
     { name = "Murizio Petrelli", email = "muripetre@gmail.com" }
 ]
