@@ -3,11 +3,11 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.poetry.dependencies]
-Thermobar_onnx = { url = "https://github.com/PennyWieser/Thermobar_onnx/archive/refs/tags/v.0.0.4.zip" }
+Thermobar_onnx = { git = "git@https://github.com/PennyWieser/Thermobar_onnx.git", branch = "main"}
 
 [project]
 name = "orange3-volcanoes"           
-version = "1.0.7"                   
+version = "1.0.11"                   
 license = { file = "LICENSE" }
 description = """Orange-Volcanoes is an extension (add-on) of the open-source Orange data mining platform, specifically designed to support data-driven investigations in petrology and volcanology."""
 readme = "README.md"
