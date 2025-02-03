@@ -10,7 +10,7 @@ Thermobar_onnx = { git = "https://github.com/PennyWieser/Thermobar_onnx.git", ta
 
 [project]
 name = "orange3-volcanoes"           
-version = "1.0.17"   
+version = "1.0.18"   
 license = { file = "LICENSE" }
 description = """Orange-Volcanoes is an extension (add-on) of the open-source Orange data mining platform, specifically designed to support data-driven investigations in petrology and volcanology."""
 readme = "README.md"
@@ -20,7 +20,8 @@ authors = [
 
 dependencies = [
   "requests>=2.0",             
-  "Thermobar"
+  "Thermobar",
+  "Thermobar_onnx"
 ]
 
 
