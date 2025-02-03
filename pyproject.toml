@@ -3,7 +3,7 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.poetry.dependencies]
-Thermobar_onnx = { git = "git@https://github.com/PennyWieser/Thermobar_onnx.git", branch = "main"}
+Thermobar_onnx = { git = "https://github.com/PennyWieser/Thermobar_onnx.git", branch = "main"}
 
 [project]
 name = "orange3-volcanoes"           
