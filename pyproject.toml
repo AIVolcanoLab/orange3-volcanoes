@@ -17,8 +17,7 @@ authors = [
 
 dependencies = [
   "requests>=2.0",             
-  "Thermobar",
-  "Thermobar_onnx"
+  "Thermobar"
 ]
 
 
