@@ -23,9 +23,7 @@ cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
 MODELS_CO = [
     ('T_Put2008_eq32d', 'T_Put2008_eq32d',True),
     ('T_Put2008_eq32d_subsol', 'T_Put2008_eq32d_subsol',True),
-    ('T_Wang2021_eq2', 'T_Wang2021_eq2',False),
-    #('T_Jorgenson2022_Cpx_only_(ML)', 'T_Jorgenson2022_Cpx_only',False),
-    ('T_Jorgenson2022_Cpx_only_(ML)', 'T_Jorgenson2022_Cpx_only_onnx',False)
+    ('T_Wang2021_eq2', 'T_Wang2021_eq2',False)
 ]
 
 MODELS_CL = [
@@ -39,13 +37,26 @@ MODELS_CL = [
     ('T_Mas2013_eqTalk2', 'T_Mas2013_eqTalk2',True),
     ('T_Mas2013_eqalk33', 'T_Mas2013_eqalk33',True),
     ('T_Mas2013_Talk2012', 'T_Mas2013_Talk2012',False),
-    ('T_Brug2019', 'T_Brug2019',False),
-    #('T_Petrelli2020_Cpx_Liq_(ML)', 'T_Petrelli2020_Cpx_Liq',False),
-    ('T_Petrelli2020_Cpx_Liq_(ML)', 'T_Petrelli2020_Cpx_Liq_onnx',False),
-    ('T_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'T_Jorgenson2022_Cpx_Liq_Norm',False),
-    #('T_Jorgenson2022_Cpx_Liq_(ML)', 'T_Jorgenson2022_Cpx_Liq',False),
-    ('T_Jorgenson2022_Cpx_Liq_(ML)', 'T_Jorgenson2022_Cpx_Liq_onnx',False)
+    ('T_Brug2019', 'T_Brug2019',False)
 ]
+
+try:
+    import Thermobar_onnx
+
+    MODELS_CO.extend([
+        ('T_Jorgenson2022_Cpx_only_(ML)', 'T_Jorgenson2022_Cpx_only_onnx',False)
+        ])
+
+
+    MODELS_CL.extend([
+        ('T_Petrelli2020_Cpx_Liq_(ML)', 'T_Petrelli2020_Cpx_Liq_onnx',False),
+        ('T_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'T_Jorgenson2022_Cpx_Liq_Norm',False),
+        ('T_Jorgenson2022_Cpx_Liq_(ML)', 'T_Jorgenson2022_Cpx_Liq_onnx',False)  
+        ])
+
+except ImportError:
+    print("You cannot use Machile Learning Models. Install Thermobar_onnx.")
+
 
 MODELS_PRESSURE_CO = [
     ('P_Put2008_eq32a', 'P_Put2008_eq32a'),
@@ -364,7 +375,7 @@ class OWCpxThermometer(OWWidget):
 
             if self.pressure_type == 0:
                 try:
-                    P = df['Pressure_Kbar']
+                    P = df['P_Kbar']
                 except:
                     P = self.pressure_value
                 

@@ -24,12 +24,6 @@ MODELS_CO = [
     ('P_Wang2021_eq1', 'P_Wang2021_eq1',False),
     ('P_Put2008_eq32a', 'P_Put2008_eq32a',True),
     ('P_Put2008_eq32b', 'P_Put2008_eq32b',True),
-    #('P_Petrelli2020_Cpx_only_(ML)', 'P_Petrelli2020_Cpx_only',False),
-    ('P_Petrelli2020_Cpx_only(ML)', 'P_Petrelli2020_Cpx_only_onnx',False),
-    #('P_Jorgenson2022_Cpx_only_Norm_(ML)', 'P_Jorgenson2022_Cpx_only_Norm',False),
-    #('P_Jorgenson2022_Cpx_only_(ML)', 'P_Jorgenson2022_Cpx_only',False),
-    ('P_Jorgenson2022_Cpx_only(ML)', 'P_Jorgenson2022_Cpx_only_onnx',False),
-    ('P_Petrelli2020_Cpx_only_withH2O_(ML)', 'P_Petrelli2020_Cpx_only_withH2O',False),
     ('P_Nimis1999_BA', 'P_Nimis1999_BA',False)
 ]
 
@@ -45,14 +39,28 @@ MODELS_CL = [
     ('P_Put2008_eq32c', 'P_Put2008_eq32c',True),
     ('P_Mas2013_eqalk32c', 'P_Mas2013_eqalk32c',True),
     ('P_Mas2013_Palk2012', 'P_Mas2013_Palk2012',False),
-    ('P_Neave2017', 'P_Neave2017',True),
-    #('P_Petrelli2020_Cpx_Liq_(ML)', 'P_Petrelli2020_Cpx_Liq',False),
-    ('P_Petrelli2020_Cpx_Liq(ML)', 'P_Petrelli2020_Cpx_Liq_onnx',False),
-    ('P_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'P_Jorgenson2022_Cpx_Liq_Norm',False),
-    #('P_Jorgenson2022_Cpx_Liq(ML)', 'P_Jorgenson2022_Cpx_Liq',False),
-    ('P_Jorgenson2022_Cpx_Liq(ML)', 'P_Jorgenson2022_Cpx_Liq_onnx',False)
+    ('P_Neave2017', 'P_Neave2017',True)
 ]
 
+
+try:
+    import Thermobar_onnx
+
+    MODELS_CO.extend([
+    ('P_Petrelli2020_Cpx_only(ML)', 'P_Petrelli2020_Cpx_only_onnx',False),
+    ('P_Jorgenson2022_Cpx_only(ML)', 'P_Jorgenson2022_Cpx_only_onnx',False),
+    ('P_Petrelli2020_Cpx_only_withH2O_(ML)', 'P_Petrelli2020_Cpx_only_withH2O',False)
+    ])
+
+
+    MODELS_CL.extend([
+        ('P_Petrelli2020_Cpx_Liq(ML)', 'P_Petrelli2020_Cpx_Liq_onnx',False),
+        ('P_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'P_Jorgenson2022_Cpx_Liq_Norm',False),
+        ('P_Jorgenson2022_Cpx_Liq(ML)', 'P_Jorgenson2022_Cpx_Liq_onnx',False)
+        ])
+
+except ImportError:
+    print("You cannot use Machile Learning Models. Install Thermobar_onnx.")
 
 MODELS_TEMPERATURE_CO = [
     ('T_Put2008_eq32d', 'T_Put2008_eq32d'),
@@ -132,7 +140,6 @@ class OWCpxBarometer(OWWidget):
             items=[m[0] for m in MODELS_CO],
             callback=self._model_combo_change
         )
-
 
         _, self.model, temperature = MODELS_CO[self.model_idx_co]
         

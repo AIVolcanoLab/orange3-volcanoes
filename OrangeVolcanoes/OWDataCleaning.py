@@ -8,6 +8,7 @@ from orangewidget.widget import Msg
 from Orange.data.pandas_compat import table_from_frame, table_to_frame
 import Thermobar as pt
 from AnyQt.QtCore import Qt
+from OrangeVolcanoes.utils import dataManipulation as dm
 
 
 ## This specifies the default order for each dataframe type used in calculations
@@ -17,7 +18,7 @@ liq_cols = ['SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq',
  'CO2_Liq']
 
 cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
-'FeOt_Cpx','MnO_Cpx', 'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', #'K2O_Cpx',
+'FeOt_Cpx','MnO_Cpx', 'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', 'K2O_Cpx',
 'Cr2O3_Cpx']
 
 
@@ -60,6 +61,8 @@ class OWDataCleaning(OWWidget):
     threshold_tot = Setting(40)
     threshold_cat = Setting(40)
     threshold_et = Setting(40)
+    pressure_flag = False
+    temperature_flag = False
     
 
     settingsHandler = DomainContextHandler()
@@ -115,11 +118,18 @@ class OWDataCleaning(OWWidget):
             gui.indentedBox(box, gui.checkButtonOffsetHint(button_2)), self, "temperature", 0, 10000, label="Temperature (C)",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
+        
+        self.temperature_check = gui.checkBox(
+            gui.indentedBox(box),self, "temperature_flag", label="Use Dataset as Temperature (C)", callback=self._flag_dataset_temperature_change)
+
 
         self.pressure_value_box = gui.spin(
             gui.indentedBox(box, gui.checkButtonOffsetHint(button_2)), self, "pressure", spinType=float, minv=0,maxv=10000,step=0.1, label="Pressure (Kbar)",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
+        
+        self.pressure_check = gui.checkBox(
+            gui.indentedBox(box),self, "pressure_flag", label="Use Dataset as Pressure (Kbar)", callback=self._flag_dataset_pressure_change)
 
         self.threshold_value_box_tot.setEnabled(True)
         self.threshold_value_box_cat.setEnabled(False)
@@ -140,6 +150,8 @@ class OWDataCleaning(OWWidget):
             self.threshold_value_box_et.setEnabled(False)
             self.temperature_value_box.setEnabled(False)
             self.pressure_value_box.setEnabled(False)
+            self.pressure_check.setEnabled(False)
+            self.temperature_check.setEnabled(False)
 
         elif self.filter_type == 1:
             self.threshold_value_box_tot.setEnabled(False)
@@ -148,6 +160,8 @@ class OWDataCleaning(OWWidget):
             self.threshold_value_box_et.setEnabled(False)
             self.temperature_value_box.setEnabled(False)
             self.pressure_value_box.setEnabled(False)
+            self.pressure_check.setEnabled(False)
+            self.temperature_check.setEnabled(False)
 
         elif self.filter_type == 2:
             self.threshold_value_box_tot.setEnabled(False)
@@ -156,6 +170,8 @@ class OWDataCleaning(OWWidget):
             self.threshold_value_box_et.setEnabled(True)
             self.temperature_value_box.setEnabled(True)
             self.pressure_value_box.setEnabled(True)
+            self.pressure_check.setEnabled(True)
+            self.temperature_check.setEnabled(True)
 
         self.commit.deferred()
 
@@ -170,6 +186,24 @@ class OWDataCleaning(OWWidget):
 
     def _value_change(self):
 
+        self.commit.deferred()
+
+
+    def _flag_dataset_pressure_change(self):
+
+        if self.pressure_flag == True:
+            self.pressure_value_box.setEnabled(False)
+        else:
+            self.pressure_value_box.setEnabled(True)
+
+        self.commit.deferred()
+
+    def _flag_dataset_temperature_change(self):
+
+        if self.temperature_flag == True:
+            self.temperature_value_box.setEnabled(False)
+        else:
+            self.temperature_value_box.setEnabled(True)
         self.commit.deferred()
 
 
@@ -193,28 +227,60 @@ class OWDataCleaning(OWWidget):
             df = table_to_frame(self.data)
 
             if self.filter_type == 0:
-                df_temp = df.copy()
+                df_temp = df_temp = dm.preprocessing(df, my_output='cpx_only')
                 df_temp['sum'] = df_temp[cpx_cols].sum(axis=1)
                 out = df_temp[(df_temp['sum']-100).abs()<=self.threshold_tot].drop(['sum'],axis=1)
 
             elif self.filter_type == 1:
-                df_temp = df.copy()
+
+                df_temp = dm.preprocessing(df, my_output='cpx_only')
+
+                if set(df_temp.columns) <= set(cpx_cols):
+                    self.Error.value_error("Data Input uncorrect")
+                else:
+                    self.Error.value_error.clear()
+                    return
+                
                 df_temp['cations'] = pt.calculate_clinopyroxene_components(df_temp)['Cation_Sum_Cpx']
                 #out = df_temp[df_temp['cations']>=self.threshold_cat].drop(['cations'],axis=1)
                 out = df_temp[(df_temp['cations']-4).abs()<=self.threshold_cat].drop(['cations'],axis=1)
 
             elif self.filter_type == 2:
 
-                if set(table_to_frame(self.data).columns) <= set(cpx_cols+liq_cols):
+                df_temp = dm.preprocessing(df, my_output='cpx_liq')
+
+                if set(df_temp.columns) <= set(cpx_cols+liq_cols):
                     self.Error.value_error("Data Input uncorrect")
                 else:
                     self.Error.value_error.clear()
                     return
+                
+                if self.temperature_flag == True:
+                    if set(df_temp.columns) <= set(['T_C']):
+                        self.Error.value_error("'T_C' column is not in Dataset")
+                        temp_T = self.temperature
+                        print('no dataset col')
+                    else:
+                        self.Error.value_error.clear()
+                        temp_T = df_temp['T_C']
+                        print('yes dataset col')
+                else: 
+                    temp_T = self.temperature
+                    print('no dataset')
 
-                df_temp = df.copy()
+                if self.pressure_flag == True:
+                    if set(df_temp.columns) <= set(['P_kbar']):
+                        self.Error.value_error("'P_kbar' column is not in Dataset")
+                        temp_P = self.pressure
+                    else:
+                        self.Error.value_error.clear()
+                        temp_P = df_temp['P_kbar']
+                else: 
+                    temp_P = self.pressure
+
                 df_temp[self.filter_et] = pt.calculate_cpx_liq_eq_tests(meltmatch=None, liq_comps=df_temp[liq_cols],
                                                               cpx_comps=df_temp[cpx_cols],Fe3Fet_Liq=None,
-                                                              P=self.pressure, T=self.temperature, sigma=1, Kd_Err=0.03)[self.filter_et] 
+                                                              P=temp_P, T=temp_T, sigma=1, Kd_Err=0.03)[self.filter_et] 
                 out = df_temp[df_temp[self.filter_et].abs()<=self.threshold_et].drop([self.filter_et],axis=1)
 
             out = table_from_frame(out)
