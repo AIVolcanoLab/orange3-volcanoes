@@ -6,21 +6,21 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CoDA Transformations &mdash; Orange3-Volcanoes 1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+  <title>CoDA Transformation &mdash; Orange3-Volcanoes 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=f2a433a1"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CpxBarometer" href="cpx_barometer.html" />
-    <link rel="prev" title="Filtering" href="data_cleaning.html" /> 
+    <link rel="prev" title="Data Cleaning" href="data_cleaning.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,14 +44,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="data_cleaning.html">Filtering</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">CoDA Transformations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#input">Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#errors">Errors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#comments">Comments</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction and Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importing_data.html">Importing Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_cleaning.html">Data Cleaning</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CoDA Transformation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpx_barometer.html">CpxBarometer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpx_thermometer.html">CpxThermometer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="liq_thermometer.html">LiqThermometer</a></li>
@@ -71,7 +68,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">CoDA Transformations</li>
+      <li class="breadcrumb-item active">CoDA Transformation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/coda_transformations.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -81,41 +78,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="coda-transformations">
-<h1>CoDA Transformations<a class="headerlink" href="#coda-transformations" title="Link to this heading"></a></h1>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>This widget applies three basic log-ratio transformations to compositional data:
-1. <strong>CLR (Centered Log Ratio):</strong> Aitchison (1986).
-2. <strong>ALR (Additive Log Ratio):</strong> Aitchison (1986).
-3. <strong>ILR (Isometric Log Ratio):</strong> Egozcue et al. (2003).</p>
-<p><strong>Purpose:</strong> Log-ratio transformations enable univariate and multivariate statistical analyses of compositional data (e.g., Hierarchical Clustering).</p>
-</section>
-<section id="input">
-<h2>Input<a class="headerlink" href="#input" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p><strong>Raw dataset:</strong> Unprocessed dataset.</p></li>
-</ul>
-</section>
-<section id="errors">
-<h2>Errors<a class="headerlink" href="#errors" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Applying the ILR transformation fails if the dataset contains zeros.</p></li>
-</ul>
-</section>
-<section id="comments">
-<h2>Comments<a class="headerlink" href="#comments" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Add a specific user message emphasizing that the dataset should not contain zeros for log-ratio transformations.</p></li>
-</ul>
-</section>
+  <section id="coda-transformation">
+<h1>CoDA Transformation<a class="headerlink" href="#coda-transformation" title="Link to this heading"></a></h1>
+<p>The use of the <code class="docutils literal notranslate"><span class="pre">CoDATransformation</span></code> widget, implemented in the Orange-Volcanoes add-on, enables users to conduct several multivariate analyses (e.g., hierarchical clustering, k-means, PCA, etc.) on geochemical, petrological, and volcanological data sets. As illustrated in the Figure, users can easily upload their desired data set into the Orange canvas using the widget <code class="docutils literal notranslate"><span class="pre">File</span></code>. This allows users to directly import into Orange a pre-prepared datasheet (containing only the variables to be transformed) or a raw data set that includes additional columns, variables, and metadata beyond those targeted for transformation.</p>
+<p>In the case of raw data sets, users can utilize the <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">Columns</span></code> widget (already built into base Orange) to specify the columns to process (i.e., transform with a log-ratio method). The <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">Columns</span></code> widget facilitates the selection of the variables that the user intends to use for the data transformation and the following analysis, excluding unnecessary columns and selecting specific columns as metadata to carry forward through the subsequent steps of the Orange workflow. Once the desired variables are selected, they can be linked to the <code class="docutils literal notranslate"><span class="pre">CoDATransformation</span></code> widget, which is specifically designed within Orange-Volcanoes for compositional data analysis.</p>
+<p>As shown in Figure 6, the widget allows choosing among three distinct isometric log-ratio transformations:</p>
+<ol class="arabic simple">
+<li><p><strong>Centered log-ratio (clr) transformation</strong></p></li>
+<li><p><strong>Additive log-ratio (alr) transformation</strong></p></li>
+<li><p><strong>Isometric log-ratio (ilr) transformation</strong></p></li>
+</ol>
+<p>A simple drop-down menu allows the user to select which major oxide to use as the denominator for the alr transformation.</p>
+<figure class="align-center" id="id1">
+<span id="fig6-coda-transformation"></span><a class="reference internal image-reference" href="../../images/Fig_6.png"><img alt="../../images/Fig_6.png" src="../../images/Fig_6.png" style="width: 90%;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><strong>CoDA Transformation</strong>. The CoDATransformation widget allows the user to transform the starting data set with three different log-ratio transformations: 1) centered log-ratio (clr); 2) additive log-ratio (alr); and 3) isometric log-ratio (ilr) transformations. Users can upload an already pre-prepared data set on the Orange canvas with the widget <code class="docutils literal notranslate"><span class="pre">File</span></code> or upload the raw data set (with the widget <code class="docutils literal notranslate"><span class="pre">File</span></code>) and then select the desired columns to transform using the widget <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">Columns</span></code>.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="data_cleaning.html" class="btn btn-neutral float-left" title="Filtering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data_cleaning.html" class="btn btn-neutral float-left" title="Data Cleaning" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="cpx_barometer.html" class="btn btn-neutral float-right" title="CpxBarometer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -1,28 +1,24 @@
-Filtering
-=========
+Data Cleaning
+=============
 
-Overview
---------
-This widget allows the user to filter the input data based on three main criteria:
-1. **Total oxide weight content (Oxides-Totals):** Filter based on the total weight percentage of oxides.
-2. **Cations per formula unit (Cations-Filter):** Filter based on the number of cations per unit formula for clinopyroxenes.
-3. **Equilibrium between clinopyroxene and liquid (Equilibrium-Test):** Filter based on existing equilibrium models.
+The "Data Cleaning" widget, implemented in Orange Volcanoes, allows the user to filter out and clean, from the starting dataset, bad analytical points and observations out of equilibrium.
 
-**Details:**
-- **Oxides-Totals:** Specify a range around the ideal sum (100 wt%). For example, if the user selects a delta of ±2 wt%, the filter accepts data with oxide totals between 98 and 102%.
-- **Cations-Filter:** Specify an absolute delta around the ideal number of cations per formula unit (e.g., 4 ± 0.04 cfu).
-- **Equilibrium-Test:** Choose from different equilibrium models (e.g., Kd filter by Putirka 2008, EnFs filter by Mollo 2013). Input data must include chemical compositions, pressure, and temperature.
+In detail, Data Cleaning implements three different types of filters:
+ 
+1. **oxide wt% total filter**
+2. **cation per formula unit filter**
+3. **liquid-crystal pairs equilibrium filter**
 
-Input
------
-- **Oxides-Totals:** Cpx and/or Liq compositions.
-- **Cations-Filter:** Cpx composition.
-- **Equilibrium-Test:** Cpx composition, Liq composition, temperature (T), and pressure (P).
+The widget panel allows users to easily select the desired thresholds to be used within filters and the formula to use for the liquid-crystal pairs equilibrium test (Figure 4).
 
-Errors
-------
-- The filter often fails because the preprocessing step does not generate (or removes) the `Totals` column required by the Oxides-Totals filter.
+In the first Orange-Volcanoes release this function is available for clinopyroxene only.
 
-Comments
---------
-- Either enforce the inclusion of a `Totals` column in the input dataset or calculate it as the sum of the oxide weights (wt%).
+In a subsequent update, we have implemented specialized functions based on Thermobar (see Wieser et al., 2022) that enable users to select the appropriate equilibrium test and specify the threshold for filtering their geochemical data.
+
+All the above filtering techniques can be applied to crystal and melt data using the Data Cleaning widget. As shown in Figure :ref:`Geochemical Data Filtering`, the Data Cleaning interface ...
+
+.. figure:: ../../images/Fig_5.png
+   :width: 60%
+   :align: center
+
+   **Geochemical Data Filtering**. The Filtering widget allows the user to filter the starting data set for: 1. oxide wt% totals; 2. cation per formula unit sum; and 3. crystal-melt pair disequilibrium.

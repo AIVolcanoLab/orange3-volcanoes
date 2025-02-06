@@ -6,21 +6,21 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Filtering &mdash; Orange3-Volcanoes 1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+  <title>Data Cleaning &mdash; Orange3-Volcanoes 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=f2a433a1"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="CoDA Transformations" href="coda_transformations.html" />
-    <link rel="prev" title="Orange3-Volcanoes documentation" href="index.html" /> 
+    <link rel="next" title="CoDA Transformation" href="coda_transformations.html" />
+    <link rel="prev" title="Datasets" href="datasets.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,14 +44,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Filtering</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#input">Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#errors">Errors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#comments">Comments</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="coda_transformations.html">CoDA Transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction and Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importing_data.html">Importing Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Data Cleaning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coda_transformations.html">CoDA Transformation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpx_barometer.html">CpxBarometer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpx_thermometer.html">CpxThermometer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="liq_thermometer.html">LiqThermometer</a></li>
@@ -71,7 +68,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Filtering</li>
+      <li class="breadcrumb-item active">Data Cleaning</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/data_cleaning.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -81,47 +78,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="filtering">
-<h1>Filtering<a class="headerlink" href="#filtering" title="Link to this heading"></a></h1>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>This widget allows the user to filter the input data based on three main criteria:
-1. <strong>Total oxide weight content (Oxides-Totals):</strong> Filter based on the total weight percentage of oxides.
-2. <strong>Cations per formula unit (Cations-Filter):</strong> Filter based on the number of cations per unit formula for clinopyroxenes.
-3. <strong>Equilibrium between clinopyroxene and liquid (Equilibrium-Test):</strong> Filter based on existing equilibrium models.</p>
-<p><strong>Details:</strong>
-- <strong>Oxides-Totals:</strong> Specify a range around the ideal sum (100 wt%). For example, if the user selects a delta of ±2 wt%, the filter accepts data with oxide totals between 98 and 102%.
-- <strong>Cations-Filter:</strong> Specify an absolute delta around the ideal number of cations per formula unit (e.g., 4 ± 0.04 cfu).
-- <strong>Equilibrium-Test:</strong> Choose from different equilibrium models (e.g., Kd filter by Putirka 2008, EnFs filter by Mollo 2013). Input data must include chemical compositions, pressure, and temperature.</p>
-</section>
-<section id="input">
-<h2>Input<a class="headerlink" href="#input" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p><strong>Oxides-Totals:</strong> Cpx and/or Liq compositions.</p></li>
-<li><p><strong>Cations-Filter:</strong> Cpx composition.</p></li>
-<li><p><strong>Equilibrium-Test:</strong> Cpx composition, Liq composition, temperature (T), and pressure (P).</p></li>
-</ul>
-</section>
-<section id="errors">
-<h2>Errors<a class="headerlink" href="#errors" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>The filter often fails because the preprocessing step does not generate (or removes) the <cite>Totals</cite> column required by the Oxides-Totals filter.</p></li>
-</ul>
-</section>
-<section id="comments">
-<h2>Comments<a class="headerlink" href="#comments" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Either enforce the inclusion of a <cite>Totals</cite> column in the input dataset or calculate it as the sum of the oxide weights (wt%).</p></li>
-</ul>
-</section>
+  <section id="data-cleaning">
+<h1>Data Cleaning<a class="headerlink" href="#data-cleaning" title="Link to this heading"></a></h1>
+<p>The “Data Cleaning” widget, implemented in Orange Volcanoes, allows the user to filter out and clean, from the starting dataset, bad analytical points and observations out of equilibrium.</p>
+<p>In detail, Data Cleaning implements three different types of filters:</p>
+<ol class="arabic simple">
+<li><p><strong>oxide wt% total filter</strong></p></li>
+<li><p><strong>cation per formula unit filter</strong></p></li>
+<li><p><strong>liquid-crystal pairs equilibrium filter</strong></p></li>
+</ol>
+<p>The widget panel allows users to easily select the desired thresholds to be used within filters and the formula to use for the liquid-crystal pairs equilibrium test (Figure 4).</p>
+<p>In the first Orange-Volcanoes release this function is available for clinopyroxene only.</p>
+<p>In a subsequent update, we have implemented specialized functions based on Thermobar (see Wieser et al., 2022) that enable users to select the appropriate equilibrium test and specify the threshold for filtering their geochemical data.</p>
+<p>All the above filtering techniques can be applied to crystal and melt data using the Data Cleaning widget. As shown in Figure <span class="xref std std-ref">Geochemical Data Filtering</span>, the Data Cleaning interface …</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../../images/Fig_5.png"><img alt="../../images/Fig_5.png" src="../../images/Fig_5.png" style="width: 60%;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><strong>Geochemical Data Filtering</strong>. The Filtering widget allows the user to filter the starting data set for: 1. oxide wt% totals; 2. cation per formula unit sum; and 3. crystal-melt pair disequilibrium.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Orange3-Volcanoes documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="coda_transformations.html" class="btn btn-neutral float-right" title="CoDA Transformations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="datasets.html" class="btn btn-neutral float-left" title="Datasets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coda_transformations.html" class="btn btn-neutral float-right" title="CoDA Transformation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

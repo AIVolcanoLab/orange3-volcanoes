@@ -15,7 +15,9 @@ documentation for details.
    :maxdepth: 2
    :caption: Contents:
 
-   dataset
+   introduction
+   importing_data
+   datasets
    data_cleaning
    coda_transformations
    cpx_barometer

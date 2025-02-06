@@ -7,14 +7,14 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CpxThermometer &mdash; Orange3-Volcanoes 1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=f2a433a1"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -44,15 +44,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="data_cleaning.html">Filtering</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coda_transformations.html">CoDA Transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction and Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importing_data.html">Importing Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_cleaning.html">Data Cleaning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coda_transformations.html">CoDA Transformation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpx_barometer.html">CpxBarometer</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">CpxThermometer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#input">Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#errors">Errors</a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CpxThermometer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="liq_thermometer.html">LiqThermometer</a></li>
 </ul>
 
@@ -82,26 +80,16 @@
              
   <section id="cpxthermometer">
 <h1>CpxThermometer<a class="headerlink" href="#cpxthermometer" title="Link to this heading"></a></h1>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>This widget calculates the temperature of clinopyroxene formation using its chemical composition or the composition of clinopyroxene-liquid pairs.</p>
-<p><strong>Key Features:</strong>
-- Offers various thermometric formulas for specific needs.</p>
-</section>
-<section id="input">
-<h2>Input<a class="headerlink" href="#input" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p><strong>Preprocessed dataset:</strong>
-- Preprocessed clinopyroxene composition.
-- Preprocessed clinopyroxene-liquid pairs.</p></li>
-</ul>
-</section>
-<section id="errors">
-<h2>Errors<a class="headerlink" href="#errors" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Machine Learning models (e.g., Jorgenson, Petrelli) are not functioning correctly.</p></li>
-</ul>
-</section>
+<p>This widget calculates the temperature of clinopyroxene formation using its chemical composition or the composition of clinopyroxene–liquid pairs.</p>
+<p>The widget uses the <a class="reference external" href="https://www.jvolcanica.org/ojs/index.php/volcanica/article/view/161">Thermobar</a> tool to function and requires a dataset prepared in a specific way (with specific variable labels). An example of how variables should be renamed before using the widget is shown in Table 1. More details can be found by consulting the Thermobar <a class="reference external" href="https://thermobar.readthedocs.io/en/latest/">documentation</a>.</p>
+<p>As shown in the Figure, users can select whether to use a thermometer based on cpx composition only or on cpx–liquid pairs. For each of the two options, users can select the thermometer formula that best suits their dataset via a convenient drop-down menu. If the chosen formula is pressure-dependent, the user can choose whether to (i) use pressure values found in a specific column within their dataset, (ii) enter a specific pressure to apply to the entire dataset, or (iii) calculate their own pressure from a specific model.</p>
+<figure class="align-center" id="id1">
+<span id="fig-cpxthermometer"></span><a class="reference internal image-reference" href="../../images/Fig_9.png"><img alt="../../images/Fig_9.png" src="../../images/Fig_9.png" style="width: 90%;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><strong>CpxThermometer</strong>. The CpxThermometer widget allows the user to calculate the temperature of clinopyroxene formation using its chemical composition or the composition of clinopyroxene–liquid pairs.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
 </section>
 
 
