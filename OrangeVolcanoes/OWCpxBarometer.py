@@ -49,14 +49,14 @@ try:
     MODELS_CO.extend([
     ('P_Petrelli2020_Cpx_only(ML)', 'P_Petrelli2020_Cpx_only_onnx',False),
     ('P_Jorgenson2022_Cpx_only(ML)', 'P_Jorgenson2022_Cpx_only_onnx',False),
-    ('P_Petrelli2020_Cpx_only_withH2O_(ML)', 'P_Petrelli2020_Cpx_only_withH2O',False)
+    #('P_Petrelli2020_Cpx_only_withH2O_(ML)', 'P_Petrelli2020_Cpx_only_withH2O',False)
     ])
 
 
     MODELS_CL.extend([
         ('P_Petrelli2020_Cpx_Liq(ML)', 'P_Petrelli2020_Cpx_Liq_onnx',False),
-        ('P_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'P_Jorgenson2022_Cpx_Liq_Norm',False),
-        ('P_Jorgenson2022_Cpx_Liq(ML)', 'P_Jorgenson2022_Cpx_Liq_onnx',False)
+        #('P_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'P_Jorgenson2022_Cpx_Liq_Norm',False),
+        #('P_Jorgenson2022_Cpx_Liq(ML)', 'P_Jorgenson2022_Cpx_Liq_onnx',False)
         ])
 
 except ImportError:
@@ -102,8 +102,8 @@ class OWCpxBarometer(OWWidget):
     want_main_area = False  
 
 
-    model_idx_co = Setting(0)
-    model_idx_cl = Setting(0)
+    model_idx_co = 0 #Setting(0)
+    model_idx_cl = 0 #Setting(0)
 
     model_idx_temperature_co = Setting(0)
     model_idx_temperature_cl = Setting(0)
@@ -374,7 +374,7 @@ class OWCpxBarometer(OWWidget):
 
             if self.temperature_type == 0:
                 try:
-                    T = df['T_C'] + 273.15
+                    T = df['T_K']
                 except:
                     T = self.temperature_value
                 
@@ -388,6 +388,7 @@ class OWCpxBarometer(OWWidget):
 
                 if self.temperature == False:
                     pressure = calculate_cpx_only_press(cpx_comps=df[cpx_cols],  equationP=self.model)
+                    #if pressure 
                 else:
                     if self.temperature_type == 2:
                         pressure = calculate_cpx_only_press_temp(cpx_comps=df[cpx_cols],
@@ -401,7 +402,7 @@ class OWCpxBarometer(OWWidget):
                 df = dm.preprocessing(df, my_output='cpx_liq')
 
                 if self.temperature == False:
-                    presssure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model)
+                    pressure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model)
                 else:
                     if  self.temperature_type == 2:
                         pressure = calculate_cpx_liq_press_temp(cpx_comps=df[cpx_cols],
@@ -411,10 +412,8 @@ class OWCpxBarometer(OWWidget):
                     else:
                         pressure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model, T=T)
 
-
-
             my_domain = Domain([ContinuousVariable(name=a.name) for i, a in enumerate(self.data.domain.attributes)],
-                            ContinuousVariable.make("Pressure_bar_output"), metas=self.data.domain.metas)
+                            ContinuousVariable.make("P_kbar_output"), metas=self.data.domain.metas)
 
             out = Table.from_numpy(my_domain, self.data.X,pressure, self.data.metas)
 

@@ -161,14 +161,14 @@ class OWCpxThermometer(OWWidget):
 
 
         #Dataset as Pressure GUI
-        self.button_1 = gui.appendRadioButton(self.box_1, "Dataset_as_Pressure_(Kbar)")   
+        self.button_1 = gui.appendRadioButton(self.box_1, "Dataset_as_Pressure_(kbar)")   
 
         #Fixed Pressure GUI
         gui.appendRadioButton(self.box_1, "Fixed_Pressure")
 
         self.pressure_value_box = gui.spin(
             gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(self.button_1)), self, "pressure_value", 
-            spinType=float, minv=0,maxv=10000,step=0.1, label="Pressure_value_(bar)",
+            spinType=float, minv=0,maxv=10000,step=0.1, label="Pressure_value_(kbar)",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
 
@@ -375,7 +375,7 @@ class OWCpxThermometer(OWWidget):
 
             if self.pressure_type == 0:
                 try:
-                    P = df['P_Kbar']
+                    P = df['P_kbar']
                 except:
                     P = self.pressure_value
                 
@@ -387,34 +387,34 @@ class OWCpxThermometer(OWWidget):
                 df = dm.preprocessing(df, my_output='cpx_only')
 
                 if self.pressure == False:
-                    temperature = calculate_cpx_only_temp(cpx_comps=df[cpx_cols],  equationT=self.model)-273.15
+                    temperature = calculate_cpx_only_temp(cpx_comps=df[cpx_cols],  equationT=self.model)
                 else:
                     if self.pressure_type == 2:
                         temperature = calculate_cpx_only_press_temp(cpx_comps=df[cpx_cols],
                                                                        equationP=self.model_pressure,
-                                                                       equationT=self.model).iloc[:,1]-273.15 
+                                                                       equationT=self.model).iloc[:,1] 
                     else:
-                        temperature = calculate_cpx_only_temp(cpx_comps=df[cpx_cols], equationT=self.model, P=P)-273.15 
+                        temperature = calculate_cpx_only_temp(cpx_comps=df[cpx_cols], equationT=self.model, P=P)
 
             elif self.model_type == 1: 
 
                 df = dm.preprocessing(df, my_output='cpx_liq')
 
                 if self.pressure == False:
-                    temperature = calculate_cpx_liq_temp(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationT=self.model)-273.15
+                    temperature = calculate_cpx_liq_temp(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationT=self.model)
                 else:
                     if  self.pressure_type == 2:
                         temperature = calculate_cpx_liq_press_temp(cpx_comps=df[cpx_cols],
                                                                       liq_comps=df[liq_cols],
                                                                       equationP=self.model_pressure,
-                                                                      equationT=self.model).iloc[:,1]-273.15
+                                                                      equationT=self.model).iloc[:,1]
                     else:
-                        temperature = calculate_cpx_liq_temp(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationT=self.model, P=P)-273.15 
+                        temperature = calculate_cpx_liq_temp(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationT=self.model, P=P)
 
 
 
             my_domain = Domain([ContinuousVariable(name=a.name) for i, a in enumerate(self.data.domain.attributes)],
-                            ContinuousVariable.make("Temperature_C_output"), metas=self.data.domain.metas)
+                            ContinuousVariable.make("T_K_output"), metas=self.data.domain.metas)
 
             out = Table.from_numpy(my_domain, self.data.X,temperature, self.data.metas)
 

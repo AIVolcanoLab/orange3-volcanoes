@@ -115,12 +115,12 @@ class OWDataCleaning(OWWidget):
             controlWidth=80)
 
         self.temperature_value_box = gui.spin(
-            gui.indentedBox(box, gui.checkButtonOffsetHint(button_2)), self, "temperature", 0, 10000, label="Temperature (C)",
+            gui.indentedBox(box, gui.checkButtonOffsetHint(button_2)), self, "temperature", 0, 10000, label="Temperature (K)",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
         
         self.temperature_check = gui.checkBox(
-            gui.indentedBox(box),self, "temperature_flag", label="Use Dataset as Temperature (C)", callback=self._flag_dataset_temperature_change)
+            gui.indentedBox(box),self, "temperature_flag", label="Use Dataset as Temperature (K)", callback=self._flag_dataset_temperature_change)
 
 
         self.pressure_value_box = gui.spin(
@@ -237,12 +237,12 @@ class OWDataCleaning(OWWidget):
 
                 if set(df_temp.columns) <= set(cpx_cols):
                     self.Error.value_error("Data Input uncorrect")
+                    return
                 else:
                     self.Error.value_error.clear()
-                    return
+                    
                 
                 df_temp['cations'] = pt.calculate_clinopyroxene_components(df_temp)['Cation_Sum_Cpx']
-                #out = df_temp[df_temp['cations']>=self.threshold_cat].drop(['cations'],axis=1)
                 out = df_temp[(df_temp['cations']-4).abs()<=self.threshold_cat].drop(['cations'],axis=1)
 
             elif self.filter_type == 2:
@@ -251,30 +251,27 @@ class OWDataCleaning(OWWidget):
 
                 if set(df_temp.columns) <= set(cpx_cols+liq_cols):
                     self.Error.value_error("Data Input uncorrect")
+                    return
                 else:
                     self.Error.value_error.clear()
-                    return
                 
                 if self.temperature_flag == True:
-                    if set(df_temp.columns) <= set(['T_C']):
+                    try:
+                        temp_T = df_temp['T_K']
+                        self.Error.value_error.clear()
+                    except:
                         self.Error.value_error("'T_C' column is not in Dataset")
                         temp_T = self.temperature
-                        print('no dataset col')
-                    else:
-                        self.Error.value_error.clear()
-                        temp_T = df_temp['T_C']
-                        print('yes dataset col')
                 else: 
                     temp_T = self.temperature
-                    print('no dataset')
 
                 if self.pressure_flag == True:
-                    if set(df_temp.columns) <= set(['P_kbar']):
+                    try:
+                        temp_P = df_temp['P_kbar']
+                        self.Error.value_error.clear()
+                    except:
                         self.Error.value_error("'P_kbar' column is not in Dataset")
                         temp_P = self.pressure
-                    else:
-                        self.Error.value_error.clear()
-                        temp_P = df_temp['P_kbar']
                 else: 
                     temp_P = self.pressure
 
