@@ -376,7 +376,9 @@ class OWCpxThermometer(OWWidget):
             if self.pressure_type == 0:
                 try:
                     P = df['P_kbar']
+                    self.Error.value_error.clear()
                 except:
+                    self.Error.value_error("'P_kbar' column is not in Dataset")
                     P = self.pressure_value
                 
             elif self.pressure_type == 1:

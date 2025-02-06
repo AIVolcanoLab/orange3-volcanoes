@@ -375,7 +375,9 @@ class OWCpxBarometer(OWWidget):
             if self.temperature_type == 0:
                 try:
                     T = df['T_K']
+                    self.Error.value_error.clear()
                 except:
+                    self.Error.value_error("'P_kbar' column is not in Dataset")
                     T = self.temperature_value
                 
             elif self.temperature_type == 1:

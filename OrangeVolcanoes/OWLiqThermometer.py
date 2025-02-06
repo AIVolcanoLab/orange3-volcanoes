@@ -149,6 +149,8 @@ class OWLiqThermometer(OWWidget):
             self.pressure_value_box.setEnabled(True)
         else:
             self.pressure_value_box.setEnabled(False)
+        
+        _, self.model, pressure = MODELS[self.model_idx]
       
         self.commit.deferred()  
 
@@ -160,11 +162,13 @@ class OWLiqThermometer(OWWidget):
         else:
             self.pressure_value_box.setEnabled(False)
                 
+        _, self.model, pressure = MODELS[self.model_idx]
         self.commit.deferred()    
 
 
     def _value_change(self):
 
+        _, self.model, pressure = MODELS[self.model_idx]
         self.commit.deferred()
 
 
@@ -193,7 +197,7 @@ class OWLiqThermometer(OWWidget):
                     self.Error.value_error.clear()
                 except:
                     self.Error.value_error("'P_kbar' column is not in Dataset")
-                    P = self.pressure_value
+                    print('except')
                 
             elif self.pressure_type == 1:
                 P = self.pressure_value 
