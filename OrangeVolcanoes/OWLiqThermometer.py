@@ -113,14 +113,14 @@ class OWLiqThermometer(OWWidget):
 
 
         #Dataset as Pressure GUI
-        self.button_1 = gui.appendRadioButton(self.box_1, "Dataset_as_Pressure_(Kbar)")   
+        self.button_1 = gui.appendRadioButton(self.box_1, "Dataset_as_Pressure_(kbar)")   
 
         #Fixed Pressure GUI
         gui.appendRadioButton(self.box_1, "Fixed_Pressure")
 
         self.pressure_value_box = gui.spin(
             gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(self.button_1)), self, "pressure_value", 
-            spinType=float, minv=0,maxv=100,step=0.1, label="Pressure_value_(Kbar)",
+            spinType=float, minv=0,maxv=100,step=0.1, label="Pressure_value_(kbar)",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
 
