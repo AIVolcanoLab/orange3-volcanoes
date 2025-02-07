@@ -21,25 +21,25 @@ cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
 
 
 MODELS_CO = [
-    ('P_Wang2021_eq1', 'P_Wang2021_eq1',False),
-    ('P_Put2008_eq32a', 'P_Put2008_eq32a',True),
-    ('P_Put2008_eq32b', 'P_Put2008_eq32b',True),
-    ('P_Nimis1999_BA', 'P_Nimis1999_BA',False)
+    ('P_Wang2021_eq1', 'P_Wang2021_eq1',False,False),
+    ('P_Put2008_eq32a', 'P_Put2008_eq32a',True,False),
+    ('P_Put2008_eq32b', 'P_Put2008_eq32b',True,True),
+    ('P_Nimis1999_BA', 'P_Nimis1999_BA',False,False)
 ]
 
 
 MODELS_CL = [
-    ('P_Put1996_eqP1', 'P_Put1996_eqP1',True),
-    ('P_Mas2013_eqPalk1', 'P_Mas2013_eqPalk1',True),
-    ('P_Put1996_eqP2', 'P_Put1996_eqP2',True),
-    #('P_Mas2013_eqPalk2', 'P_Mas2013_eqPalk2',True),
-    ('P_Put2003', 'P_Put2003',True),
-    ('P_Put2008_eq30', 'P_Put2008_eq30',True),
-    ('P_Put2008_eq31', 'P_Put2008_eq31',True),
-    ('P_Put2008_eq32c', 'P_Put2008_eq32c',True),
-    ('P_Mas2013_eqalk32c', 'P_Mas2013_eqalk32c',True),
-    ('P_Mas2013_Palk2012', 'P_Mas2013_Palk2012',False),
-    ('P_Neave2017', 'P_Neave2017',True)
+    ('P_Put1996_eqP1', 'P_Put1996_eqP1',True,False),
+    ('P_Mas2013_eqPalk1', 'P_Mas2013_eqPalk1',True,False),
+    ('P_Put1996_eqP2', 'P_Put1996_eqP2',True,False),
+    #('P_Mas2013_eqPalk2', 'P_Mas2013_eqPalk2',True,False),
+    ('P_Put2003', 'P_Put2003',True,False),
+    ('P_Put2008_eq30', 'P_Put2008_eq30',True,True),
+    ('P_Put2008_eq31', 'P_Put2008_eq31',True,True),
+    ('P_Put2008_eq32c', 'P_Put2008_eq32c',True,True),
+    ('P_Mas2013_eqalk32c', 'P_Mas2013_eqalk32c',True,True),
+    ('P_Mas2013_Palk2012', 'P_Mas2013_Palk2012',False,True),
+    ('P_Neave2017', 'P_Neave2017',True,False)
 ]
 
 
@@ -47,16 +47,16 @@ try:
     import Thermobar_onnx
 
     MODELS_CO.extend([
-    ('P_Petrelli2020_Cpx_only(ML)', 'P_Petrelli2020_Cpx_only_onnx',False),
-    ('P_Jorgenson2022_Cpx_only(ML)', 'P_Jorgenson2022_Cpx_only_onnx',False),
-    #('P_Petrelli2020_Cpx_only_withH2O_(ML)', 'P_Petrelli2020_Cpx_only_withH2O',False)
+    ('P_Petrelli2020_Cpx_only(ML)', 'P_Petrelli2020_Cpx_only_onnx',False,False),
+    ('P_Jorgenson2022_Cpx_only(ML)', 'P_Jorgenson2022_Cpx_only_onnx',False,False),
+    #('P_Petrelli2020_Cpx_only_withH2O_(ML)', 'P_Petrelli2020_Cpx_only_withH2O',False,True)
     ])
 
 
     MODELS_CL.extend([
-        ('P_Petrelli2020_Cpx_Liq(ML)', 'P_Petrelli2020_Cpx_Liq_onnx',False),
-        #('P_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'P_Jorgenson2022_Cpx_Liq_Norm',False),
-        #('P_Jorgenson2022_Cpx_Liq(ML)', 'P_Jorgenson2022_Cpx_Liq_onnx',False)
+        ('P_Petrelli2020_Cpx_Liq(ML)', 'P_Petrelli2020_Cpx_Liq_onnx',False,False),
+        #('P_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'P_Jorgenson2022_Cpx_Liq_Norm',False,False),
+        #('P_Jorgenson2022_Cpx_Liq(ML)', 'P_Jorgenson2022_Cpx_Liq_onnx',False,False)
         ])
 
 except ImportError:
@@ -109,6 +109,8 @@ class OWCpxBarometer(OWWidget):
     model_idx_temperature_cl = Setting(0)
 
     temperature = Setting(True)
+    h2o = Setting(True)
+
     temperature_model_co = Setting(False)
     temperature_model_cl = Setting(False)
 
@@ -121,7 +123,8 @@ class OWCpxBarometer(OWWidget):
     class Error(OWWidget.Error):
         value_error = Msg("{}")
 
-
+    class Warning(OWWidget.Warning):
+        value_error = Msg("{}")
 
     def __init__(self):
         OWWidget.__init__(self)
@@ -141,7 +144,7 @@ class OWCpxBarometer(OWWidget):
             callback=self._model_combo_change
         )
 
-        _, self.model, temperature = MODELS_CO[self.model_idx_co]
+        _, self.model, self.temperature, self.h2o = MODELS_CO[self.model_idx_co]
         
 
         #Cpx-liq GUI
@@ -197,13 +200,13 @@ class OWCpxBarometer(OWWidget):
     def _radio_change(self):
 
         if self.model_type == 0:
-            _, self.model, self.temperature = MODELS_CO[self.model_idx_co]
+            _, self.model, self.temperature, self.h2o = MODELS_CO[self.model_idx_co]
             _, self.model_temperature = MODELS_TEMPERATURE_CO[self.model_idx_temperature_co]
             self.models_combo_co.setEnabled(True)
             self.models_combo_cl.setEnabled(False)
 
         elif self.model_type == 1:
-            _, self.model, self.temperature = MODELS_CL[self.model_idx_cl]
+            _, self.model, self.temperature, self.h2o = MODELS_CL[self.model_idx_cl]
             _, self.model_temperature = MODELS_TEMPERATURE_CL[self.model_idx_temperature_cl]
             self.models_combo_co.setEnabled(False)
             self.models_combo_cl.setEnabled(True)
@@ -260,10 +263,10 @@ class OWCpxBarometer(OWWidget):
     def _model_combo_change(self):
 
         if self.model_type == 0:
-            _, self.model, self.temperature = MODELS_CO[self.model_idx_co]
+            _, self.model, self.temperature, self.h2o = MODELS_CO[self.model_idx_co]
 
         elif self.model_type == 1:
-            _, self.model, self.temperature = MODELS_CL[self.model_idx_cl]
+            _, self.model, self.temperature, self.h2o = MODELS_CL[self.model_idx_cl]
 
 
         if self.temperature_type == 1 and self.temperature == True:
@@ -365,6 +368,8 @@ class OWCpxBarometer(OWWidget):
 
 
         self.clear_messages()
+        self.Error.value_error.clear()
+        self.Warning.value_error.clear()
 
         if self.data is None:
             pass
@@ -372,13 +377,23 @@ class OWCpxBarometer(OWWidget):
 
             df = pd.DataFrame(data=np.array(self.data.X), columns=[a.name for i, a in enumerate(self.data.domain.attributes)])
 
+            # H2O in Dataset  
+            if self.h2o == True:
+                try:
+                    water = df['H2O']
+                except:
+                    water = 0
+                    self.Warning.value_error("'H2O' column is not in Dataset, H2O is set to zero.")
+            else:
+                water = 0
+
+
             if self.temperature_type == 0:
                 try:
                     T = df['T_K']
-                    self.Error.value_error.clear()
                 except:
-                    self.Error.value_error("'P_kbar' column is not in Dataset")
                     T = self.temperature_value
+                    self.Warning.value_error("'P_kbar' column is not in Dataset")
                 
             elif self.temperature_type == 1:
                 T = self.temperature_value
@@ -389,30 +404,30 @@ class OWCpxBarometer(OWWidget):
                 df = dm.preprocessing(df, my_output='cpx_only')
 
                 if self.temperature == False:
-                    pressure = calculate_cpx_only_press(cpx_comps=df[cpx_cols],  equationP=self.model)
+                    pressure = calculate_cpx_only_press(cpx_comps=df[cpx_cols],  equationP=self.model, H2O_Liq=water)
                     #if pressure 
                 else:
                     if self.temperature_type == 2:
                         pressure = calculate_cpx_only_press_temp(cpx_comps=df[cpx_cols],
                                                                        equationP=self.model_temperature,
-                                                                       equationT=self.model).iloc[:,0] 
+                                                                       equationT=self.model, H2O_Liq=water).iloc[:,0] 
                     else:
-                        pressure = calculate_cpx_only_press(cpx_comps=df[cpx_cols], equationP=self.model, T=T) 
+                        pressure = calculate_cpx_only_press(cpx_comps=df[cpx_cols], equationP=self.model, T=T, H2O_Liq=water) 
 
             elif self.model_type == 1: 
 
                 df = dm.preprocessing(df, my_output='cpx_liq')
 
                 if self.temperature == False:
-                    pressure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model)
+                    pressure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model, H2O_Liq=water)
                 else:
                     if  self.temperature_type == 2:
                         pressure = calculate_cpx_liq_press_temp(cpx_comps=df[cpx_cols],
                                                                       liq_comps=df[liq_cols],
                                                                       equationP=self.model_temperature,
-                                                                      equationT=self.model).iloc[:,0]
+                                                                      equationT=self.model, H2O_Liq=water).iloc[:,0]
                     else:
-                        pressure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model, T=T)
+                        pressure = calculate_cpx_liq_press(cpx_comps=df[cpx_cols], liq_comps=df[liq_cols], equationP=self.model, T=T, H2O_Liq=water)
 
             my_domain = Domain([ContinuousVariable(name=a.name) for i, a in enumerate(self.data.domain.attributes)],
                             ContinuousVariable.make("P_kbar_output"), metas=self.data.domain.metas)

@@ -22,36 +22,36 @@ cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
 
 
 MODELS = [
-    ('T_Put2008_eq13', 'T_Put2008_eq13',False),
-    ('T_Put2008_eq14', 'T_Put2008_eq14',False),
-    ('T_Put2008_eq15', 'T_Put2008_eq15',True),
-    ('T_Put2008_eq16', 'T_Put2008_eq16',True),
-    ('T_Helz1987_MgO', 'T_Helz1987_MgO',False),
-    ('T_Shea2022_MgO', 'T_Shea2022_MgO',False),
-    ('T_Montierth1995_MgO', 'T_Montierth1995_MgO',False),
-    ('T_Helz1987_CaO', 'T_Helz1987_CaO',False),
-    ('T_Beatt93_BeattDMg', 'T_Beatt93_BeattDMg',False),
-    ('T_Beatt93_BeattDMg_HerzCorr', 'T_Beatt93_BeattDMg_HerzCorr',False),
-    ('T_Sug2000_eq1', 'T_Sug2000_eq1',False),
-    ('T_Sug2000_eq3_ol', 'T_Sug2000_eq3_ol',True),
-    ('T_Sug2000_eq3_opx', 'T_Sug2000_eq3_opx',True),
-    ('T_Sug2000_eq3_cpx', 'T_Sug2000_eq3_cpx',True),
-    ('T_Sug2000_eq3_pig', 'T_Sug2000_eq3_pig',True),
-    ('T_Sug2000_eq6a_H7a', 'T_Sug2000_eq6a_H7a',True),
-    ('T_Sug2000_eq6b', 'T_Sug2000_eq6b',True),
-    ('T_Sug2000_eq6b_H7b', 'T_Sug2000_eq6b_H7b',True),
-    ('T_Put2008_eq19_BeattDMg', 'T_Put2008_eq19_BeattDMg',True),
-    ('T_Put2008_eq21_BeattDMg', 'T_Put2008_eq21_BeattDMg',True),
-    ('T_Put2008_eq22_BeattDMg', 'T_Put2008_eq22_BeattDMg',True),
-    ('T_Molina2015_amp_sat', 'T_Molina2015_amp_sat',False),
-    ('T_Put2016_eq3_amp_sat', 'T_Put2016_eq3_amp_sat',False),
-    ('T_Put1999_cpx_sat', 'T_Put1999_cpx_sat',True),
-    ('T_Put2008_eq34_cpx_sat', 'T_Put2008_eq34_cpx_sat',True),
-    ('T_Beatt1993_opx', 'T_Beatt1993_opx',True),
-    ('T_Put2005_eqD_plag_sat', 'T_Put2005_eqD_plag_sat',True),
-    ('T_Put2008_eq26_plag_sat', 'T_Put2008_eq26_plag_sat',True),
-    ('T_Put2008_eq24c_kspar_sat', 'T_Put2008_eq24c_kspar_sat',True),
-    ('T_Put2008_eq28b_opx_sat', 'T_Put2008_eq28b_opx_sat',True)
+    ('T_Put2008_eq13', 'T_Put2008_eq13',False,False),
+    ('T_Put2008_eq14', 'T_Put2008_eq14',False,True),
+    ('T_Put2008_eq15', 'T_Put2008_eq15',True,True),
+    ('T_Put2008_eq16', 'T_Put2008_eq16',True,False),
+    ('T_Helz1987_MgO', 'T_Helz1987_MgO',False,False),
+    ('T_Shea2022_MgO', 'T_Shea2022_MgO',False,False),
+    ('T_Montierth1995_MgO', 'T_Montierth1995_MgO',False,False),
+    ('T_Helz1987_CaO', 'T_Helz1987_CaO',False,False),
+    ('T_Beatt93_BeattDMg', 'T_Beatt93_BeattDMg',False,False),
+    ('T_Beatt93_BeattDMg_HerzCorr', 'T_Beatt93_BeattDMg_HerzCorr',True,False),
+    ('T_Sug2000_eq1', 'T_Sug2000_eq1',False,False),
+    ('T_Sug2000_eq3_ol', 'T_Sug2000_eq3_ol',True,False),
+    ('T_Sug2000_eq3_opx', 'T_Sug2000_eq3_opx',True,False),
+    ('T_Sug2000_eq3_cpx', 'T_Sug2000_eq3_cpx',True,False),
+    ('T_Sug2000_eq3_pig', 'T_Sug2000_eq3_pig',True,False),
+    ('T_Sug2000_eq6a_H7a', 'T_Sug2000_eq6a_H7a',True,True),
+    ('T_Sug2000_eq6b', 'T_Sug2000_eq6b',True,False),
+    ('T_Sug2000_eq6b_H7b', 'T_Sug2000_eq6b_H7b',True,True),
+    ('T_Put2008_eq19_BeattDMg', 'T_Put2008_eq19_BeattDMg',True,False),
+    ('T_Put2008_eq21_BeattDMg', 'T_Put2008_eq21_BeattDMg',True,True),
+    ('T_Put2008_eq22_BeattDMg', 'T_Put2008_eq22_BeattDMg',True,True),
+    ('T_Molina2015_amp_sat', 'T_Molina2015_amp_sat',False,False),
+    ('T_Put2016_eq3_amp_sat', 'T_Put2016_eq3_amp_sat',False,False),
+    ('T_Put1999_cpx_sat', 'T_Put1999_cpx_sat',True,False),
+    ('T_Put2008_eq34_cpx_sat', 'T_Put2008_eq34_cpx_sat',True,True),
+    ('T_Beatt1993_opx', 'T_Beatt1993_opx',True,False),
+    ('T_Put2005_eqD_plag_sat', 'T_Put2005_eqD_plag_sat',True,True),
+    ('T_Put2008_eq26_plag_sat', 'T_Put2008_eq26_plag_sat',True,True),
+    ('T_Put2008_eq24c_kspar_sat', 'T_Put2008_eq24c_kspar_sat',True,True)#,
+    #('T_Put2008_eq28b_opx_sat', 'T_Put2008_eq28b_opx_sat',True,True)
 
 ]
 
@@ -77,10 +77,10 @@ class OWLiqThermometer(OWWidget):
     resizing_enabled = False 
     want_main_area = False  
 
+    pressure = Setting(True)
+    h2o = Setting(True)
 
     model_idx = Setting(0)
-
-    pressure = Setting(True)
 
     pressure_value = Setting(1)
 
@@ -91,6 +91,8 @@ class OWLiqThermometer(OWWidget):
     class Error(OWWidget.Error):
         value_error = Msg("{}")
 
+    class Warning(OWWidget.Warning):
+        value_error = Msg("{}")
 
 
     def __init__(self):
@@ -104,7 +106,7 @@ class OWLiqThermometer(OWWidget):
         )
 
 
-        _, self.model, pressure = MODELS[self.model_idx]
+        _, self.model, self.pressure, self.h2o = MODELS[self.model_idx]
         
 
         self.box_1 = gui.radioButtons(
@@ -150,7 +152,7 @@ class OWLiqThermometer(OWWidget):
         else:
             self.pressure_value_box.setEnabled(False)
         
-        _, self.model, pressure = MODELS[self.model_idx]
+        _, self.model, self.pressure, self.h2o = MODELS[self.model_idx]
       
         self.commit.deferred()  
 
@@ -162,13 +164,13 @@ class OWLiqThermometer(OWWidget):
         else:
             self.pressure_value_box.setEnabled(False)
                 
-        _, self.model, pressure = MODELS[self.model_idx]
+        _, self.model, self.pressure, self.h2o = MODELS[self.model_idx]
         self.commit.deferred()    
 
 
     def _value_change(self):
 
-        _, self.model, pressure = MODELS[self.model_idx]
+        _, self.model, self.pressure, self.h2o = MODELS[self.model_idx]
         self.commit.deferred()
 
 
@@ -183,6 +185,8 @@ class OWLiqThermometer(OWWidget):
     def commit(self):
 
         self.clear_messages()
+        self.Warning.value_error.clear()
+        self.Error.value_error.clear()
 
         if self.data is None:
             pass
@@ -191,21 +195,42 @@ class OWLiqThermometer(OWWidget):
             df_o = pd.DataFrame(data=np.array(self.data.X), columns=[a.name for i, a in enumerate(self.data.domain.attributes)])
             df = dm.preprocessing(df_o, my_output='liq_only')
 
+            # H2O in Dataset  
+            if self.h2o == True:
+                try:
+                    water = df['H2O']
+                except:
+                    water = 0
+                    self.Warning.value_error("'H2O' column is not in Dataset, H2O is set to zero.")
+            else:
+                water = 0
+
+            # Pressure in Dataset    
             if self.pressure_type == 0:
                 try:
                     P = df['P_kbar']
-                    self.Error.value_error.clear()
                 except:
-                    self.Error.value_error("'P_kbar' column is not in Dataset")
-                    print('except')
-                
+                    P = self.pressure_value 
+                    self.Warning.value_error("'P_kbar' column is not in Dataset")
+   
             elif self.pressure_type == 1:
                 P = self.pressure_value 
 
+
+            # MODEL
+            #if self.pressure == False and self.h2o == False:
+            #    temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model)
+            #elif self.pressure == False and self.h2o == True:
+            #    temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model, H2O_Liq=water)
+            #elif self.pressure == True and self.h2o == False:
+            #    temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model, P=P)
+            #else:
+            #    temperature = calculate_liq_only_temp(liq_comps=df[liq_cols], equationT=self.model, P=P, H2O_Liq=water)
+
             if self.pressure == False:
-                temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model)
+                temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model, H2O_Liq=water)
             else:
-                temperature = calculate_liq_only_temp(liq_comps=df[liq_cols], equationT=self.model, P=P)
+                temperature = calculate_liq_only_temp(liq_comps=df[liq_cols], equationT=self.model, P=P, H2O_Liq=water)
 
 
             my_domain = Domain([ContinuousVariable(name=a.name) for i, a in enumerate(self.data.domain.attributes)],
