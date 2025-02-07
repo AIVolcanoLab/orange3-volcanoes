@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://orange3-volcanoes.readthedocs.io/en/latest/index.html">
+    <a href="https://orange3-volcanoes.readthedocs.io/en/|version|/index.html">
     <img src="https://raw.githubusercontent.com/AIVolcanoLab/orange3-volcanoes/refs/heads/main/docs/images/Titolo-DOC.png" alt="Orange Volcanoes" height="400">
     </a>
 </p>
