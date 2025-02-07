@@ -7,14 +7,14 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CpxBarometer &mdash; Orange3-Volcanoes 1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=f2a433a1"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -91,9 +91,24 @@
 <h1>CpxBarometer<a class="headerlink" href="#cpxbarometer" title="Link to this heading"></a></h1>
 <p>This widget calculates the pressure of clinopyroxene (cpx) formation using its chemical composition or the composition of clinopyroxene–liquid (cpx–liq) pairs.</p>
 <p>The widget uses the <a class="reference external" href="https://www.jvolcanica.org/ojs/index.php/volcanica/article/view/161">Thermobar</a> tool to function and requires a dataset prepared in a specific way (with specific variable labels). An example of how variables should be renamed before using the widget is shown in Table 1. More details can be found by consulting the Thermobar <a class="reference external" href="https://thermobar.readthedocs.io/en/latest/">documentation</a>.</p>
+<table class="docutils align-default" id="tab-my-label">
+<caption><span class="caption-text">Example of a standard data form for Thermobarometric estimates, from Agreda López et al. (2024)</span><a class="headerlink" href="#tab-my-label" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Column1</p></th>
+<th class="head"><p>Column2</p></th>
+<th class="head"><p>Column3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Value1</p></td>
+<td><p>Value2</p></td>
+<td><p>Value3</p></td>
+</tr>
+</tbody>
+</table>
 <p>As shown in the Figure, users can select whether to use barometers based on cpx composition only or on cpx–liquid pairs. For each of the two options, users can select the barometry formula that best suits their dataset via a convenient drop-down menu. If the chosen formula is temperature-dependent, the user can choose whether to (i) use temperature values found in a specific column within their dataset, (ii) enter a specific temperature to apply to the entire dataset, or (iii) calculate their own temperature from a specific model.</p>
 <figure class="align-center" id="id1">
-<span id="fig7-cpxbarometer"></span><a class="reference internal image-reference" href="../../images/Fig_7.png"><img alt="../../images/Fig_7.png" src="../../images/Fig_7.png" style="width: 90%;" />
+<span id="fig7-cpxbarometer"></span><a class="reference internal image-reference" href="../images/Fig_7.png"><img alt="../images/Fig_7.png" src="../images/Fig_7.png" style="width: 90%;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><strong>CpxBarometer</strong>. The widget interface allows users to select whether to use barometers based on cpx composition only or on cpx–liquid pairs. For each option, the appropriate barometry formula can be selected via a drop-down menu. If the formula is temperature-dependent, the user can choose between using a temperature column, entering a specific temperature, or calculating their own temperature.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>

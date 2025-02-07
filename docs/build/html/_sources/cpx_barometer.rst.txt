@@ -8,13 +8,18 @@ The widget uses the `Thermobar <https://www.jvolcanica.org/ojs/index.php/volcani
 .. table:: Example of a standard data form for Thermobarometric estimates, from Agreda López et al. (2024)
    :name: tab_my_label
 
+   +------------+------------+------------+
+   |   Column1  |  Column2   |  Column3   |
+   +============+============+============+
+   |  Value1    |  Value2    |  Value3    |
+   +------------+------------+------------+
 
 
 As shown in the Figure, users can select whether to use barometers based on cpx composition only or on cpx–liquid pairs. For each of the two options, users can select the barometry formula that best suits their dataset via a convenient drop-down menu. If the chosen formula is temperature-dependent, the user can choose whether to (i) use temperature values found in a specific column within their dataset, (ii) enter a specific temperature to apply to the entire dataset, or (iii) calculate their own temperature from a specific model.
 
 .. _fig7_CpxBarometer:
 
-.. figure:: ../../images/Fig_7.png
+.. figure:: ../images/Fig_7.png
    :width: 90%
    :align: center
 

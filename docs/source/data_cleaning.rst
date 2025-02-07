@@ -15,9 +15,11 @@ In the first Orange-Volcanoes release this function is available for clinopyroxe
 
 In a subsequent update, we have implemented specialized functions based on Thermobar (see Wieser et al., 2022) that enable users to select the appropriate equilibrium test and specify the threshold for filtering their geochemical data.
 
-All the above filtering techniques can be applied to crystal and melt data using the Data Cleaning widget. As shown in Figure :ref:`Geochemical Data Filtering`, the Data Cleaning interface ...
+All the above filtering techniques can be applied to crystal and melt data using the Data Cleaning widget. As shown in Figure :ref:`fig_geochemical_data_filtering`, the Data Cleaning interface ...
 
-.. figure:: ../../images/Fig_5.png
+.. _fig_geochemical_data_filtering:
+
+.. figure:: ../images/Fig_5.png
    :width: 60%
    :align: center
 

@@ -22,7 +22,7 @@ The list of Orange-Volcanoes Add-ons is displayed in **Figure 1**.
 
 .. _orange-widgets:
 
-.. figure:: ../../images/figure1.png
+.. figure:: ../images/figure1.png
    :width: 80%
    :align: center
    :alt: Orange-Volcanoes widgets

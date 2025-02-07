@@ -9,7 +9,7 @@ As shown in the Figure, users can select whether to use a thermometer based on c
 
 .. _fig_CpxThermometer:
 
-.. figure:: ../../images/Fig_9.png
+.. figure:: ../images/Fig_9.png
    :width: 90%
    :align: center
 

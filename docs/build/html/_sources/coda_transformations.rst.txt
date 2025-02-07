@@ -15,7 +15,7 @@ A simple drop-down menu allows the user to select which major oxide to use as th
 
 .. _fig6_CoDA_Transformation:
 
-.. figure:: ../../images/Fig_6.png
+.. figure:: ../images/Fig_6.png
    :width: 90%
    :align: center
 
