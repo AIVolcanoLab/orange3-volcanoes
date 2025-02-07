@@ -1,59 +1,50 @@
-Tephra Clustering 
+Tephra Clustering
 =================
 
+Here we show how to define a reproducible Machine Learning workflowuse on natural volcanic data.  
+The data set consists of glass chemical analyses belonging the the recent activity of the Campi Flegrei caldera (Smith et al., 2011).
 
-Orange-Volcanoes is an extension (add-on) of the open-source
-`Orange data mining platform <https://orangedatamining.com/>`_, specifically designed to support
-data-driven investigations in petrology and volcanology. Through the integration of tools for
-geochemical analysis into the Orange visual programming environment, Orange-Volcanoes allows
-researchers to explore, visualize, and interpret complex datasets without a coding background.
+.. figure:: ../images/fig_clustering.png
+   :width: 100%
+   :align: center
+   :alt: Clustering Workflow
 
-This add-on enhances the basic functionality of Orange by introducing specialized widgets designed
-for the specific needs of petrologists and volcanologists. These widgets facilitate geochemical data
-workflows, enabling tasks such as:
+   Hierarchical Clustering on Campi Flegrei samples.  
+   a) The workflow is divided into four steps: uploading, pre-processing, clustering, and merging/visualization/export.  
 
-- Importing and preparing petrological datasets
-- Conducting compositional data analysis (CoDA)
-- Cleaning and filtering geochemical analyses of glass and volcanic minerals
-- Testing mineral-liquid equilibrium
-- Performing thermobarometric calculations, both classical and machine learning-based.
 
-The list of Orange-Volcanoes Add-ons is displayed in **Figure 1**.
+The workflow has four steps:
 
-Orange-Volcanoes incorporates 6 dedicated widgets:
-   1. **Datasets**: to upload existing open source volcanological, geochemical, and petrological datasets;
-   2. **Data Cleaning**: to filter out bad data and observations at disequilibrium from the starting dataset;
-   3. **CoDATransformation**: to apply a set of log-ratio transformations to geochemical datasets;
-   4, 5, and 6. **Thermobarometers**: to perform classic and ML-based thermobarometric calculations on the analyzed dataset.
+1. **Uploading and Selecting Data**  
+   The data set is loaded.  
+   Only the needed columns (e.g., major element compositions) are selected using the "Select Column" widget.  
+   Rows with zeros or missing values are removed with the "Select Row" widget.
 
-Orange-Volcanoes bridges the gap between advanced data science techniques and the specific requirements
-of geochemical datasets. It uses Orange's powerful interactive environment to apply machine learning,
-statistical modelling, and explainable AI methods to petrological datasets. Users can easily build
-customized workflows by linking widgets, facilitating rapid iteration and discovery in magmatic and
-volcanic research.
+2. **Data Pre-processing**  
+   The major element compositions are transformed with an isometric log-ratio (ilr) transformation.  
+   This uses the "CoDATransformations" widget in Orange-Volcanoes.  
+   The transformed data is normalized with a standard scaler in the "Preprocess" widget.  
+   The ilr transformation lets you cluster geochemical data in Orange.
 
-Whether you are conducting large-scale geochemical studies, refining glass and mineral chemical datasets,
-or testing magmatic equilibria, Orange-Volcanoes offers an intuitive and flexible tool to enhance your
-analytical capabilities. This documentation will guide you through each widget and its applications,
-providing the basis for an in-depth study of volcanic and petrological processes.
+3. **Clustering Analysis**  
+   The cleaned data is used for clustering.  
+   Euclidean distances are computed with the "Distances" widget.  
+   Hierarchical clustering is performed with the "Hierarchical Clustering" widget.  
+   Other methods like k-means and Louvain Clustering are also available.
 
-Orange-Volcanoes is published in XXX:
+4. **Data Merging, Visualization, and Export**  
+   The original data is merged with the transformed data and clustering results.  
+   The clusters are shown with simple binary chemical scatterplots.  
+   Extra plots explore cluster compositions and eruptive products.  
+   The merged data set can be exported using the "Save Data" widget.
 
-**Link to the paper here**
+Four distinct clusters are identified by Euclidean distances.  
+Most products from the first epoch are in Clusters 1 and 2.  
+Cluster 3 dominates in the second epoch and later period.  
+Cluster 4 mostly shows products from the third epoch with some from the first.  
+An example plot shows Na₂O composition for three clusters.
 
-Please cite the paper (DOI: XXX) if you are applying Orange-Volcanoes for your study.
-
-Thermobarometric estimations are built on `Thermobar <https://www.jvolcanica.org/ojs/index.php/volcanica/article/view/161>`_
-(Wieser et al., 2022). In addition to our paper and this documentation, you can consult the Thermobar
-`paper <https://www.jvolcanica.org/ojs/index.php/volcanica/article/view/161>`_ and
-`documentation <https://thermobar.readthedocs.io/en/latest/>`_ along with the specific paper related
-to the used formula for thermobarometry. Make sure you cite them properly as well if you are using
-Orange-Volcanoes for thermobarometric estimates.
-
-Orange-Volcanoes is actively maintained and improved. We value user input for feature requests and bug
-reports. To contribute, you can either submit a request or report an issue directly on the GitHub Issues
-page, or reach out via email at XXX.
-
-**References:**
-
-Wieser, P., Petrelli, M., Lubbers, J., Wieser, E., Ozaydin, S., Kent, A. and Till, C. (2022) “Thermobar: An open-source Python3 tool for thermobarometry and hygrometry”, Volcanica, 5(2), pp. 349–384. doi: 10.30909/vol.05.02.349384.
+This exercise shows that Orange and Orange-Volcanoes work well with geochemical data.  
+The workflow is intuitive and user-friendly.  
+Users can control the chemical meaning of the clusters.  
+They can test different transformations, normalizations, and clustering methods interactively.

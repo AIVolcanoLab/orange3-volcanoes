@@ -12,7 +12,7 @@ data-driven investigations in petrology and volcanology.
 
 .. _orange-widgets:
 
-.. figure:: ../images/figure1.png
+.. figure:: ../images/Titolo-DOC.png
    :width: 80%
    :align: center
    :alt: Orange-Volcanoes widgets
