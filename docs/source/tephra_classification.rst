@@ -2,7 +2,7 @@ Tephra Classification
 =====================
 
 
-.. figure:: f../images/fig_classification.png
+.. figure:: ../images/fig_classification.png
    :width: 70%
    :align: center
    :alt: Cross validation of classification models
