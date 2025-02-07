@@ -1,8 +1,8 @@
-Introduction and Citation
-=========================
+Tephra Classification
+=====================
 
 
-Welcome to Orange-Volcanoes – Orange-Volcanoes is an extension (add-on) of the open-source
+Orange-Volcanoes is an extension (add-on) of the open-source
 `Orange data mining platform <https://orangedatamining.com/>`_, specifically designed to support
 data-driven investigations in petrology and volcanology. Through the integration of tools for
 geochemical analysis into the Orange visual programming environment, Orange-Volcanoes allows
@@ -20,14 +20,7 @@ workflows, enabling tasks such as:
 
 The list of Orange-Volcanoes Add-ons is displayed in **Figure 1**.
 
-.. _orange-widgets:
-
-.. figure:: ../../images/figure1.png
-   :width: 80%
-   :align: center
-   :alt: Orange-Volcanoes widgets
-
-   **Figure 1**. Orange-Volcanoes incorporates 6 dedicated widgets:
+Orange-Volcanoes incorporates 6 dedicated widgets:
    1. **Datasets**: to upload existing open source volcanological, geochemical, and petrological datasets;
    2. **Data Cleaning**: to filter out bad data and observations at disequilibrium from the starting dataset;
    3. **CoDATransformation**: to apply a set of log-ratio transformations to geochemical datasets;
