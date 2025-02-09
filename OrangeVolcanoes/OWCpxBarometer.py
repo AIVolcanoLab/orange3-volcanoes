@@ -164,13 +164,13 @@ class OWCpxBarometer(OWWidget):
 
 
         #Dataset as Pressure GUI
-        self.button_1 = gui.appendRadioButton(self.box_1, "Dataset_as_Temperature_(°C)")   
+        self.button_1 = gui.appendRadioButton(self.box_1, "Dataset_as_Temperature_(K)")   
 
         #Fixed Pressure GUI
         gui.appendRadioButton(self.box_1, "Fixed_Temperature")
 
         self.temperature_value_box = gui.spin(
-            gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(self.button_1)), self, "temperature_value", 1, 10000, label="Temperature_value_(°C)",
+            gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(self.button_1)), self, "temperature_value", 1, 10000, label="Temperature_value_(K)",
             alignment=Qt.AlignRight, callback=self._value_change,
             controlWidth=80)
 

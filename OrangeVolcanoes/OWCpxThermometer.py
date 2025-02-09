@@ -21,9 +21,9 @@ cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
 
 
 MODELS_CO = [
-    ('T_Put2008_eq32d', 'T_Put2008_eq32d',True),
-    ('T_Put2008_eq32d_subsol', 'T_Put2008_eq32d_subsol',True),
-    ('T_Wang2021_eq2', 'T_Wang2021_eq2',False)
+    ('T_Put2008_eq32d', 'T_Put2008_eq32d',True,False),
+    ('T_Put2008_eq32d_subsol', 'T_Put2008_eq32d_subsol',True,False),
+    ('T_Wang2021_eq2', 'T_Wang2021_eq2',False,False)
 ]
 
 MODELS_CL = [
@@ -390,9 +390,9 @@ class OWCpxThermometer(OWWidget):
             if self.pressure_type == 0:
                 try:
                     P = df['P_kbar']
-                    self.Error.value_error.clear()
+                    self.Warning.value_error.clear()
                 except:
-                    self.Error.value_error("'P_kbar' column is not in Dataset")
+                    self.Warning.value_error("'P_kbar' column is not in Dataset")
                     P = self.pressure_value
                 
             elif self.pressure_type == 1:

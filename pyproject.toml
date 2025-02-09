@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "orange3-volcanoes"           
-version = "1.0.29" 
+version = "1.0.30" 
 requires-python = ">= 3.8"  
 license = { file = "LICENSE" }
 description = "Orange-Volcanoes is an extension (add-on) of the open-source Orange data mining platform, specifically designed to support data-driven investigations in petrology and volcanology."

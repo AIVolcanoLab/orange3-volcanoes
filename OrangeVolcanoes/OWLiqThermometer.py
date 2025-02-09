@@ -217,16 +217,6 @@ class OWLiqThermometer(OWWidget):
                 P = self.pressure_value 
 
 
-            # MODEL
-            #if self.pressure == False and self.h2o == False:
-            #    temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model)
-            #elif self.pressure == False and self.h2o == True:
-            #    temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model, H2O_Liq=water)
-            #elif self.pressure == True and self.h2o == False:
-            #    temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model, P=P)
-            #else:
-            #    temperature = calculate_liq_only_temp(liq_comps=df[liq_cols], equationT=self.model, P=P, H2O_Liq=water)
-
             if self.pressure == False:
                 temperature = calculate_liq_only_temp(liq_comps=df[liq_cols],  equationT=self.model, H2O_Liq=water)
             else:
