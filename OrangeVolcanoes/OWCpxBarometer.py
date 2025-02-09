@@ -29,7 +29,7 @@ MODELS_CO = [
 
 
 MODELS_CL = [
-    ('P_Put1996_eqP1', 'P_Put1996_eqP1',True,False),
+    #('P_Put1996_eqP1', 'P_Put1996_eqP1',True,False),
     ('P_Mas2013_eqPalk1', 'P_Mas2013_eqPalk1',True,False),
     ('P_Put1996_eqP2', 'P_Put1996_eqP2',True,False),
     #('P_Mas2013_eqPalk2', 'P_Mas2013_eqPalk2',True,False),
