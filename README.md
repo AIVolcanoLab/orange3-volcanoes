@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-    <a href="https://pypi.org/project/orange3-volcanoes/" alt="Latest release">
-        <img src="https://img.shields.io/badge/downolad_OV-v1.0.3-orange" />
+    <a href="https://pypi.org/project/orange3-volcanoes/" title="Latest release">
+        <img src="https://img.shields.io/pypi/v/orange3-volcanoes?color=orange" alt="Latest release" />
     </a>
     <a href="https://orange3-volcanoes.readthedocs.io/en/latest/index.html" alt="Documentation">
         <img src="https://img.shields.io/badge/Orange_Volcanoes-Documentation-red">

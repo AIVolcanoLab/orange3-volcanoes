@@ -50,17 +50,17 @@ Orange-Volcanoes is published in XXX:
 
 Please cite the paper (DOI: XXX) if you are applying Orange-Volcanoes for your study.
 
-Thermobarometric estimations are built on `Thermobar <https://www.jvolcanica.org/ojs/index.php/volcanica/article/view/161>`_
-(Wieser et al., 2022). In addition to our paper and this documentation, you can consult the Thermobar
-`paper <https://www.jvolcanica.org/ojs/index.php/volcanica/article/view/161>`_ and
-`documentation <https://thermobar.readthedocs.io/en/latest/>`_ along with the specific paper related
-to the used formula for thermobarometry. Make sure you cite them properly as well if you are using
-Orange-Volcanoes for thermobarometric estimates.
-
 Orange-Volcanoes is actively maintained and improved. We value user input for feature requests and bug
 reports. To contribute, you can either submit a request or report an issue directly on the GitHub Issues
 page, or reach out via email at XXX.
 
-**References:**
+Are you interested in developing, expanding, or suggesting changes in Orange Volcanoes?
+To contribute, you can either `submit a request`_ or `report an issue`_ directly on the `GitHub`_,
+by using the dedicated `pull request`_ and `issues`_ spaces.
 
-Wieser, P., Petrelli, M., Lubbers, J., Wieser, E., Ozaydin, S., Kent, A. and Till, C. (2022) “Thermobar: An open-source Python3 tool for thermobarometry and hygrometry”, Volcanica, 5(2), pp. 349–384. doi: 10.30909/vol.05.02.349384.
+.. _submit a request: https://github.com/AIVolcanoLab/orange3-volcanoes/pulls
+.. _report an issue: https://github.com/AIVolcanoLab/orange3-volcanoes/issues
+.. _pull request: https://github.com/AIVolcanoLab/orange3-volcanoes/pulls
+.. _issues: https://github.com/AIVolcanoLab/orange3-volcanoes/issues
+.. _GitHub: https://github.com/AIVolcanoLab/orange3-volcanoes
+

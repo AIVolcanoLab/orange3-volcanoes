@@ -33,6 +33,13 @@ data-driven investigations in petrology and volcanology.
 
 .. toctree::
    :maxdepth: 2
+   :caption: Tutorials:  
+   
+   tephra_clustering
+   tephra_classification
+
+.. toctree::
+   :maxdepth: 2
    :caption: Widgets:  
 
    datasets
@@ -42,9 +49,4 @@ data-driven investigations in petrology and volcanology.
    cpx_thermometer
    liq_thermometer
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Tutorials:  
-   
-   tephra_clustering
-   tephra_classification
+
