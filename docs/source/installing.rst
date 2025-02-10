@@ -1,7 +1,8 @@
 Installing and Running
 ----------------------
 
-We strongly suggest installing Orange-Volcanoes in a Conda environment.
+We strongly suggest installing Orange-Volcanoes in a `Conda environment`.
+.. _Conda environment: https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html
 
 
 Step 1: Installing Anaconda or Miniconda
@@ -56,7 +57,7 @@ As a final step, to also activate ML-based thermometers ans barometers, please i
 .. code-block:: shell
 
    pip install "https://github.com/PennyWieser/Thermobar_onnx/archive/refs/tags/v.0.0.4.zip"
-   
+
 
 Running
 ~~~~~~~
