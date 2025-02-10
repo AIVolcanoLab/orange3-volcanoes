@@ -82,6 +82,9 @@ class OWCoDATransformations(OWWidget):
     class Error(OWWidget.Error):
         value_error = Msg("{}")
 
+    class Warning(OWWidget.Warning):
+        value_error = Msg("{}")
+
 
 
     def __init__(self):
@@ -121,39 +124,45 @@ class OWCoDATransformations(OWWidget):
 
     @Inputs.data
     def set_data(self, data):
-        # Skip the context if the combo is empty: a context with
-        # feature_model == None would then match all domains
+       # Skip the context if the combo is empty: a context with
+       # feature_model == None would then match all domains
 
-        if self.feature_model:
-            self.closeContext()
-        self.data = data
-        self.set_controls()
-        if self.feature_model:
-            self.openContext(data)
-        self.commit.now()
+       if self.feature_model:
+           self.closeContext()
+       self.data = data
+       self.set_controls()
+       if self.feature_model:
+           self.openContext(data)
+       self.commit.now()
 
     def set_controls(self):
-        self.feature_model.set_domain(Domain(self.data.domain.attributes) if self.data else None)
-        self.meta_button.setEnabled(bool(self.feature_model))
-        if self.feature_model:
-            self.feature_names_column = self.feature_model[0]
-        else:
-            self.feature_names_column = None
+       self.feature_model.set_domain(Domain(self.data.domain.attributes) if self.data else None)
+       self.meta_button.setEnabled(bool(self.feature_model))
+       if self.feature_model:
+           self.feature_names_column = self.feature_model[0]
+       else:
+           self.feature_names_column = None
+
+     #def set_data(self, data):
+     #        self.data = data
+     #        self.commit.now()
 
     @gui.deferred
     def commit(self):
 
 
         self.clear_messages()
+        self.Error.value_error.clear()
+        self.Warning.value_error.clear()
 
         if self.data is None:
             pass
         elif len(self.data.domain.attributes) > 1:
 
             if np.any(self.data.X == 0):
-                    self.Error.value_error("Samples with 0 or NaN elements are deleted! Log(0) or Log(NaN) cannot be calculated.")
+                    self.Warning.value_error("Samples with 0 or NaN elements are deleted! Log(0) or Log(NaN) cannot be calculated.")
             else:
-                    self.Error.value_error.clear()
+                    self.Warning.value_error.clear()
 
             mask = ~np.any(self.data.X == 0, axis=1)
 
@@ -190,4 +199,4 @@ class OWCoDATransformations(OWWidget):
                 transformed = Table.from_numpy(my_domain, my_X, self.data.Y[mask], self.data.metas[mask])
 
 
-        self.Outputs.data.send(transformed)
+            self.Outputs.data.send(transformed)
