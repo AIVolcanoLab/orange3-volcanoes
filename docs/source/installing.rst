@@ -1,7 +1,7 @@
 Installing and Running
 ----------------------
 
-We strongly suggest installing Orange-Volcanoes in a `Conda environment`.
+We strongly suggest installing Orange-Volcanoes in a `Conda environment`_.
 .. _Conda environment: https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html
 
 
