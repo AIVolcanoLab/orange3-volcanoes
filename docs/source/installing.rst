@@ -53,7 +53,7 @@ This can be done via pip install with the simple command:
    pip install orange3-volcanoes
 
 
-As a final step, to also activate ML-based thermometers ans barometers, please install Thermobar_onnx
+As a final step, to also activate ML-based thermometers and barometers, please install Thermobar_onnx
 
 .. code-block:: shell
 
