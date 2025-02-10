@@ -39,7 +39,7 @@ Then, create a new conda environment, and install `orange3`_:
    conda install orange3
 
 
-Step 2: Installing Orange-Volcanoes
+Step 3: Installing Orange-Volcanoes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once Orange has been correctly installed in a dedicated environment, we can proceed
