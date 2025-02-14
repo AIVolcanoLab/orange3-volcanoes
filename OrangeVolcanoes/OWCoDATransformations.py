@@ -115,7 +115,6 @@ class OWCoDATransformations(OWWidget):
 
     def _apply_editing(self):
         self.normalization_type = self.GENERIC
-        #self.feature_name = self.feature_name.strip()
         self.commit.deferred()
 
     def _feature_combo_changed(self):
@@ -124,8 +123,6 @@ class OWCoDATransformations(OWWidget):
 
     @Inputs.data
     def set_data(self, data):
-       # Skip the context if the combo is empty: a context with
-       # feature_model == None would then match all domains
 
        if self.feature_model:
            self.closeContext()
@@ -143,10 +140,6 @@ class OWCoDATransformations(OWWidget):
        else:
            self.feature_names_column = None
 
-     #def set_data(self, data):
-     #        self.data = data
-     #        self.commit.now()
-
     @gui.deferred
     def commit(self):
 
@@ -159,44 +152,34 @@ class OWCoDATransformations(OWWidget):
             pass
         elif len(self.data.domain.attributes) > 1:
 
-            if np.any(self.data.X == 0):
-                    self.Warning.value_error("Samples with 0 or NaN elements are deleted! Log(0) or Log(NaN) cannot be calculated.")
+            mask = ~np.any((self.data.X <= 0) | ~np.isfinite(self.data.X), axis=1)
+
+            if np.any(mask == False):
+                    self.Warning.value_error("Samples with <=0 or NaN or not numeric elements are deleted!")
             else:
                     self.Warning.value_error.clear()
 
-            mask = ~np.any(self.data.X == 0, axis=1)
-
-            if self.normalization_type == 0: #clr
-
-                my_X = np.apply_along_axis(clr, 1, self.data.X[mask])
-
-                my_list = [ContinuousVariable(name='clr_'+a.name) for i, a in enumerate(self.data.domain.attributes)]
-
-                my_domain = Domain(my_list, class_vars=self.data.domain.class_vars, metas=self.data.domain.metas)
-
-                transformed = Table.from_numpy(my_domain, my_X, self.data.Y[mask], self.data.metas[mask])
-
-            elif self.normalization_type == 1: #alr
-
-                my_X = np.apply_along_axis(alr, 1, self.data.X[mask], self.data.domain.index(self.feature_names_column))
-                
-                my_list = [ContinuousVariable(name="log_"+a.name+'_'+self.feature_names_column.name) for i, a in enumerate(self.data.domain.attributes)
-                            if i != self.data.domain.index(self.feature_names_column)]
-
-                my_domain = Domain(my_list, class_vars=self.data.domain.class_vars, metas=self.data.domain.metas)
-                    
-
-                transformed = Table.from_numpy(my_domain, my_X, self.data.Y[mask], self.data.metas[mask])
-
-            elif self.normalization_type == 2: #ilr
             
-                my_X = np.apply_along_axis(ilr, 1, self.data.X[mask])
+            if np.all(mask == False):
+                self.Warning.value_error("Samples with <=0 or NaN or not numeric elements are deleted!")
+                return
 
-                my_list = [ContinuousVariable(name="ilr_"+str(a+1))for a in range(my_X.shape[1])]
+            else:
 
-                my_domain = Domain(my_list, class_vars=self.data.domain.class_vars, metas=self.data.domain.metas)
-            
-                transformed = Table.from_numpy(my_domain, my_X, self.data.Y[mask], self.data.metas[mask])
+                if self.normalization_type == 0: #clr
+                    my_X = np.apply_along_axis(clr, 1, self.data.X[mask])
+                    my_list = [ContinuousVariable(name='clr_'+a.name) for i, a in enumerate(self.data.domain.attributes)]
 
+                elif self.normalization_type == 1: #alr
+                    my_X = np.apply_along_axis(alr, 1, self.data.X[mask], self.data.domain.index(self.feature_names_column))
+                    my_list = [ContinuousVariable(name="log_"+a.name+'_'+self.feature_names_column.name) for i, a in enumerate(self.data.domain.attributes)
+                                if i != self.data.domain.index(self.feature_names_column)]
+
+                elif self.normalization_type == 2: #ilr
+                    my_X = np.apply_along_axis(ilr, 1, self.data.X[mask])
+                    my_list = [ContinuousVariable(name="ilr_"+str(a+1))for a in range(my_X.shape[1])]
+
+            my_domain = Domain(my_list, class_vars=self.data.domain.class_vars, metas=self.data.domain.metas)
+            transformed = Table.from_numpy(my_domain, my_X, self.data.Y[mask], self.data.metas[mask])
 
             self.Outputs.data.send(transformed)
