@@ -50,8 +50,8 @@ try:
 
     MODELS_CL.extend([
         ('T_Petrelli2020_Cpx_Liq_(ML)', 'T_Petrelli2020_Cpx_Liq_onnx',False,False),
-        ('T_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'T_Jorgenson2022_Cpx_Liq_Norm',False,False),
-        ('T_Jorgenson2022_Cpx_Liq_(ML)', 'T_Jorgenson2022_Cpx_Liq_onnx',False,False)  
+        #('T_Jorgenson2022_Cpx_Liq_Norm_(ML)', 'T_Jorgenson2022_Cpx_Liq_Norm',False,False),
+       # ('T_Jorgenson2022_Cpx_Liq_(ML)', 'T_Jorgenson2022_Cpx_Liq_onnx',False,False)  
         ])
 
 except ImportError:

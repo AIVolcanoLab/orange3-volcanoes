@@ -30,7 +30,7 @@ MODELS = [
     ('T_Shea2022_MgO', 'T_Shea2022_MgO',False,False),
     ('T_Montierth1995_MgO', 'T_Montierth1995_MgO',False,False),
     ('T_Helz1987_CaO', 'T_Helz1987_CaO',False,False),
-    ('T_Beatt93_BeattDMg', 'T_Beatt93_BeattDMg',False,False),
+    #('T_Beatt93_BeattDMg', 'T_Beatt93_BeattDMg',False,False),
     ('T_Beatt93_BeattDMg_HerzCorr', 'T_Beatt93_BeattDMg_HerzCorr',True,False),
     ('T_Sug2000_eq1', 'T_Sug2000_eq1',False,False),
     ('T_Sug2000_eq3_ol', 'T_Sug2000_eq3_ol',True,False),
@@ -135,22 +135,32 @@ class OWLiqThermometer(OWWidget):
 
     def _model_combo_change(self):
 
-        if self.pressure_type == 1 and self.pressure == True:
-            self.pressure_value_box.setEnabled(True)
-        else:
-            self.pressure_value_box.setEnabled(False)
-
         if self.pressure == False:
             self.box_1.setEnabled(False)
-            self.pressure_value_box.setEnabled(False)
-        else: 
-            self.box_1.setEnabled(True)
-
-
-        if self.pressure_type == 1:
-            self.pressure_value_box.setEnabled(True)
         else:
-            self.pressure_value_box.setEnabled(False)
+            self.box_1.setEnabled(True)
+            if self.pressure_type == 1:
+                self.pressure_value_box.setEnabled(True) 
+            else: 
+                self.pressure_value_box.setEnabled(False) 
+
+
+        #if self.pressure_type == 1 and self.pressure == True:
+        #    self.pressure_value_box.setEnabled(True)
+        #else:
+        #    self.pressure_value_box.setEnabled(False)
+#
+        #if self.pressure == False:
+        #    self.box_1.setEnabled(False)
+        #    self.pressure_value_box.setEnabled(False)
+        #else: 
+        #    self.box_1.setEnabled(True)
+#
+#
+        #if self.pressure_type == 1:
+        #    self.pressure_value_box.setEnabled(True)
+        #else:
+        #    self.pressure_value_box.setEnabled(False)
         
         _, self.model, self.pressure, self.h2o = MODELS[self.model_idx]
       
