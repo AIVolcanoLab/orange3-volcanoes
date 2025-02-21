@@ -32,9 +32,9 @@ This add-on enhances the basic functionality of Orange by introducing specialize
 
 ## Installing Orange-Volcanoes
 
-To install Orange-Volcanoes, please follow the [step by step instructions] reported in the documentation.
+To install Orange-Volcanoes, please follow the [step by step install] instructions reported in the documentation.
 
-[step by step instructions]: https://orange3-volcanoes.readthedocs.io/en/latest/installing.html#step-1-installing-anaconda-or-miniconda
+[step by step install]: https://orange3-volcanoes.readthedocs.io/en/latest/installing.html#step-1-installing-anaconda-or-miniconda
 
 
 ## Running Orange-Volcanoes
