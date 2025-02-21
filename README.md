@@ -30,27 +30,18 @@ This add-on enhances the basic functionality of Orange by introducing specialize
      <li> Performing thermobarometric calculations, both classical and machine learning-based</li>
 </ol>
 
-## Installing
+## Installing Orange-Volcanoes
 
-To install Orange-Volcanoes, Orange should be first installed in your computer.
+To install Orange-Volcanoes, please follow the [step by step instructions] reported in the documentation.
 
-### Installing Orange
+[step by step instructions]: https://orange3-volcanoes.readthedocs.io/en/latest/installing.html#step-1-installing-anaconda-or-miniconda
 
-In order to install orange follow the procedure on the [Orange download page], or read the instruction in [orange3 GitHub].
 
-[Orange download page]: https://orangedatamining.com/download/
-[orange3 GitHub]: https://github.com/biolab/orange3/blob/master/README.md
+## Running Orange-Volcanoes
 
-### Installing Orange-Volcanoes with pip
+To run Orange-Volcanoes, please follow the [step by step instructions] reported in the documentation.
 
-Once Orange have been correctly installed in a dedicated enviroment, we can proceed installing the Orange-Volcanoes add-on within the same enviroment.
-This can be done via [pip install] with the easy command `pip install orange3-volcanoes`
-
-[pip install]: https://pypi.org/project/orange3-volcanoes/
-
-## Running
-
-Make sure you have activated the correct virtual environment. If you follow the conda instructions in [orange3 GitHub]:
+[step by step instructions]: https://orange3-volcanoes.readthedocs.io/en/latest/installing.html#running
 
 ```Shell
 conda activate orange3
