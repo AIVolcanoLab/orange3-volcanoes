@@ -40,6 +40,7 @@ To install Orange-Volcanoes, please follow the [step by step install] instructio
 ## Running Orange-Volcanoes
 
 To run Orange-Volcanoes, please follow the [step by step instructions] reported in the documentation.
+For example, if during the install process you created the orange3 envirnoment to host Orange and Orange-Volcanoes:
 
 [step by step instructions]: https://orange3-volcanoes.readthedocs.io/en/latest/installing.html#running
 
