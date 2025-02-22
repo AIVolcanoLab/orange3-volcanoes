@@ -45,9 +45,10 @@ To run Orange-Volcanoes, please follow the [step by step instructions] reported 
 
 ```Shell
 conda activate orange3
+orange-canvas
 ``` 
 
-Run `orange-canvas` or `python3 -m Orange.canvas`. Add `--help` for a list of program options.
+Add `--help` for a list of program options.
 
 Starting up for the first time may take a while.
 
