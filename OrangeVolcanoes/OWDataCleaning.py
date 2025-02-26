@@ -19,7 +19,7 @@ liq_cols = ['SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq',
 
 cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
 'FeOt_Cpx','MnO_Cpx', 'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', 'K2O_Cpx',
-'Cr2O3_Cpx', 'NiO_Cpx']
+'Cr2O3_Cpx'] #, 'NiO_Cpx']
 
 
 FILTERS_ET = [
@@ -209,14 +209,11 @@ class OWDataCleaning(OWWidget):
 
     @Inputs.data
     def set_data(self, data):
-       
         self.data = data
         self.commit.now()
 
-
     @gui.deferred
     def commit(self):
-
         self.clear_messages()
 
         if self.data is None:
@@ -225,15 +222,15 @@ class OWDataCleaning(OWWidget):
         elif len(self.data.domain.attributes) > 1:
 
             df = table_to_frame(self.data)
+            mask = np.ones(len(df), dtype=bool)  # Inizializza la maschera come True per tutte le righe
 
             if self.filter_type == 0:
-                df_temp = df_temp = dm.preprocessing(df, my_output='cpx_only')
+                df_temp = dm.preprocessing(df.copy(), my_output='cpx_only')
                 df_temp['sum'] = df_temp[cpx_cols].sum(axis=1)
-                out = df_temp[(df_temp['sum']-100).abs()<=self.threshold_tot].drop(['sum'],axis=1)
+                mask &= (df_temp['sum']-100).abs() <= self.threshold_tot
 
             elif self.filter_type == 1:
-
-                df_temp = dm.preprocessing(df, my_output='cpx_only')
+                df_temp = dm.preprocessing(df.copy(), my_output='cpx_only')
 
                 if set(df_temp.columns) <= set(cpx_cols):
                     self.Error.value_error("Data Input uncorrect")
@@ -241,45 +238,38 @@ class OWDataCleaning(OWWidget):
                 else:
                     self.Error.value_error.clear()
                     
-                
                 df_temp['cations'] = pt.calculate_clinopyroxene_components(df_temp)['Cation_Sum_Cpx']
-                out = df_temp[(df_temp['cations']-4).abs()<=self.threshold_cat].drop(['cations'],axis=1)
+                mask &= (df_temp['cations']-4).abs() <= self.threshold_cat
 
             elif self.filter_type == 2:
+                df_temp = dm.preprocessing(df.copy(), my_output='cpx_liq')
 
-                df_temp = dm.preprocessing(df, my_output='cpx_liq')
-
-                if set(df_temp.columns) <= set(cpx_cols+liq_cols):
+                if set(df_temp.columns) <= set(cpx_cols + liq_cols):
                     self.Error.value_error("Data Input uncorrect")
                     return
                 else:
                     self.Error.value_error.clear()
-                
-                if self.temperature_flag == True:
-                    try:
-                        temp_T = df_temp['T_K']
-                        self.Error.value_error.clear()
-                    except:
-                        self.Error.value_error("'T_C' column is not in Dataset")
-                        temp_T = self.temperature
-                else: 
-                    temp_T = self.temperature
 
-                if self.pressure_flag == True:
-                    try:
-                        temp_P = df_temp['P_kbar']
-                        self.Error.value_error.clear()
-                    except:
-                        self.Error.value_error("'P_kbar' column is not in Dataset")
-                        temp_P = self.pressure
-                else: 
-                    temp_P = self.pressure
+                temp_T = df_temp['T_K'] if 'T_K' in df_temp else self.temperature
+                temp_P = df_temp['P_kbar'] if 'P_kbar' in df_temp else self.pressure
 
-                df_temp[self.filter_et] = pt.calculate_cpx_liq_eq_tests(meltmatch=None, liq_comps=df_temp[liq_cols],
-                                                              cpx_comps=df_temp[cpx_cols],Fe3Fet_Liq=None,
-                                                              P=temp_P, T=temp_T, sigma=1, Kd_Err=0.03)[self.filter_et] 
-                out = df_temp[df_temp[self.filter_et].abs()<=self.threshold_et].drop([self.filter_et],axis=1)
+                df_temp[self.filter_et] = pt.calculate_cpx_liq_eq_tests(
+                    meltmatch=None, liq_comps=df_temp[liq_cols],
+                    cpx_comps=df_temp[cpx_cols], Fe3Fet_Liq=None,
+                    P=temp_P, T=temp_T, sigma=1, Kd_Err=0.03)[self.filter_et]
+                mask &= df_temp[self.filter_et].abs() <= self.threshold_et
 
-            out = table_from_frame(out)
+        
+            df_final = df[mask]
 
-            self.Outputs.data.send(out)
+            attribute_names = self.data.domain.attributes
+            metas = [a for a in self.data.domain.metas]
+            class_vars = [a for a in self.data.domain.class_vars]
+
+            column_names = [var.name for var in attribute_names]
+
+            new_domain = Domain(attributes=attribute_names, class_vars=class_vars, metas=metas)
+            
+            new_table = Table.from_numpy(domain=new_domain, X=df_final[column_names].values, Y=self.data.Y[mask], metas=self.data.metas[mask])
+
+            self.Outputs.data.send(new_table)
