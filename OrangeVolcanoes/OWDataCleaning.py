@@ -19,7 +19,7 @@ liq_cols = ['SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq',
 
 cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
 'FeOt_Cpx','MnO_Cpx', 'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', 'K2O_Cpx',
-'Cr2O3_Cpx']
+'Cr2O3_Cpx', 'NiO_Cpx']
 
 
 FILTERS_ET = [
