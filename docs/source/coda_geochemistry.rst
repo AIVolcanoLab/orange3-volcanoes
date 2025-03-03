@@ -86,7 +86,7 @@ Applying the three transformations on our data we should get:
 .. math::
 
    ilr(x) = \left [ \sqrt{\frac{1}{2}} \, \ln\left(\frac{80}{15}\right), \sqrt{\frac{2}{3}} \, \ln\left(\frac{\sqrt{80\cdot15}}{5}\right) \right ]
-   = [1.15, 1.58]
+   = [1.18, 1.58]
 
 In the Figure, we illustrate how to perform the same calculation in Orange. The desired transformation can be easily selected from the ``CoDATransformation`` widget. For the :math:`alr` transformation, users can specify which component to use as the denominator (in our example, we select :math:`TiO_2`, dividing all other components by the :math:`TiO_2` concentration, which in this case is 5).
 
