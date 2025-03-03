@@ -76,17 +76,29 @@ Applying the three transformations on our data we should get:
 
 .. math::
 
-   alr(x) = alr[80, 15, 5] = \left [ \ln\frac{80}{5}, \ln\frac{15}{5} \right ] = [2.77, 1.10]
+   \begin{aligned}
+   alr(x) &= alr[80, 15, 5] \\
+          &= \left [ \ln\frac{80}{5}, \ln\frac{15}{5} \right ] \\
+          &= [2.77, 1.10]
+   \end{aligned}
+
 
 .. math::
 
-   clr(x) = clr[80, 15, 5] = \left [ \ln\frac{80}{(80\cdot15\cdot5)^{1/3}}, \ln\frac{15}{(80\cdot15\cdot5)^{1/3}}, \ln\frac{5}{(80\cdot15\cdot5)^{1/3}} \right ]
-   = [1.48, -0.19, -1.29]
+   \begin{aligned}
+   clr(x) &= clr[80, 15, 5] \\
+          &= \left [ \ln\frac{80}{(80\cdot15\cdot5)^{1/3}}, \ln\frac{15}{(80\cdot15\cdot5)^{1/3}}, \ln\frac{5}{(80\cdot15\cdot5)^{1/3}} \right ] \\
+          &= [1.48, -0.19, -1.29]
+   \end{aligned}
+   
 
 .. math::
 
-   ilr(x) = ilr[80, 15, 5] = \left [ \sqrt{\frac{1}{2}} \, \ln\left(\frac{80}{15}\right), \sqrt{\frac{2}{3}} \, \ln\left(\frac{\sqrt{80\cdot15}}{5}\right) \right ]
-   = [1.15, 1.58]
+   \begin{aligned}
+   ilr(x) &= ilr[80, 15, 5] \\
+          &= \left [ \sqrt{\frac{1}{2}} \, \ln\left(\frac{80}{15}\right), \sqrt{\frac{2}{3}} \, \ln\left(\frac{\sqrt{80\cdot15}}{5}\right) \right ] \\
+          &= [1.15, 1.58]
+   \end{aligned}
 
 In the Figure, we illustrate how to perform the same calculation in Orange. The desired transformation can be easily selected from the ``CoDATransformation`` widget. For the :math:`alr` transformation, users can specify which component to use as the denominator (in our example, we select :math:`TiO_2`, dividing all other components by the :math:`TiO_2` concentration, which in this case is 5).
 
