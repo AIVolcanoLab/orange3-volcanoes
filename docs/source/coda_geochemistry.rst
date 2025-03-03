@@ -97,8 +97,7 @@ In the Figure, we illustrate how to perform the same calculation in Orange. The 
 
    Applying CoDA transformation with Orange-Volcanoes
 
-References
-==========
+**References**
 
 1. **Greenacre, M. (2021).** *Compositional Data Analysis in Geochemistry.* Journal of Geochemical Methods, 45(3), 123–134.
 
