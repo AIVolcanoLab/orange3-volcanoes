@@ -4,7 +4,7 @@ Tephra Clustering
 Here we show how to define a reproducible Machine Learning workflowuse on natural volcanic data.  
 The data set consists of glass chemical analyses belonging the the recent activity of the Campi Flegrei caldera (Smith et al., 2011).
 
-.. figure:: ../images/fig_clustering.png
+.. figure:: ../images/Fig_9.png
    :width: 100%
    :align: center
    :alt: Clustering Workflow

@@ -20,6 +20,11 @@ Orange-Volcanoes for thermobarometric estimates.
 
 Column names can be modified either in the source file before uploading to Orange or directly within Orange, through the `‘File’ widget <https://orangedatamining.com/widget-catalog/data/file/>`_. For instance, you can specify whether the data pertains to liquid chemistry ``_Liq`` or a specific mineral phase (e.g., Clinopyroxene; ``_Cpx``).
 
+.. figure:: ../images/Fig_2.png
+   :width: 80%
+   :align: center
+   :alt: The widget `‘File’ lets you select and load files directly from your PC. After loading, you can rename individual variables within your dataset and adjust their types (e.g., text, numeric, etc.)
+
 
 **References:**
 

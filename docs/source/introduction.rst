@@ -20,12 +20,9 @@ workflows, enabling tasks such as:
 
 The list of Orange-Volcanoes Add-ons is displayed in **Figure 1**.
 
-.. _orange-widgets:
-
-.. figure:: ../images/figure1.png
+.. figure:: ../images/Fig_1.png
    :width: 80%
    :align: center
-   :alt: Orange-Volcanoes widgets
 
    **Figure 1**. Orange-Volcanoes incorporates 6 dedicated widgets:
    1. **Datasets**: to upload existing open source volcanological, geochemical, and petrological datasets;

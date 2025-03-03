@@ -17,9 +17,8 @@ The widget uses the `Thermobar <https://www.jvolcanica.org/ojs/index.php/volcani
 
 As shown in the Figure, users can select whether to use barometers based on cpx composition only or on cpx–liquid pairs. For each of the two options, users can select the barometry formula that best suits their dataset via a convenient drop-down menu. If the chosen formula is temperature-dependent, the user can choose whether to (i) use temperature values found in a specific column within their dataset, (ii) enter a specific temperature to apply to the entire dataset, or (iii) calculate their own temperature from a specific model.
 
-.. _fig7_CpxBarometer:
 
-.. figure:: ../images/Fig_7.png
+.. figure:: ../images/Fig_6.png
    :width: 90%
    :align: center
 

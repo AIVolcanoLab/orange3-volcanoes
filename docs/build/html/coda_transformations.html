@@ -91,7 +91,7 @@
 <h1>CoDA Transformation<a class="headerlink" href="#coda-transformation" title="Link to this heading"></a></h1>
 <p>The use of the <code class="docutils literal notranslate"><span class="pre">CoDATransformation</span></code> widget, implemented in the Orange-Volcanoes add-on, enables users to conduct several multivariate analyses (e.g., hierarchical clustering, k-means, PCA, etc.) on geochemical, petrological, and volcanological data sets. As illustrated in the Figure, users can easily upload their desired data set into the Orange canvas using the widget <code class="docutils literal notranslate"><span class="pre">File</span></code>. This allows users to directly import into Orange a pre-prepared datasheet (containing only the variables to be transformed) or a raw data set that includes additional columns, variables, and metadata beyond those targeted for transformation.</p>
 <p>In the case of raw data sets, users can utilize the <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">Columns</span></code> widget (already built into base Orange) to specify the columns to process (i.e., transform with a log-ratio method). The <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">Columns</span></code> widget facilitates the selection of the variables that the user intends to use for the data transformation and the following analysis, excluding unnecessary columns and selecting specific columns as metadata to carry forward through the subsequent steps of the Orange workflow. Once the desired variables are selected, they can be linked to the <code class="docutils literal notranslate"><span class="pre">CoDATransformation</span></code> widget, which is specifically designed within Orange-Volcanoes for compositional data analysis.</p>
-<p>As shown in Figure 6, the widget allows choosing among three distinct isometric log-ratio transformations:</p>
+<p>As shown in the Figure, the widget allows choosing among three distinct isometric log-ratio transformations:</p>
 <ol class="arabic simple">
 <li><p><strong>Centered log-ratio (clr) transformation</strong></p></li>
 <li><p><strong>Additive log-ratio (alr) transformation</strong></p></li>
@@ -99,10 +99,17 @@
 </ol>
 <p>A simple drop-down menu allows the user to select which major oxide to use as the denominator for the alr transformation.</p>
 <figure class="align-center" id="id1">
-<span id="fig6-coda-transformation"></span><a class="reference internal image-reference" href="_images/Fig_6.png"><img alt="_images/Fig_6.png" src="_images/Fig_6.png" style="width: 90%;" />
+<a class="reference internal image-reference" href="_images/Fig_4.png"><img alt="_images/Fig_4.png" src="_images/Fig_4.png" style="width: 60%;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><strong>CoDA Transformation</strong>. The CoDATransformation widget allows the user to transform the starting data set with three different log-ratio transformations: 1) centered log-ratio (clr); 2) additive log-ratio (alr); and 3) isometric log-ratio (ilr) transformations. Users can upload an already pre-prepared data set on the Orange canvas with the widget <code class="docutils literal notranslate"><span class="pre">File</span></code> or upload the raw data set (with the widget <code class="docutils literal notranslate"><span class="pre">File</span></code>) and then select the desired columns to transform using the widget <code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">Columns</span></code>.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="_images/Fig_5.png"><img alt="_images/Fig_5.png" src="_images/Fig_5.png" style="width: 60%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The <strong>CoDATransformations</strong> widget allows users to transform a starting data set using three different log‐ratio transformations: 1) Centered log‐ratio (clr); 2)Additive log‐ratio (alr); 3) Isometric log‐ratio (ilr).</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 </section>

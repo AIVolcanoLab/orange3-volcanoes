@@ -7,9 +7,8 @@ The widget uses the `Thermobar <https://www.jvolcanica.org/ojs/index.php/volcani
 
 As shown in the Figure, users can select whether to use a thermometer based on cpx composition only or on cpx–liquid pairs. For each of the two options, users can select the thermometer formula that best suits their dataset via a convenient drop-down menu. If the chosen formula is pressure-dependent, the user can choose whether to (i) use pressure values found in a specific column within their dataset, (ii) enter a specific pressure to apply to the entire dataset, or (iii) calculate their own pressure from a specific model.
 
-.. _fig_CpxThermometer:
 
-.. figure:: ../images/Fig_9.png
+.. figure:: ../images/Fig_7.png
    :width: 90%
    :align: center
 

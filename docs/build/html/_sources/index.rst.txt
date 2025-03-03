@@ -10,8 +10,6 @@ Orange-Volcanoes is an extension (add-on) of the open-source
 data-driven investigations in petrology and volcanology. 
 
 
-.. _orange-widgets:
-
 .. figure:: ../images/Titolo-DOC.png
    :width: 80%
    :align: center
@@ -35,6 +33,7 @@ data-driven investigations in petrology and volcanology.
    :maxdepth: 2
    :caption: Tutorials:  
    
+   coda_geochemistry
    tephra_clustering
    tephra_classification
 
