@@ -19,27 +19,31 @@ data-driven investigations in petrology and volcanology.
 |
 
 
-
+Orange-Volcanoes
+----------------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Orange-Volcanoes:
 
    introduction
    installing
    importing_data
 
+Tutorials
+---------
+
 .. toctree::
    :maxdepth: 2
-   :caption: Tutorials:  
-   
+
    coda_geochemistry
    tephra_clustering
    tephra_classification
 
+Widgets
+-------
+
 .. toctree::
    :maxdepth: 2
-   :caption: Widgets:  
 
    datasets
    data_cleaning
