@@ -12,12 +12,19 @@ readme = "README.md"
 authors = [
     { name = "Murizio Petrelli", email = "muripetre@gmail.com" }
 ]
-
 dependencies = [
   "requests>=2.0",             
   "Thermobar"
 ]
 
+[project.entry-points."orange3.addon"]
+"Volcanoes" = "OrangeVolcanoes"
+
+[project.entry-points."orange.widgets"]
+"Volcanoes" = "OrangeVolcanoes"
+
+[project.entry-points."orange.canvas.help"]
+html-index = " OrangeVolcanoes:WIDGET_HELP_PATH"
 
 [project.urls]
 "Source" = "https://github.com/AIVolcanoLab/orange3-volcanoes"
