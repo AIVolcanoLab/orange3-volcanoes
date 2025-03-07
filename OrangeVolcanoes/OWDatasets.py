@@ -9,7 +9,8 @@ from Orange.data.pandas_compat import table_from_frame
 import Orange.data
 
 DATASETS_PATHS = [
-    ('Agreda-Loopez 2024', FileFormat.locate("Agreda-Lopez_2024.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
+    ('Petrelli 2020 Train', FileFormat.locate("Petrelli_et_al_2020__Train_Dataset.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
+    ('Petrelli 2020 Test', FileFormat.locate("Petrelli_et_al_2020__Test_Dataset.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
     ('Smith 2011', FileFormat.locate("Smith_et_al_2011.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
     ('Georoc Cpx', FileFormat.locate("Georoc_Cpx_Selected.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
     ('Pawlowsky-Glahn and Egozcue 2006', FileFormat.locate("Pawlowsky-Glahn_and_Egozcue_2006.xlsx",Orange.data.table.dataset_dirs),'xlsx')
@@ -22,9 +23,6 @@ class OWDatasets(OWWidget):
     icon = "icons/Datasets.png"
     priority = 1
     keywords = ['Dataset', 'Smith', 'Lopez']
-
-    help = "preprocessing.html"
-
 
     GENERIC, FROM_VAR = range(2)
 
