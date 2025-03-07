@@ -57,7 +57,7 @@ MODELS = [
 
 class OWLiqThermometer(OWWidget):
     name = "LiqThermometer"
-    description = "LiqThermometer"
+    description = "This widget allows the user to determine the temperature of liquid equilibriation with different mineralogical phases using the liquid chemical composition only as input data."
     icon = "icons/LiqThermometer.png"
     priority = 6
     keywords = ['Liq', 'Thermometer']
@@ -143,24 +143,6 @@ class OWLiqThermometer(OWWidget):
                 self.pressure_value_box.setEnabled(True) 
             else: 
                 self.pressure_value_box.setEnabled(False) 
-
-
-        #if self.pressure_type == 1 and self.pressure == True:
-        #    self.pressure_value_box.setEnabled(True)
-        #else:
-        #    self.pressure_value_box.setEnabled(False)
-#
-        #if self.pressure == False:
-        #    self.box_1.setEnabled(False)
-        #    self.pressure_value_box.setEnabled(False)
-        #else: 
-        #    self.box_1.setEnabled(True)
-#
-#
-        #if self.pressure_type == 1:
-        #    self.pressure_value_box.setEnabled(True)
-        #else:
-        #    self.pressure_value_box.setEnabled(False)
         
         _, self.model, self.pressure, self.h2o = MODELS[self.model_idx]
       

@@ -19,7 +19,7 @@ DATASETS_PATHS = [
 
 class OWDatasets(OWWidget):
     name = "Datasets"
-    description = "Datasets"
+    description = "This widget allows users to directly load a set of open-source petrological and volcanological literature datasets into the Orange canvas."
     icon = "icons/Datasets.png"
     priority = 1
     keywords = ['Dataset', 'Smith', 'Lopez']

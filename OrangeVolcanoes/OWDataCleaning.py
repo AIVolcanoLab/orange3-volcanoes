@@ -34,8 +34,8 @@ FILTERS_ET = [
 
 
 class OWDataCleaning(OWWidget):
-    name = "DataCleaning"
-    description = "DataCleaning"
+    name = "Data Cleaning"
+    description = "This widget allows the user to filter the input data according to: (i) the total oxide weight content in percentage; (ii) the cations per unit formula and (iii) the equilibrium between clinopyroxene and liquid."
     icon = "icons/DataCleaning.png"
     priority = 2
     keywords = ['DataCleaning', 'Oxides', 'Equilibrium', 'Test', 'Cations']

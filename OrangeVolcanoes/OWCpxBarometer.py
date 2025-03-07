@@ -81,7 +81,7 @@ MODELS_TEMPERATURE_CL = [
 
 class OWCpxBarometer(OWWidget):
     name = "CpxBarometer"
-    description = "CpxBarometer"
+    description = "The widget allows the user to determine the pressure of clinopyroxene formation using its chemical composition or the composition of clinopyroxene-liquid pairs as input data."
     icon = "icons/CpxBaromether.png"
     priority = 4
     keywords = ['Cpx', 'Baromether']

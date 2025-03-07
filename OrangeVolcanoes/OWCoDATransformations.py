@@ -49,8 +49,8 @@ def ilr(x):
 
 
 class OWCoDATransformations(OWWidget):
-    name = "CoDATransformations"
-    description = "Compositional Data Analysis (CoDA) Transformations"
+    name = "CoDA Transformation"
+    description = "This widget allows the user to apply different log-ratio transformations: (i) centred log ratio transformation (clr; Aitchison, 1986); (ii) additive log ratio transformation (alr; Aitchison, 1986) and (iii) isometric log ratio transformation (ilr; Egozcue et al., 2003)."
     icon = "icons/CoDATransformations.png"
     priority = 3
     keywords = ['Coda', 'Transformation', 'ilr', 'clr', 'alr']
