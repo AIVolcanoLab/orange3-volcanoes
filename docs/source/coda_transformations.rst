@@ -14,7 +14,7 @@ As shown in the Figure, the widget allows choosing among three distinct isometri
 A simple drop-down menu allows the user to select which major oxide to use as the denominator for the alr transformation.
 
 
-.. figure:: ../images/Fig_4.png
+.. figure:: ../images/Fig_5.png
    :width: 60%
    :align: center
 
