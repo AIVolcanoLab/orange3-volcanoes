@@ -19,7 +19,7 @@ All the above filtering techniques can be applied to crystal and melt data using
 
 .. _fig_geochemical_data_filtering:
 
-.. figure:: ../images/Fig_5.png
+.. figure:: ../images/Fig_4.png
    :width: 60%
    :align: center
 
