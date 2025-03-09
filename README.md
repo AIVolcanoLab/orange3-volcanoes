@@ -28,6 +28,7 @@ This add-on enhances the basic functionality of Orange by introducing specialize
      <li> Cleaning and filtering geochemical analyses of glass and volcanic minerals</li>
      <li> Testing mineral-liquid equilibrium</li>
      <li> Performing thermobarometric calculations, both classical and machine learning-based</li>
+     <li> Overall, enabling data-driven investigations on petrologic and geochemical data</li>
 </ol>
 
 ## Installing Orange-Volcanoes
