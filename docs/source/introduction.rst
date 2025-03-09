@@ -12,11 +12,12 @@ This add-on enhances the basic functionality of Orange by introducing specialize
 for the specific needs of petrologists and volcanologists. These widgets facilitate geochemical data
 workflows, enabling tasks such as:
 
-- Importing and preparing petrological datasets
-- Conducting compositional data analysis (CoDA)
-- Cleaning and filtering geochemical analyses of glass and volcanic minerals
-- Testing mineral-liquid equilibrium
-- Performing thermobarometric calculations, both classical and machine learning-based.
+- Importing and preparing petrological datasets;
+- Conducting compositional data analysis (CoDA);
+- Cleaning and filtering geochemical analyses of glass and volcanic minerals;
+- Testing mineral-liquid equilibrium;
+- Performing thermobarometric calculations, both classical and machine learning-based;
+- Overall, enabling data-driven investigations on petrologic and geochemical data.
 
 The list of Orange-Volcanoes Add-ons is displayed in **Figure 1**.
 
