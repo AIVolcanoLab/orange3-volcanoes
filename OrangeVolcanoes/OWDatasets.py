@@ -5,7 +5,7 @@ from Orange.widgets.widget import OWWidget, Output
 from Orange.widgets import gui
 from orangewidget.widget import Msg
 from Orange.data.io import FileFormat
-from Orange.data.pandas_compat import table_from_frame
+from Orange.data.pandas_compat import table_from_frames
 import Orange.data
 
 DATASETS_PATHS = [
@@ -15,6 +15,56 @@ DATASETS_PATHS = [
     ('Georoc Cpx', FileFormat.locate("Georoc_Cpx_Selected.xlsx",Orange.data.table.dataset_dirs),'xlsx'),
     ('Pawlowsky-Glahn and Egozcue 2006', FileFormat.locate("Pawlowsky-Glahn_and_Egozcue_2006.xlsx",Orange.data.table.dataset_dirs),'xlsx')
 ]
+
+ATTRIBUTE_NAMES = [
+    [
+       'SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq', 'FeOt_Liq', 'MnO_Liq',
+       'MgO_Liq', 'CaO_Liq', 'Na2O_Liq', 'K2O_Liq', 'Cr2O3_Liq', 'P2O5_Liq',
+       'H2O_Liq', 'SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx', 'FeOt_Cpx', 'MnO_Cpx',
+       'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', 'K2O_Cpx', 'Cr2O3_Cpx', 'P_GPa',
+       'P_kbar', 'T_K'
+    ],
+    [
+        'SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq', 'FeOt_Liq', 'MnO_Liq',
+       'MgO_Liq', 'CaO_Liq', 'Na2O_Liq', 'K2O_Liq', 'Cr2O3_Liq', 'P2O5_Liq',
+       'H2O_Liq', 'SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx', 'FeOt_Cpx', 'MnO_Cpx',
+       'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', 'K2O_Cpx', 'Cr2O3_Cpx', 'P_GPa',
+       'P_kbar', 'T_K'
+    ],
+    [
+        'Na2O_Cpx', 'MgO_Cpx', 'Al203_Cpx', 'SiO2_Cpx', 'K2O_Cpx', 
+        'CaO_Cpx', 'TiO2_Cpx', 'MnO_Cpx', 'FeOt_Cpx', 'P2O5_Cpx', 
+        'Cl', 'F', 'Total'
+    ],
+    [
+       'SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
+       'FeOt_Cpx', 'CaO_Cpx', 'MnO_Cpx', 'MgO_Cpx', 'Na2O_Cpx', 'K2O_Cpx',
+       'Cr2O3_Cpx', 'NiO_Cpx', 'P2O5_Cpx', 'Alkali', 'MgO/FeO', 'CaO/Al2O3'
+    ],
+    [
+        'SiO2', 'Al2O3', 'TiO2'
+    ]
+]
+
+META_NAMES = [
+    [
+        'Sample_ID'
+    ],
+    [
+        'Sample_ID'
+    ],
+    [
+        'Analysis label', 'Analysis no.', 'Stat. pos.', 'Eruption', 
+        'Sample no.', 'Epoch', 'Date of analysis'
+    ],
+    [
+        'Sample_ID', 'Ref', 'Sample', 'Tectonic Setting', 'Location',
+        'Volcanic centre', 'Volcanic Area', 'Location Comment', 'Rock Name', 
+        'Crystal Type', 'Rim/Core'
+    ],
+    [
+    ]
+]    
 
 
 class OWDatasets(OWWidget):
@@ -77,6 +127,9 @@ class OWDatasets(OWWidget):
 
             df = pd.read_csv(self.path)
 
-        out = table_from_frame(df)
+        attribute_names = ATTRIBUTE_NAMES[self.dataset_idx]
+        meta_names = META_NAMES[self.dataset_idx]
+
+        out = table_from_frames(df[attribute_names], df[[]] ,df[meta_names])
 
         self.Outputs.data.send(out)
