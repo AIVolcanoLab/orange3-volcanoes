@@ -19,6 +19,8 @@ cpx_cols = ['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
 'FeOt_Cpx','MnO_Cpx', 'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', 'K2O_Cpx',
 'Cr2O3_Cpx']
 
+# First element is the display name, second is the func name in Thermobar
+# First tuple indicates whether model requires a temperature, second whether it requires water. 
 
 MODELS_CO = [
     ('P_Wang2021_eq1', 'P_Wang2021_eq1',False,False),
@@ -82,9 +84,9 @@ MODELS_TEMPERATURE_CL = [
 class OWCpxBarometer(OWWidget):
     name = "CpxBarometer"
     description = "The widget allows the user to determine the pressure of clinopyroxene formation using its chemical composition or the composition of clinopyroxene-liquid pairs as input data."
-    icon = "icons/CpxBaromether.png"
+    icon = "icons/Cpx_Barometer_icon.png"
     priority = 4
-    keywords = ['Cpx', 'Baromether']
+    keywords = ['Cpx', 'Barometer']
 
     class Inputs:
         data = Input("Data", Table)
@@ -393,7 +395,8 @@ class OWCpxBarometer(OWWidget):
                     T = df['T_K']
                 except:
                     T = self.temperature_value
-                    self.Warning.value_error("'P_kbar' column is not in Dataset")
+                    self.Error.value_error("'T_K' column is missing from the dataset but required for temperature input.")
+
                 
             elif self.temperature_type == 1:
                 T = self.temperature_value

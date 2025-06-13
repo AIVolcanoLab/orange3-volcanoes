@@ -32,3 +32,5 @@ WIDGET_HELP_PATH = (
     # performed by comparing link caption to widget name.
     ("https://orange3-volcanoes.readthedocs.io/en/latest/", ""),
 )
+
+
