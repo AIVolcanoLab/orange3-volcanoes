@@ -5,7 +5,7 @@ from Orange.widgets.settings import Setting, ContextSetting
 from Orange.widgets.widget import OWWidget, Input, Output
 from Orange.widgets import gui
 from orangewidget.widget import Msg
-from Thermobar import  calculate_opx_liq_temp,  calculate_opx_liq_press_temp
+from Thermobar import calculate_opx_liq_temp, calculate_opx_liq_press_temp
 
 from OrangeVolcanoes.utils import dataManipulation as dm
 from AnyQt.QtCore import Qt
@@ -37,7 +37,7 @@ MODELS_OL = [
 
 # Opx only pressure
 MODELS_OO = [
- ('None_available', ''),
+ ('None_available','None_available',  True, True),
 ]
 
 
@@ -89,6 +89,10 @@ class OWOpxThermometer(OWWidget):
 
     model_idx_PRESSURE_oo = Setting(0)
     model_idx_PRESSURE_ol = Setting(0)
+
+    # CHANGE: New setting to control which barometer type is active. 0=Opx-only, 1=Opx-Liq
+    active_barometer_choice = Setting(1)
+
     PRESSURE = Setting(True)
 
     # Water test
@@ -121,388 +125,214 @@ class OWOpxThermometer(OWWidget):
         OWWidget.__init__(self)
         self.data = None
 
-        # Have an option for water
-
-        # Create the label first
-        lbl = gui.label(self.controlArea, self, "<i>Calculations performed using Thermobar, please remember to cite Wieser et al. (2022) and Muso et al. (2025) </i>")
-
-        # Then style it using Qt's stylesheet syntax
+        lbl = gui.label(self.controlArea, self, "<i>Calculations performed using Thermobar...</i>")
         lbl.setStyleSheet("font-size:10px; color: gray;")
-
-        # This sets up the GUI
 
         box = gui.radioButtons(
             self.controlArea, self, "model_type", box="Models",
-            callback=self._radio_change)
+            callback=self._update_controls)
 
-
-
-        #Opx-only GUI
         button = gui.appendRadioButton(box, "Opx-only thermometers")
-
         self.models_combo_oo = gui.comboBox(
             gui.indentedBox(box, gui.checkButtonOffsetHint(button)), self, "model_idx_oo",
             items=[m[0] for m in MODELS_OO],
-            callback=self._model_combo_change
-        )
+            callback=self._update_controls)
 
-        _ = MODELS_OO[self.model_idx_oo]
-        self.model = None
-        self.PRESSURE = False
-        self.h2o = False
-
-
-
-        #opx-liq GUI
         gui.appendRadioButton(box, "Opx-liq thermometers")
-
         self.models_combo_ol = gui.comboBox(
             gui.indentedBox(box, gui.checkButtonOffsetHint(button)), self, "model_idx_ol",
             items=[m[0] for m in MODELS_OL],
-            callback=self._model_combo_change
+            callback=self._update_controls)
 
-        )
-
-        # This creates the box for how PRESSURE is handled.
         self.box_1 = gui.radioButtons(
             self.controlArea, self, "PRESSURE_type", box="PRESSURE",
-            callback=self._radio_change_1)
+            callback=self._update_controls)
 
+        gui.appendRadioButton(self.box_1, "Dataset_as_PRESSURE_(kbar)")
 
-        #Dataset as PRESSURE GUI
-        self.button_1 = gui.appendRadioButton(self.box_1, "Dataset_as_PRESSURE_(kbar)")
-
-        #Fixed PRESSURE GUI
-        gui.appendRadioButton(self.box_1, "Fixed_PRESSURE")
-
+        rb_fixed_p = gui.appendRadioButton(self.box_1, "Fixed_PRESSURE")
         self.PRESSURE_value_box = gui.doubleSpin(
-            gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(self.button_1)), self,
-            "PRESSURE_value", 1.0, 10000.0, step=0.1,
-            label="PRESSURE_value_(kbar)",
-            alignment=Qt.AlignRight, callback=self._value_change,
-            controlWidth=80, decimals=1)
+            gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(rb_fixed_p)), self,
+            "PRESSURE_value", 1.0, 10000.0, step=0.1, label="PRESSURE_value_(kbar)",
+            alignment=Qt.AlignRight, callback=self._value_change, controlWidth=80, decimals=1)
 
+        rb_model_p = gui.appendRadioButton(self.box_1, "Model_as_PRESSURE")
+        model_as_p_box = gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(rb_model_p))
 
-        # Model as PRESSURE
-        gui.appendRadioButton(self.box_1, "Model_as_PRESSURE")
+        # CHANGE: Add radio buttons to choose between barometer types
+        self.barometer_choice_buttons = gui.radioButtons(
+            model_as_p_box, self, "active_barometer_choice",
+            callback=self._barometer_choice_change)
 
-        # Add label: Opx-only barometers
-        opx_only_box = gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(self.button_1))
-        gui.label(opx_only_box, self, "Opx-only barometers")
+        rb_oo = gui.appendRadioButton(self.barometer_choice_buttons, "Use Opx-only barometer")
         self.PRESSURE_model_box_oo = gui.comboBox(
-            opx_only_box, self, "model_idx_PRESSURE_oo",
-            items=[m[0] for m in MODELS_PRESSURE_OO],
-            callback=self._model_PRESSURE_change)
+            gui.indentedBox(self.barometer_choice_buttons, gui.checkButtonOffsetHint(rb_oo)),
+            self, "model_idx_PRESSURE_oo", items=[m[0] for m in MODELS_PRESSURE_OO],
+            callback=self._model_PRESSURE_oo_change)
 
-        # Add label: Opx-Liq barometers
-        opx_liq_box = gui.indentedBox(self.box_1, gui.checkButtonOffsetHint(self.button_1))
-        gui.label(opx_liq_box, self, "Opx-Liq barometers")
-
+        rb_ol = gui.appendRadioButton(self.barometer_choice_buttons, "Use Opx-Liq barometer")
         self.PRESSURE_model_box_ol = gui.comboBox(
-            opx_liq_box, self, "model_idx_PRESSURE_ol",
-            items=[m[0] for m in MODELS_PRESSURE_OL],
-            callback=self._model_PRESSURE_change)
+            gui.indentedBox(self.barometer_choice_buttons, gui.checkButtonOffsetHint(rb_ol)),
+            self, "model_idx_PRESSURE_ol", items=[m[0] for m in MODELS_PRESSURE_OL],
+            callback=self._model_PRESSURE_ol_change)
 
-        _, self.model_PRESSURE = MODELS_PRESSURE_OO[self.model_idx_PRESSURE_oo]
-
-
-        # H₂O override section
         self.fixed_h2o_box = gui.vBox(self.controlArea, "H₂O Settings")
-
-        # Checkbox: enables H₂O override
-        gui.checkBox(
-            self.fixed_h2o_box, self, "fixed_h2o", "Fixed H₂O",
-            callback=self._radio_change  # reuses safe logic
-        )
-
-        # Text box: manual H₂O entry
+        gui.checkBox(self.fixed_h2o_box, self, "fixed_h2o", "Fixed H₂O", callback=self._update_controls)
         self.fixed_h2o_input = gui.lineEdit(
-            self.fixed_h2o_box, self, "fixed_h2o_value_str",
-            label="H₂O (wt%)", orientation=Qt.Horizontal,
-            callback=lambda: self.commit.deferred()
-        )
-
-        self.box_1.setEnabled(False)
-
-        self.models_combo_oo.setEnabled(True)
-        self.models_combo_ol.setEnabled(False)
+            self.fixed_h2o_box, self, "fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
 
         gui.auto_apply(self.buttonsArea, self)
+        self._update_controls()
 
-    def _h2o_toggle(self):
-        self.fixed_h2o_input.setEnabled(self.fixed_h2o)
 
-        # Only call deferred if commit is ready and callable
-        if hasattr(self, "commit") and callable(getattr(self.commit, "deferred", None)):
-            self.commit.deferred()
-
-    # This function updates the GUI and model calculations when user clicks different buttons.
-    def _radio_change(self):
-        # Set model and pressure flags
+    def _update_controls(self):
+        """A single function to update the state of all GUI controls."""
         if self.model_type == 0:
             _, self.model, self.PRESSURE, self.h2o = MODELS_OO[self.model_idx_oo]
-            self.model_PRESSURE = None
-            self.PRESSURE_model_oo = True
-            self.PRESSURE_model_ol = False
             self.models_combo_oo.setEnabled(True)
             self.models_combo_ol.setEnabled(False)
-        elif self.model_type == 1:
+        else:
             _, self.model, self.PRESSURE, self.h2o = MODELS_OL[self.model_idx_ol]
-            _, self.model_PRESSURE = MODELS_PRESSURE_OL[self.model_idx_PRESSURE_ol]
-            self.PRESSURE_model_oo = False
-            self.PRESSURE_model_ol = True
             self.models_combo_oo.setEnabled(False)
             self.models_combo_ol.setEnabled(True)
 
-        # Handle visibility of PRESSURE entry and combo boxes
+        self.box_1.setEnabled(self.PRESSURE)
         self.PRESSURE_value_box.setEnabled(self.PRESSURE and self.PRESSURE_type == 1)
 
-        if self.PRESSURE_type == 2:
-            self.PRESSURE_model_box_oo.setEnabled(self.model_type == 0)
-            self.PRESSURE_model_box_ol.setEnabled(self.model_type == 1)
+        # Logic for the "Model as PRESSURE" section
+        model_as_p_active = self.PRESSURE and self.PRESSURE_type == 2
+        self.barometer_choice_buttons.setEnabled(model_as_p_active)
+
+        if model_as_p_active:
+            if self.model_type == 0:  # Opx-only thermometer
+                # Force choice to Opx-only barometer and disable the other option
+                self.active_barometer_choice = 0
+                self.barometer_choice_buttons.buttons[0].setEnabled(True)
+                self.barometer_choice_buttons.buttons[1].setEnabled(False)
+            else:  # Opx-Liq thermometer
+                # Allow user to choose either barometer type
+                self.barometer_choice_buttons.buttons[0].setEnabled(True)
+                self.barometer_choice_buttons.buttons[1].setEnabled(True)
+
+            # Sync the enabled state of the dropdowns
+            self._barometer_choice_change()
         else:
+            # Disable dropdowns if Model as P is not selected
             self.PRESSURE_model_box_oo.setEnabled(False)
             self.PRESSURE_model_box_ol.setEnabled(False)
 
-        self.box_1.setEnabled(self.PRESSURE)
-
-        # Enable H₂O override widgets
-        self.fixed_h2o_input.setEnabled(self.h2o and self.fixed_h2o)
         self.fixed_h2o_box.setEnabled(self.h2o)
-
-        self.commit.deferred()
-
-
-
-
-    # Triggered when user changes the model.
-    def _model_combo_change(self):
-
-        # If model is Opx-only, get model and flags
-        if self.model_type == 0:
-            _, self.model, self.PRESSURE, self.h2o = MODELS_OO[self.model_idx_oo]
-
-        # If model is Opx-Liq, get model and flags
-        elif self.model_type == 1:
-            _, self.model, self.PRESSURE, self.h2o = MODELS_OL[self.model_idx_ol]
-
-
-        if self.PRESSURE_type == 1 and self.PRESSURE == True:
-            self.PRESSURE_value_box.setEnabled(True)
-        else:
-            self.PRESSURE_value_box.setEnabled(False)
-
-
-        if self.PRESSURE_type == 1 and self.PRESSURE_model_oo == True:
-            self.PRESSURE_model_box_oo.setEnabled(True)
-        else:
-            self.PRESSURE_model_box_oo.setEnabled(False)
-
-        if self.PRESSURE_type == 1 and self.PRESSURE_model_ol == True:
-            self.PRESSURE_model_box_ol.setEnabled(True)
-        else:
-            self.PRESSURE_model_box_ol.setEnabled(False)
-
-
-        if self.PRESSURE == False:
-            self.box_1.setEnabled(False)
-            self.PRESSURE_value_box.setEnabled(False)
-            self.PRESSURE_model_box_oo.setEnabled(False)
-            self.PRESSURE_model_box_ol.setEnabled(False)
-        else:
-            self.box_1.setEnabled(True)
-
-
-        if self.PRESSURE_type == 1:
-            self.PRESSURE_value_box.setEnabled(True)
-        else:
-            self.PRESSURE_value_box.setEnabled(False)
-
-
-        if self.PRESSURE_type == 2:
-            self.PRESSURE_model_box_oo.setEnabled(self.model_type == 0)
-            self.PRESSURE_model_box_ol.setEnabled(self.model_type == 1)
-        else:
-            self.PRESSURE_model_box_oo.setEnabled(False)
-            self.PRESSURE_model_box_ol.setEnabled(False)
-
-
-        # Enable/disable H₂O box
         self.fixed_h2o_input.setEnabled(self.h2o and self.fixed_h2o)
-        self.fixed_h2o_box.setEnabled(self.h2o)
-
-
-
 
         self.commit.deferred()
 
-    # This function is called when the user changes the PRESSURE input mode.
-    def _radio_change_1(self):
+    def _barometer_choice_change(self):
+        """Handles switching between Opx-only and Opx-Liq barometer types."""
+        # Enable/disable the comboboxes based on the radio button selection
+        self.PRESSURE_model_box_oo.setEnabled(self.active_barometer_choice == 0)
+        self.PRESSURE_model_box_ol.setEnabled(self.active_barometer_choice == 1)
 
-        if self.PRESSURE_type == 1:
-            self.PRESSURE_value_box.setEnabled(True)
+        # Update the pressure model to reflect the active choice and commit
+        if self.active_barometer_choice == 0:
+            self._model_PRESSURE_oo_change()
         else:
-            self.PRESSURE_value_box.setEnabled(False)
+            self._model_PRESSURE_ol_change()
 
-
-        if self.PRESSURE_type == 2:
-            if self.model_type == 0:
-                self.PRESSURE_model_box_oo.setEnabled(True)
-                self.PRESSURE_model_box_ol.setEnabled(False)
-            elif self.model_type == 1:
-                self.PRESSURE_model_box_oo.setEnabled(False)
-                self.PRESSURE_model_box_ol.setEnabled(True)
-
-        else:
-            self.PRESSURE_model_box_oo.setEnabled(False)
-            self.PRESSURE_model_box_ol.setEnabled(False)
-
-        self.commit.deferred()
-
-    # Waits until user has finished playing with buttons
     def _value_change(self):
-
         self.commit.deferred()
 
-
-    # Schedules a temp recalc if needed
-    def _model_PRESSURE_change(self):
-
-        if self.model_type == 0:
-            _, self.model_PRESSURE = MODELS_PRESSURE_OO[self.model_idx_PRESSURE_oo]
-
-        elif self.model_type == 1:
-            _, self.model_PRESSURE = MODELS_PRESSURE_OL[self.model_idx_PRESSURE_ol]
-
+    def _model_PRESSURE_oo_change(self):
+        _, self.model_PRESSURE = MODELS_PRESSURE_OO[self.model_idx_PRESSURE_oo]
         self.commit.deferred()
 
+    def _model_PRESSURE_ol_change(self):
+        _, self.model_PRESSURE = MODELS_PRESSURE_OL[self.model_idx_PRESSURE_ol]
+        self.commit.deferred()
 
     @Inputs.data
-
     def set_data(self, data):
         self.data = data
         self.commit.now()
 
-
     @gui.deferred
-
-    # This function
     def commit(self):
 
-        # clears messages in GUI
         self.clear_messages()
         self.Error.value_error.clear()
         self.Warning.value_error.clear()
 
-        # Checks data is connected, if not, does nothing.
         if self.data is None:
-            pass
-        elif len(self.data.domain.attributes) > 1:
+            return
 
-            # gets data into a dataframe
-            df = pd.DataFrame(data=np.array(self.data.X), columns=[a.name for i, a in enumerate(self.data.domain.attributes)])
+        if len(self.data.domain.attributes) <= 1:
+            return
 
-            if self.fixed_h2o:
-                try:
-                    water = float(self.fixed_h2o_value_str)
-                except ValueError:
-                    self.Error.value_error("Invalid H₂O value entered.")
-                    return
+        df = pd.DataFrame(data=np.array(self.data.X), columns=[a.name for a in self.data.domain.attributes])
+
+        if self.fixed_h2o:
+            try:
+                water = float(self.fixed_h2o_value_str)
+            except ValueError:
+                self.Error.value_error("Invalid H₂O value entered.")
+                return
+        else:
+            if self.h2o and 'H2O_Liq' in df.columns:
+                water = df['H2O_Liq']
             else:
+                water = 0
                 if self.h2o:
-                    try:
-                        water = df['H2O_Liq']
-                    except:
-                        water = 0
-                        self.Warning.value_error("'H2O' column is not in Dataset, H₂O is set to zero.")
-                else:
-                    water = 0
+                    self.Warning.value_error("'H2O_Liq' column not in Dataset, H₂O is set to zero.")
 
+        temperature = None
+        PRESSURE_output = None
 
+        if self.model_type == 0:
+            raise NotImplementedError("Opx-only thermometers are not yet implemented.")
 
-            if self.PRESSURE_type == 0:
-                try:
-                    P = df['P_kbar']
-                except:
-                    P = self.PRESSURE_value
-                    self.Warning.value_error("'P_kbar' column is not in Dataset")
-
-            elif self.PRESSURE_type == 1:
-                P = self.PRESSURE_value
-
-
-            if self.model_type == 0:
-                if self.model_type == 0:
-                    raise NotImplementedError("Opx-only thermometers are not yet implemented.")
-
-
-                # If one comes along
-                # df = dm.preprocessing(df, my_output='opx_only')
-                #
-                # if self.PRESSURE == False:
-                #     temperature = calculate_opx_only_temp(opx_comps=df[opx_cols],  equationT=self.model, H2O_Liq=water)
-                #     #if pressure
-                # else:
-                #     if self.PRESSURE_type == 2:
-                #         calc = calculate_opx_only_press_temp(opx_comps=df[opx_cols],
-                #                                                        equationT=self.model,
-                #                                                        equationP=self.model_PRESSURE
-                #                                                       )
-                #         temperature =calc['T_K_calc']    # temp column
-                #         PRESSURE_output = calc['P_kbar_calc'] # PRESSURE column
-                #
-                #     else:
-                #         temperature = calculate_opx_only_temp(opx_comps=df[opx_cols], equationT=self.model, P=P)
-
-            elif self.model_type == 1:
-
-                df = dm.preprocessing(df, my_output='opx_liq')
-
-                if self.PRESSURE == False:
-                    temperature = calculate_opx_liq_temp(opx_comps=df[opx_cols], liq_comps=df[liq_cols], equationT=self.model, H2O_Liq=water)
-                else:
-                    if  self.PRESSURE_type == 2:
-                        calc = calculate_opx_liq_press_temp(opx_comps=df[opx_cols],
-                                                                      liq_comps=df[liq_cols],
-                                                                      equationT=self.model,
-                                                                      equationP=self.model_PRESSURE, H2O_Liq=water)
-
-                        temperature = calc['T_K_calc']    # temp column
-                        PRESSURE_output = calc['P_kbar_calc'] # PRESSURE column
+        elif self.model_type == 1:
+            df = dm.preprocessing(df, my_output='opx_liq')
+            P = None
+            if self.PRESSURE:
+                if self.PRESSURE_type == 0: # Dataset
+                    if 'P_kbar' in df.columns:
+                        P = df['P_kbar']
                     else:
-                        temperature = calculate_opx_liq_temp(opx_comps=df[opx_cols], liq_comps=df[liq_cols], equationT=self.model, P=P, H2O_Liq=water)
+                        self.Warning.value_error("'P_kbar' column not in Dataset.")
+                elif self.PRESSURE_type == 1: # Fixed
+                    P = self.PRESSURE_value
 
-            # New logic to output temp as well
-            if self.PRESSURE_type == 2:
-                # PRESSURE from model — output as T_K_output
-                my_domain = Domain(
-                    [ContinuousVariable(name=a.name) for a in self.data.domain.attributes],
-                    [ContinuousVariable("T_K_output"), ContinuousVariable("P_kbar_output")],
-                    metas=self.data.domain.metas
-                )
-                Y = np.column_stack([temperature, PRESSURE_output])
+            if self.PRESSURE and self.PRESSURE_type == 2: # Model
+                calc = calculate_opx_liq_press_temp(
+                    opx_comps=df[opx_cols], liq_comps=df[liq_cols],
+                    equationT=self.model, equationP=self.model_PRESSURE, H2O_Liq=water)
+                temperature = calc['T_K_calc']
+                PRESSURE_output = calc['P_kbar_calc']
+            else: # No pressure or fixed/dataset pressure
+                temperature = calculate_opx_liq_temp(
+                    opx_comps=df[opx_cols], liq_comps=df[liq_cols],
+                    equationT=self.model, P=P, H2O_Liq=water)
 
-            else:
-                # PRESSURE was input — from dataset or fixed value
-                if self.PRESSURE_type == 0:
-                    try:
-                        P_out = df["P_kbar"]
-                    except KeyError:
-                        P_out = np.full(len(df), np.nan)
-                        self.Warning.value_error("'P_kbar' column missing, cannot output P_kbar_input.")
-                elif self.PRESSURE_type == 1:
-                    P_out = np.full(len(df), self.PRESSURE_value)
+        # Prepare and send output
+        if PRESSURE_output is not None:
+            my_domain = Domain(
+                [ContinuousVariable(name=a.name) for a in self.data.domain.attributes],
+                [ContinuousVariable("T_K_output"), ContinuousVariable("P_kbar_output")],
+                metas=self.data.domain.metas)
+            Y = np.column_stack([temperature, PRESSURE_output])
+        else:
+            if self.PRESSURE and self.PRESSURE_type == 0:
+                P_out = df["P_kbar"] if 'P_kbar' in df.columns else np.full(len(df), np.nan)
+            elif self.PRESSURE and self.PRESSURE_type == 1:
+                P_out = np.full(len(df), self.PRESSURE_value)
+            else: # No pressure input
+                P_out = np.full(len(df), np.nan)
 
-                my_domain = Domain(
-                    [ContinuousVariable(name=a.name) for a in self.data.domain.attributes],
-                    [ContinuousVariable("T_K_output"), ContinuousVariable("P_kbar_input")],
-                    metas=self.data.domain.metas
-                )
-                Y = np.column_stack([temperature, P_out])
+            my_domain = Domain(
+                [ContinuousVariable(name=a.name) for a in self.data.domain.attributes],
+                [ContinuousVariable("T_K_output"), ContinuousVariable("P_kbar_input")],
+                metas=self.data.domain.metas)
+            Y = np.column_stack([temperature, P_out])
 
-            # Finalize and send output
-            out = Table.from_numpy(my_domain, self.data.X, Y, self.data.metas)
-            self.Outputs.data.send(out)
-
-
-
+        out = Table.from_numpy(my_domain, self.data.X, Y, self.data.metas)
+        self.Outputs.data.send(out)
