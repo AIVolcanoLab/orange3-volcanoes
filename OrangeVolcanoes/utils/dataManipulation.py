@@ -102,6 +102,11 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
     elif my_output == 'opx_liq':
         output = pd.concat([myOPXs1, myLiquids1], axis=1)
 
+    elif my_output == 'cpx_liq':
+        output = pd.concat([myCPXs1, myLiquids1], axis=1)
+
+    elif my_output == 'cpx_opx':
+        output = pd.concat([myCPXs1, myOPXs1], axis=1)
 
 
     # Maintain all columns
