@@ -14,6 +14,7 @@ from PyQt5.QtCore import Qt # Make sure Qt is imported for options
 
 from Thermobar import calculate_cpx_opx_temp, calculate_cpx_opx_press_temp
 
+# Import all the thermobar stuff we need
 from Thermobar import (
     calculate_cpx_opx_temp,calculate_cpx_opx_press, calculate_cpx_opx_press_temp,
     calculate_cpx_only_temp, calculate_cpx_only_press,
@@ -161,40 +162,7 @@ class OWThermobar(OWWidget):
     class Outputs:
         data = Output("Data", Table, dynamic=False)
 
-    # Settings for each calculation type - these will control visibility and selections
-    # ContextSetting will remember user choices for each workflow
-    do_cpx_temp = ContextSetting(False)
-    cpx_temp_model_idx = ContextSetting(0)
-    cpx_temp_pressure_type = ContextSetting(0) # 0=Dataset, 1=Fixed, 2=Model
-    cpx_temp_pressure_value = ContextSetting(1.0)
-    cpx_temp_barometer_choice = ContextSetting(0) # For cpx-cpx or cpx-melt etc.
-    cpx_temp_fixed_h2o = ContextSetting(False)
-    cpx_temp_fixed_h2o_value_str = ContextSetting("1.0")
-
-    do_cpx_press = ContextSetting(False)
-    cpx_press_model_idx = ContextSetting(0)
-    cpx_press_temp_type = ContextSetting(0) # 0=Dataset, 1=Fixed, 2=Model
-    cpx_press_temp_value = ContextSetting(900.0)
-    cpx_press_thermometer_choice = ContextSetting(0) # For cpx-cpx or cpx-melt etc.
-    cpx_press_fixed_h2o = ContextSetting(False)
-    cpx_press_fixed_h2o_value_str = ContextSetting("1.0")
-
-    do_opx_temp = ContextSetting(False)
-    opx_temp_model_idx = ContextSetting(0)
-    opx_temp_pressure_type = ContextSetting(0)
-    opx_temp_pressure_value = ContextSetting(1.0)
-    opx_temp_barometer_choice = ContextSetting(0)
-    opx_temp_fixed_h2o = ContextSetting(False)
-    opx_temp_fixed_h2o_value_str = ContextSetting("1.0")
-
-    do_opx_press = ContextSetting(False)
-    opx_press_model_idx = ContextSetting(0)
-    opx_press_temp_type = ContextSetting(0)
-    opx_press_temp_value = ContextSetting(900.0)
-    opx_press_thermometer_choice = ContextSetting(0)
-    opx_press_fixed_h2o = ContextSetting(False)
-    opx_press_fixed_h2o_value_str = ContextSetting("1.0")
-
+    # Opx-Cpx
     do_cpx_opx_temp = ContextSetting(True) # Your original widget's default
     cpx_opx_temp_model_idx = ContextSetting(0)
     cpx_opx_temp_pressure_type = ContextSetting(0)
@@ -215,6 +183,28 @@ class OWThermobar(OWWidget):
     cpx_opx_press_fixed_h2o = ContextSetting(False)
     cpx_opx_press_fixed_h2o_value_str = ContextSetting("1.0")
 
+    #Opx
+
+    do_opx_temp = ContextSetting(True) # Your original widget's default
+    opx_temp_model_idx = ContextSetting(0)
+    opx_temp_pressure_type = ContextSetting(0)
+    opx_temp_pressure_value = ContextSetting(1.0)
+    opx_temp_barometer_choice = ContextSetting(1) # Corresponds to Opx-Cpx as per your original
+    opx_temp_barometer_model_idx_ol = ContextSetting(0)
+    opx_temp_barometer_model_idx_oo = ContextSetting(0) # If you re-add opx-only barometers
+    opx_temp_fixed_h2o = ContextSetting(False)
+    opx_temp_fixed_h2o_value_str = ContextSetting("1.0")
+
+    do_opx_press = ContextSetting(False)
+    opx_press_model_idx = ContextSetting(0)
+    opx_press_temp_type = ContextSetting(0)
+    opx_press_temp_value = ContextSetting(900.0)
+    opx_press_thermometer_choice = ContextSetting(0) # Corresponds to Opx-Cpx etc.
+    opx_press_thermometer_model_idx_ol = ContextSetting(0)
+    opx_press_thermometer_model_idx_oo = ContextSetting(0) # If you re-add opx-only thermometers
+    opx_press_fixed_h2o = ContextSetting(False)
+    opx_press_fixed_h2o_value_str = ContextSetting("1.0")
+
     resizing_enabled = False
     want_main_area = False
     auto_apply = Setting(True)
@@ -231,6 +221,8 @@ class OWThermobar(OWWidget):
         super().__init__()
         # Explicitly initialize all ContextSetting attributes with their default values.
         # This ensures they exist as instance attributes before the GUI elements try to bind to them.
+
+        # Cpx-Opx
         self.calculation_type = 0
         self.cpx_opx_temp_model_idx = 0
         self.cpx_opx_temp_pressure_type = 0
@@ -246,19 +238,22 @@ class OWThermobar(OWWidget):
         self.cpx_opx_press_fixed_h2o = False
         self.cpx_opx_press_fixed_h2o_value_str = "1.0"
 
-        self.cpx_liq_temp_model_idx = 0
-        self.cpx_liq_temp_pressure_type = 0
-        self.cpx_liq_temp_pressure_value = 1.0
-        self.cpx_liq_temp_barometer_model_idx = 0
-        self.cpx_liq_temp_fixed_h2o = False
-        self.cpx_liq_temp_fixed_h2o_value_str = "1.0"
+        # Opx-only
+        self.calculation_type = 0
+        self.opx_temp_model_idx = 0
+        self.opx_temp_pressure_type = 0
+        self.opx_temp_pressure_value = 1.0
+        self.opx_temp_barometer_model_idx = 0
+        self.opx_temp_fixed_h2o = False
+        self.opx_temp_fixed_h2o_value_str = "1.0"
 
-        self.cpx_liq_press_model_idx = 0
-        self.cpx_liq_press_temp_type = 0
-        self.cpx_liq_press_temp_value = 900.0
-        self.cpx_liq_press_thermometer_model_idx = 0
-        self.cpx_liq_press_fixed_h2o = False
-        self.cpx_liq_press_fixed_h2o_value_str = "1.0"
+        self.opx_press_model_idx = 0
+        self.opx_press_temp_type = 0
+        self.opx_press_temp_value = 900.0
+        self.opx_press_thermometer_model_idx = 0
+        self.opx_press_fixed_h2o = False
+        self.opx_press_fixed_h2o_value_str = "1.0"
+
 
         self.data = None
 
@@ -273,16 +268,10 @@ class OWThermobar(OWWidget):
                 "None", # 0
                 "Cpx-Opx Thermometry", # 1
                 "Cpx-Opx Barometry", # 2
-                "Cpx Only Thermometry", # 3
-                "Cpx Only Barometry", # 4
-                "Cpx-Liq Thermometry", # 5
-                "Cpx-Liq Barometry", # 6
-                "Opx Only Thermometry", # 7
-                "Opx Only Barometry", # 8
-                "Opx-Liq Thermometry", # 9
-                "Opx-Liq Barometry", # 10
+                "Opx Barometry", # 2
+                "Cpx Barometry", # 2
             ],
-            callback=self._update_controls)
+            callback=self.__update_controls_cpx_opx)
 
         gui.separator(self.controlArea)
 
@@ -299,52 +288,23 @@ class OWThermobar(OWWidget):
         self._build_cpx_opx_press_gui(self.cpx_opx_press_box)
         self.cpx_opx_press_box.setVisible(False)
 
-        # Cpx Only Thermometry (Placeholder)
-        self.cpx_only_temp_box = gui.vBox(self.controlArea, "Cpx Only Thermometry Settings")
-        self._build_cpx_only_temp_gui(self.cpx_only_temp_box) # Assuming it creates fixed_h2o_input if applicable
-        self.cpx_only_temp_box.setVisible(False)
+        # Opx Thermometry
+        self.opx_temp_box = gui.vBox(self.controlArea, "Cpx-Opx Thermometry Settings")
+        # Ensure fixed_h2o_input_opx_temp is created here!
+        self._build_opx_temp_gui(self.opx_temp_box)
+        self.opx_temp_box.setVisible(False)
 
-        # Cpx Only Barometry (Placeholder)
-        self.cpx_only_press_box = gui.vBox(self.controlArea, "Cpx Only Barometry Settings")
-        self._build_cpx_only_press_gui(self.cpx_only_press_box) # Assuming it creates fixed_h2o_input if applicable
-        self.cpx_only_press_box.setVisible(False)
+        # Opx Barometry
+        self.opx_press_box = gui.vBox(self.controlArea, "Cpx-Opx Barometry Settings")
+        # Ensure fixed_h2o_input_opx_press is created here!
+        self._build_opx_press_gui(self.opx_press_box)
+        self.opx_press_box.setVisible(False)
 
-        # Cpx-Liq Thermometry (Placeholder)
-        self.cpx_liq_temp_box = gui.vBox(self.controlArea, "Cpx-Liq Thermometry Settings")
-        # Ensure fixed_h2o_input_cpx_liq_temp is created here!
-        self._build_cpx_liq_temp_gui(self.cpx_liq_temp_box)
-        self.cpx_liq_temp_box.setVisible(False)
-
-        # Cpx-Liq Barometry (Placeholder)
-        self.cpx_liq_press_box = gui.vBox(self.controlArea, "Cpx-Liq Barometry Settings")
-        # Ensure fixed_h2o_input_cpx_liq_press is created here!
-        self._build_cpx_liq_press_gui(self.cpx_liq_press_box)
-        self.cpx_liq_press_box.setVisible(False)
-
-        # Opx Only Thermometry (Placeholder)
-        self.opx_only_temp_box = gui.vBox(self.controlArea, "Opx Only Thermometry Settings")
-        self._build_opx_only_temp_gui(self.opx_only_temp_box)
-        self.opx_only_temp_box.setVisible(False)
-
-        # Opx Only Barometry (Placeholder)
-        self.opx_only_press_box = gui.vBox(self.controlArea, "Opx Only Barometry Settings")
-        self._build_opx_only_press_gui(self.opx_only_press_box)
-        self.opx_only_press_box.setVisible(False)
-
-        # Opx-Liq Thermometry (Placeholder)
-        self.opx_liq_temp_box = gui.vBox(self.controlArea, "Opx-Liq Thermometry Settings")
-        self._build_opx_liq_temp_gui(self.opx_liq_temp_box)
-        self.opx_liq_temp_box.setVisible(False)
-
-        # Opx-Liq Barometry (Placeholder)
-        self.opx_liq_press_box = gui.vBox(self.controlArea, "Opx-Liq Barometry Settings")
-        self._build_opx_liq_press_gui(self.opx_liq_press_box)
-        self.opx_liq_press_box.setVisible(False)
 
 
         gui.auto_apply(self.buttonsArea, self)
-        # MOVE THIS CALL: Call _update_controls AFTER all GUI elements are built
-        self._update_controls() # Initial update to set visibility
+        # MOVE THIS CALL: Call __update_controls_cpx_opx AFTER all GUI elements are built
+        self.__update_controls_cpx_opx() # Initial update to set visibility
 
     def _build_cpx_opx_temp_gui(self, parent_box):
         """Builds the GUI elements for Cpx-Opx Thermometry."""
@@ -354,30 +314,30 @@ class OWThermobar(OWWidget):
         self.cpx_opx_temp_models_combo = gui.comboBox(
             temp_model_box, self, "cpx_opx_temp_model_idx",
             items=[m[0] for m in MODELS_CPX_OPX_TEMP],
-            callback=self._update_controls)
+            callback=self.__update_controls_cpx_opx)
 
         # Pressure settings
         pressure_box = gui.radioButtons(
             parent_box, self, "cpx_opx_temp_pressure_type", box="Pressure Input",
-            callback=self._update_controls)
+            callback=self.__update_controls_cpx_opx)
         gui.appendRadioButton(pressure_box, "Dataset as Pressure (kbar)")
 
         rb_fixed_p = gui.appendRadioButton(pressure_box, "Fixed Pressure")
         self.cpx_opx_temp_pressure_value_box = gui.doubleSpin(
             gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
             "cpx_opx_temp_pressure_value", 1.0, 10000.0, step=0.1, label="Pressure Value (kbar)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=1)
+            alignment=Qt.AlignRight, callback=self.__update_controls_cpx_opx, controlWidth=80, decimals=1)
 
         rb_model_p = gui.appendRadioButton(pressure_box, "Model as Pressure")
         model_as_p_box = gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_model_p))
 
         self.cpx_opx_temp_barometer_model_box = gui.comboBox(
             model_as_p_box, self, "cpx_opx_temp_barometer_model_idx", items=[m[0] for m in MODELS_CPX_OPX_PRESSURE],
-            callback=self._update_controls)
+            callback=self.__update_controls_cpx_opx)
 
         # H2O settings
         h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "cpx_opx_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        gui.checkBox(h2o_box, self, "cpx_opx_temp_fixed_h2o", "Fixed H₂O", callback=self.__update_controls_cpx_opx)
         # Correctly assign the lineEdit to self.cpx_opx_temp_fixed_h2o_input
         self.cpx_opx_temp_fixed_h2o_input = gui.lineEdit(
             h2o_box, self, "cpx_opx_temp_fixed_h2o_value_str", label="H₂O (wt%)",
@@ -390,118 +350,40 @@ class OWThermobar(OWWidget):
         self.cpx_opx_press_models_combo = gui.comboBox(
             press_model_box, self, "cpx_opx_press_model_idx",
             items=[m[0] for m in MODELS_CPX_OPX_PRESSURE],
-            callback=self._update_controls)
+            callback=self.__update_controls_cpx_opx)
 
         # Temperature settings
         temp_box = gui.radioButtons(
             parent_box, self, "cpx_opx_press_temp_type", box="Temperature Input",
-            callback=self._update_controls)
+            callback=self.__update_controls_cpx_opx)
         gui.appendRadioButton(temp_box, "Dataset as Temperature (K)")
 
         rb_fixed_t = gui.appendRadioButton(temp_box, "Fixed Temperature")
         self.cpx_opx_press_temp_value_box = gui.doubleSpin(
             gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
             "cpx_opx_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+            alignment=Qt.AlignRight, callback=self.__update_controls_cpx_opx, controlWidth=80, decimals=0)
 
         rb_model_t = gui.appendRadioButton(temp_box, "Model as Temperature")
         model_as_t_box = gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_model_t))
 
         self.cpx_opx_press_thermometer_model_box = gui.comboBox(
             model_as_t_box, self, "cpx_opx_press_thermometer_model_idx", items=[m[0] for m in MODELS_CPX_OPX_TEMP],
-            callback=self._update_controls)
+            callback=self.__update_controls_cpx_opx)
 
         # H2O settings (if Cpx-Opx Pressure models require H2O)
         h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "cpx_opx_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        gui.checkBox(h2o_box, self, "cpx_opx_press_fixed_h2o", "Fixed H₂O", callback=self.__update_controls_cpx_opx)
         # Correctly assign the lineEdit to self.cpx_opx_press_fixed_h2o_input
         self.cpx_opx_press_fixed_h2o_input = gui.lineEdit(
             h2o_box, self, "cpx_opx_press_fixed_h2o_value_str", label="H₂O (wt%)",
             orientation=Qt.Horizontal, callback=self.commit.deferred)
 
-    # Placeholders for other build GUI methods - You'll implement these as you add more calculation types
-    def _build_cpx_only_temp_gui(self, parent_box): pass
-    def _build_cpx_only_press_gui(self, parent_box): pass
-
-    def _build_cpx_liq_temp_gui(self, parent_box):
-        """Builds the GUI for Cpx-Liq Thermometry."""
-        temp_model_box = gui.vBox(parent_box, "Models")
-        self.cpx_liq_temp_models_combo = gui.comboBox(
-            temp_model_box, self, "cpx_liq_temp_model_idx",
-            items=[m[0] for m in MODELS_CPX_LIQ_TEMPERATURE],
-            callback=self._update_controls)
-
-        pressure_box = gui.radioButtons(
-            parent_box, self, "cpx_liq_temp_pressure_type", box="Pressure Input",
-            callback=self._update_controls)
-        gui.appendRadioButton(pressure_box, "Dataset as Pressure (kbar)")
-        rb_fixed_p = gui.appendRadioButton(pressure_box, "Fixed Pressure")
-        # Correctly assign the doubleSpin to self.cpx_liq_temp_pressure_value_box
-        self.cpx_liq_temp_pressure_value_box = gui.doubleSpin(
-            gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
-            "cpx_liq_temp_pressure_value", 1.0, 10000.0, step=0.1, label="Pressure Value (kbar)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=1)
-        rb_model_p = gui.appendRadioButton(pressure_box, "Model as Pressure")
-        model_as_p_box = gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_model_p))
-        self.cpx_liq_temp_barometer_model_combo = gui.comboBox(
-            model_as_p_box, self, "cpx_liq_temp_barometer_model_idx", items=[m[0] for m in MODELS_CPX_LIQ_PRESSURE],
-            callback=self._update_controls)
-
-        h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "cpx_liq_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
-        # Correctly assign the lineEdit to self.cpx_liq_temp_fixed_h2o_input
-        self.cpx_liq_temp_fixed_h2o_input = gui.lineEdit(
-            h2o_box, self, "cpx_liq_temp_fixed_h2o_value_str", label="H₂O (wt%)",
-            orientation=Qt.Horizontal, callback=self.commit.deferred)
-
-    def _build_cpx_liq_press_gui(self, parent_box):
-        """Builds the GUI for Cpx-Liq Barometry."""
-        press_model_box = gui.vBox(parent_box, "Models")
-        self.cpx_liq_press_models_combo = gui.comboBox(
-            press_model_box, self, "cpx_liq_press_model_idx",
-            items=[m[0] for m in MODELS_CPX_LIQ_PRESSURE],
-            callback=self._update_controls)
-
-        temp_box = gui.radioButtons(
-            parent_box, self, "cpx_liq_press_temp_type", box="Temperature Input",
-            callback=self._update_controls)
-        gui.appendRadioButton(temp_box, "Dataset as Temperature (K)")
-        rb_fixed_t = gui.appendRadioButton(temp_box, "Fixed Temperature")
-        # Correctly assign the doubleSpin to self.cpx_liq_press_temp_value_box
-        self.cpx_liq_press_temp_value_box = gui.doubleSpin(
-            gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
-            "cpx_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
-        rb_model_t = gui.appendRadioButton(temp_box, "Model as Temperature")
-        model_as_t_box = gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_model_t))
-        self.cpx_liq_press_thermometer_model_combo = gui.comboBox(
-            model_as_t_box, self, "cpx_liq_press_thermometer_model_idx", items=[m[0] for m in MODELS_CPX_LIQ_TEMPERATURE],
-            callback=self._update_controls)
-
-        h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "cpx_liq_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
-        # Correctly assign the lineEdit to self.cpx_liq_press_fixed_h2o_input
-        self.cpx_liq_press_fixed_h2o_input = gui.lineEdit(
-            h2o_box, self, "cpx_liq_press_fixed_h2o_value_str", label="H₂O (wt%)",
-            orientation=Qt.Horizontal, callback=self.commit.deferred)
-
-    def _build_opx_only_temp_gui(self, parent_box): pass
-    def _build_opx_only_press_gui(self, parent_box): pass
-    def _build_opx_liq_temp_gui(self, parent_box): pass
-    def _build_opx_liq_press_gui(self, parent_box): pass
-
-    def _update_controls(self):
+    def __update_controls_cpx_opx(self):
         # Hide all calculation sections first
         self.cpx_opx_temp_box.setVisible(False)
         self.cpx_opx_press_box.setVisible(False)
-        self.cpx_only_temp_box.setVisible(False)
-        self.cpx_only_press_box.setVisible(False)
-        self.cpx_liq_temp_box.setVisible(False)
-        self.cpx_liq_press_box.setVisible(False)
-        self.opx_only_temp_box.setVisible(False)
-        self.opx_only_press_box.setVisible(False)
-        self.opx_liq_temp_box.setVisible(False)
-        self.opx_liq_press_box.setVisible(False)
+
 
         # Show the selected calculation section
         if self.calculation_type == 1: # Cpx-Opx Thermometry
@@ -513,32 +395,6 @@ class OWThermobar(OWWidget):
             self.cpx_opx_press_box.setVisible(True)
             # self._update_cpx_opx_press_models()
             # self._update_cpx_opx_press_temp_input() # This method needs to exist and handle input fields
-        elif self.calculation_type == 3: # Cpx Only Thermometry
-            self.cpx_only_temp_box.setVisible(True)
-            # self._update_cpx_only_temp_models()
-        elif self.calculation_type == 4: # Cpx Only Barometry
-            self.cpx_only_press_box.setVisible(True)
-            # self._update_cpx_only_press_models()
-        elif self.calculation_type == 5: # Cpx-Liq Thermometry
-            self.cpx_liq_temp_box.setVisible(True)
-            # self._update_cpx_liq_temp_models()
-            # self._update_cpx_liq_temp_pressure_input()
-        elif self.calculation_type == 6: # Cpx-Liq Barometry
-            self.cpx_liq_press_box.setVisible(True)
-            # self._update_cpx_liq_press_models()
-            # self._update_cpx_liq_press_temp_input()
-        elif self.calculation_type == 7: # Opx Only Thermometry
-            self.opx_only_temp_box.setVisible(True)
-            # self._update_opx_only_temp_models()
-        elif self.calculation_type == 8: # Opx Only Barometry
-            self.opx_only_press_box.setVisible(True)
-            # self._update_opx_only_press_models()
-        elif self.calculation_type == 9: # Opx-Liq Thermometry
-            self.opx_liq_temp_box.setVisible(True)
-            # self._update_opx_liq_temp_models()
-        elif self.calculation_type == 10: # Opx-Liq Barometry
-            self.opx_liq_press_box.setVisible(True)
-            # self._update_opx_liq_press_models()
 
 
         # Update the state of H2O input fields based on their respective fixed_h2o checkboxes
@@ -546,39 +402,24 @@ class OWThermobar(OWWidget):
              self.cpx_opx_temp_fixed_h2o_input.setEnabled(self.cpx_opx_temp_fixed_h2o)
         if hasattr(self, 'cpx_opx_press_fixed_h2o_input'):
             self.cpx_opx_press_fixed_h2o_input.setEnabled(self.cpx_opx_press_fixed_h2o)
-        if hasattr(self, 'cpx_liq_temp_fixed_h2o_input'):
-            self.cpx_liq_temp_fixed_h2o_input.setEnabled(self.cpx_liq_temp_fixed_h2o)
-        if hasattr(self, 'cpx_liq_press_fixed_h2o_input'):
-            self.cpx_liq_press_fixed_h2o_input.setEnabled(self.cpx_liq_press_fixed_h2o)
-
 
         # Enable/disable pressure value spin box based on pressure_type == 1 (Fixed)
         if hasattr(self, 'cpx_opx_temp_pressure_value_box'):
             self.cpx_opx_temp_pressure_value_box.setEnabled(self.cpx_opx_temp_pressure_type == 1)
-        if hasattr(self, 'cpx_liq_temp_pressure_value_box'):
-            self.cpx_liq_temp_pressure_value_box.setEnabled(self.cpx_liq_temp_pressure_type == 1)
 
 
         # Enable/disable barometer model combo box based on pressure_type == 2 (Model)
         if hasattr(self, 'cpx_opx_temp_barometer_model_box'):
             self.cpx_opx_temp_barometer_model_box.setEnabled(self.cpx_opx_temp_pressure_type == 2)
-        if hasattr(self, 'cpx_liq_temp_barometer_model_combo'):
-            self.cpx_liq_temp_barometer_model_combo.setEnabled(self.cpx_liq_temp_pressure_type == 2)
 
 
         # Enable/disable temperature value spin box based on temp_type == 1 (Fixed)
         if hasattr(self, 'cpx_opx_press_temp_value_box'):
             self.cpx_opx_press_temp_value_box.setEnabled(self.cpx_opx_press_temp_type == 1)
-        if hasattr(self, 'cpx_liq_press_temp_value_box'):
-            self.cpx_liq_press_temp_value_box.setEnabled(self.cpx_liq_press_temp_type == 1)
-
 
         # Enable/disable thermometer model combo box based on temp_type == 2 (Model)
         if hasattr(self, 'cpx_opx_press_thermometer_model_box'):
             self.cpx_opx_press_thermometer_model_box.setEnabled(self.cpx_opx_press_temp_type == 2)
-        if hasattr(self, 'cpx_liq_press_thermometer_model_combo'):
-            self.cpx_liq_press_thermometer_model_combo.setEnabled(self.cpx_liq_press_temp_type == 2)
-
 
         # Now, for the radio buttons, you need to find QRadioButtons
         # and ensure the correct visibility/enabled state
@@ -588,32 +429,7 @@ class OWThermobar(OWWidget):
         for rb in self.cpx_opx_press_box.findChildren(QRadioButton):
             pass
 
-        for rb in self.cpx_only_temp_box.findChildren(QRadioButton):
-            pass
 
-        for rb in self.cpx_only_press_box.findChildren(QRadioButton):
-            pass
-
-        for rb in self.cpx_liq_temp_box.findChildren(QRadioButton):
-            pass
-
-        for rb in self.cpx_liq_press_box.findChildren(QRadioButton):
-            pass
-
-        for rb in self.opx_only_temp_box.findChildren(QRadioButton):
-            pass
-
-        for rb in self.opx_only_press_box.findChildren(QRadioButton):
-            pass
-
-        for rb in self.opx_liq_temp_box.findChildren(QRadioButton):
-            pass
-
-        for rb in self.opx_liq_press_box.findChildren(QRadioButton):
-            pass
-
-        # FIX: Replace self.apply() with self.commit.now()
-        # self.apply() # Ensure changes are applied if auto_apply is enabled
         self.commit.now() # Trigger the output sending immediately
 
     @Inputs.data
@@ -829,6 +645,8 @@ class OWThermobar(OWWidget):
                 return temp_value
         return None # Return None if temperature is not required
 
+
+## Into the actual functions do the math, not just the GUI buttons
     def _calculate_cpx_opx_temp(self, df):
         """Encapsulates the Cpx-Opx Thermometry calculation logic."""
         _, current_model_func_name, requires_pressure_by_model, requires_h2o_by_model = MODELS_CPX_OPX_TEMP[self.cpx_opx_temp_model_idx]
@@ -920,73 +738,3 @@ class OWThermobar(OWWidget):
 
         return results_df, "CpxOpx", "T_K", "P_kbar"
 
-    def _calculate_cpx_liq_temp(self, df):
-        """Encapsulates the Cpx-Liq Thermometry calculation logic."""
-        _, current_model_func_name, requires_pressure_by_model, requires_h2o_by_model = MODELS_CPX_LIQ_TEMPERATURE[self.cpx_liq_temp_model_idx]
-        current_barometer_func_name = MODELS_CPX_LIQ_PRESSURE[self.cpx_liq_temp_barometer_model_idx][1]
-
-        df = dm.preprocessing(df, my_output='cpx_liq')
-
-        water = self._get_h2o_value(df, requires_h2o_by_model,
-                                    self.cpx_liq_temp_fixed_h2o,
-                                    self.cpx_liq_temp_fixed_h2o_value_str,
-                                    "Cpx-Liq Thermometry")
-        if water is None: return pd.DataFrame(), "", "", ""
-
-        P_input = self._get_pressure_value(df, requires_pressure_by_model,
-                                           self.cpx_liq_temp_pressure_type,
-                                           self.cpx_liq_temp_pressure_value,
-                                           "Cpx-Liq Thermometry")
-
-        temperature = calculate_cpx_liq_temp(
-            cpx_comps=df[cpx_cols], liq_comps=df[liq_cols],
-            equationT=current_model_func_name, P=P_input, H2O=water)
-
-        results_df = pd.DataFrame()
-        results_df['T_K_calc'] = temperature
-        if P_input is not None:
-            results_df['P_kbar_input'] = P_input
-        else:
-            results_df['P_kbar_input'] = np.full(len(df), np.nan) # Placeholder if no P input
-
-        return results_df, "CpxLiq", "T_K", "P_kbar"
-
-    def _calculate_cpx_liq_press(self, df):
-        """Encapsulates the Cpx-Liq Barometry calculation logic."""
-        _, current_model_func_name, requires_temp_by_model, requires_h2o_by_model = MODELS_CPX_LIQ_PRESSURE[self.cpx_liq_press_model_idx]
-        current_thermometer_func_name = MODELS_CPX_LIQ_TEMPERATURE[self.cpx_liq_press_thermometer_model_idx][1]
-
-        df = dm.preprocessing(df, my_output='cpx_liq')
-
-        water = self._get_h2o_value(df, requires_h2o_by_model,
-                                    self.cpx_liq_press_fixed_h2o,
-                                    self.cpx_liq_press_fixed_h2o_value_str,
-                                    "Cpx-Liq Barometry")
-        if water is None: return pd.DataFrame(), "", "", ""
-
-        T_input = self._get_temperature_value(df, requires_temp_by_model,
-                                              self.cpx_liq_press_temp_type,
-                                              self.cpx_liq_press_temp_value,
-                                              "Cpx-Liq Barometry")
-
-        pressure = calculate_cpx_liq_press(
-            cpx_comps=df[cpx_cols], liq_comps=df[liq_cols],
-            equationP=current_model_func_name, T=T_input, H2O=water)
-
-        results_df = pd.DataFrame()
-        results_df['P_kbar_calc'] = pressure
-        if T_input is not None:
-            results_df['T_K_input'] = T_input
-        else:
-            results_df['T_K_input'] = np.full(len(df), np.nan) # Placeholder if no T input
-
-        return results_df, "CpxLiq", "T_K", "P_kbar"
-
-
-    # Placeholders for other calculate methods (implement these later)
-    # def _calculate_cpx_only_temp(self, df): pass
-    # def _calculate_cpx_only_press(self, df): pass
-    # def _calculate_opx_only_temp(self, df): pass
-    # def _calculate_opx_only_press(self, df): pass
-    # def _calculate_opx_liq_temp(self, df): pass
-    # def _calculate_opx_liq_press(self, df): pass
