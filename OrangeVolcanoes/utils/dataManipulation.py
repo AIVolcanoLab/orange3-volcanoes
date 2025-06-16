@@ -93,7 +93,7 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
         output = myCPXs1
 
 
-    if my_output == 'opx_only':
+    elif my_output == 'opx_only':
         output = myOPXs1
 
     elif my_output == 'liq_only':

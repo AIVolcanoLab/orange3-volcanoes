@@ -220,8 +220,20 @@ class OWThermobar(OWWidget):
     def __init__(self):
         super().__init__()
 
-        # --- Explicitly Initialize All Attributes Used by GUI Elements ---
-        # Initialize them to match their ContextSetting defaults.
+        # Initialize data attribute FIRST
+        self.data = None
+
+        # Then initialize all other attributes
+        self._initialize_attributes()
+
+        # Build the GUI
+        self._build_main_gui()
+
+        # Set initialization flag and update controls
+        self._initialized = True
+        self._update_all_controls()
+
+    def _initialize_attributes(self):
 
         # Opx-Cpx Thermometry
         self.cpx_opx_temp_model_idx = 0
@@ -263,52 +275,44 @@ class OWThermobar(OWWidget):
         self.opx_press_fixed_h2o = False
         self.opx_press_fixed_h2o_value_str = "1.0"
 
-        # Main calculation type selection
-        self.calculation_type = 0
-
-        self.data = None # Initialize data to None
-
+    def _build_main_gui(self):
+        """Build the main GUI structure"""
         gui.label(self.controlArea, self, "<i>Calculations performed using Thermobar...</i>")
         gui.separator(self.controlArea)
 
-        # --- Single Dropdown for Calculation Type ---
+        # Calculation type dropdown
         calc_type_box = gui.vBox(self.controlArea, "Select Calculation Type")
         self.calculation_type_combo = gui.comboBox(
             calc_type_box, self, "calculation_type",
-            items=[
-                "None", # 0
-                "Cpx-Opx Thermometry", # 1
-                "Cpx-Opx Barometry", # 2
-                "Opx Thermometry", # 3
-                "Opx Barometry", # 4
-            ],
-            callback=self._update_all_controls) # Changed callback to a general update function
-
+            items=["None", "Cpx-Opx Thermometry", "Cpx-Opx Barometry",
+                "Opx Thermometry", "Opx Barometry"],
+            callback=self._update_all_controls
+        )
         gui.separator(self.controlArea)
 
-        # --- Sections for each calculation type, now mutually exclusive ---
-        # Cpx-Opx Thermometry
+        # Build all calculation sections
+        self._build_calculation_sections()
+
+        gui.auto_apply(self.buttonsArea, self)
+
+    def _build_calculation_sections(self):
+        """Build all calculation type sections"""
         self.cpx_opx_temp_box = gui.vBox(self.controlArea, "Cpx-Opx Thermometry Settings")
         self._build_cpx_opx_temp_gui(self.cpx_opx_temp_box)
         self.cpx_opx_temp_box.setVisible(False)
 
-        # Cpx-Opx Barometry
         self.cpx_opx_press_box = gui.vBox(self.controlArea, "Cpx-Opx Barometry Settings")
         self._build_cpx_opx_press_gui(self.cpx_opx_press_box)
         self.cpx_opx_press_box.setVisible(False)
 
-        # Opx Thermometry
         self.opx_temp_box = gui.vBox(self.controlArea, "Opx Thermometry Settings")
         self._build_opx_temp_gui(self.opx_temp_box)
         self.opx_temp_box.setVisible(False)
 
-        # Opx Barometry
         self.opx_press_box = gui.vBox(self.controlArea, "Opx Barometry Settings")
         self._build_opx_press_gui(self.opx_press_box)
         self.opx_press_box.setVisible(False)
 
-        gui.auto_apply(self.buttonsArea, self)
-        self._update_all_controls() # Initial call to set visibility
 
     def _build_cpx_opx_temp_gui(self, parent_box):
         """Builds the GUI elements for Cpx-Opx Thermometry."""
@@ -386,63 +390,104 @@ class OWThermobar(OWWidget):
             ## Now Opx
 
     def _build_opx_temp_gui(self, parent_box):
-        """Builds the GUI elements for Opx Thermometry."""
+        """Builds the Opx Thermometry GUI section using only existing callbacks"""
+        # Set default to Opx-Liq thermometers
+        self.opx_temp_model_type = 1
 
-        # Models selection (Opx-only vs Opx-Liq)
-        model_type_box = gui.radioButtons(
-            parent_box, self, "opx_temp_model_type", box="Models",
-            callback=self.__update_controls_opx)
+        # Thermometer Type selection
+        model_type_box = gui.vBox(parent_box, "Thermometer Type")
+        self.opx_thermometer_type_radiobuttons = gui.radioButtons(
+            model_type_box, self, "opx_temp_model_type",
+            btnLabels=["Opx-only thermometers", "Opx-Liq thermometers"],
+            callback=self._update_opx_temp_selection_vis  # Existing callback
+        )
+        self.opx_thermometer_type_radiobuttons.buttons[0].setEnabled(False)
 
-        rb_oo = gui.appendRadioButton(model_type_box, "Opx-only thermometers")
-        self.opx_temp_models_combo_oo = gui.comboBox(
-            gui.indentedBox(model_type_box, gui.checkButtonOffsetHint(rb_oo)), self, "opx_temp_model_idx_oo",
+        # Opx-only models
+        self.opx_only_temp_model_box = gui.vBox(parent_box, "Opx-Only Thermometers")
+        self.opx_only_temp_model_combo = gui.comboBox(
+            self.opx_only_temp_model_box, self, "opx_temp_model_idx_oo",
             items=[m[0] for m in MODELS_OPX_ONLY_TEMPERATURE],
-            callback=self.__update_controls_opx)
+            callback=self._update_opx_temp_selection_vis  # Existing callback
+        )
+        self.opx_only_temp_model_box.setVisible(False)
 
-        rb_ol = gui.appendRadioButton(model_type_box, "Opx-Liq thermometers")
-        self.opx_temp_models_combo_ol = gui.comboBox(
-            gui.indentedBox(model_type_box, gui.checkButtonOffsetHint(rb_ol)), self, "opx_temp_model_idx_ol",
+        # Opx-Liq models
+        self.opx_liq_temp_model_box = gui.vBox(parent_box, "Opx-Liq Thermometers")
+        self.opx_liq_temp_model_combo = gui.comboBox(
+            self.opx_liq_temp_model_box, self, "opx_temp_model_idx_ol",
             items=[m[0] for m in MODELS_OPX_LIQ_TEMPERATURE],
-            callback=self.__update_controls_opx)
+            callback=self._update_opx_temp_selection_vis  # Existing callback
+        )
+        self.opx_liq_temp_model_box.setVisible(True)
 
-        # Pressure settings
-        pressure_box = gui.radioButtons(
-            parent_box, self, "opx_temp_pressure_type", box="Pressure Input",
-            callback=self.__update_controls_opx)
-        gui.appendRadioButton(pressure_box, "Dataset as Pressure (kbar)")
+        # Pressure input
+        pressure_input_box = gui.vBox(parent_box, "Pressure Input")
+        self.opx_pressure_input_radiobuttons = gui.radioButtons(
+            pressure_input_box, self, "opx_temp_pressure_type",
+            btnLabels=["From Dataset", "Fixed Value", "From Model (Iterative)"],
+            callback=self._update_opx_temp_pressure_controls  # Existing callback
+        )
 
-        rb_fixed_p = gui.appendRadioButton(pressure_box, "Fixed Pressure")
-        self.opx_temp_pressure_value_box = gui.doubleSpin(
-            gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
-            "opx_temp_pressure_value", 1.0, 10000.0, step=0.1, label="Pressure Value (kbar)",
-            alignment=Qt.AlignRight, callback=self.__update_controls_opx, controlWidth=80, decimals=1)
+        # Fixed pressure value
+        self.opx_fixed_pressure_box = gui.hBox(pressure_input_box)
+        gui.lineEdit(self.opx_fixed_pressure_box, self, "opx_temp_pressure_value",
+                    label="kbar", valueType=float, controlWidth=80,
+                    callback=self._on_fixed_pressure_change)  # Existing callback
+        self.opx_fixed_pressure_box.setVisible(False)
 
-        rb_model_p = gui.appendRadioButton(pressure_box, "Model as Pressure")
-        model_as_p_box = gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_model_p))
+        # Barometer selection
+        self.opx_barometer_choice_box = gui.vBox(parent_box, "Barometer Model")
+        self.opx_barometer_type_radiobuttons = gui.radioButtons(
+            self.opx_barometer_choice_box, self, "opx_temp_barometer_choice",
+            btnLabels=["Opx-only barometer", "Opx-Liq barometer"],
+            callback=self._update_opx_barometer_selection  # Existing callback
+        )
+        self.opx_barometer_choice_box.setVisible(False)
 
-        # Barometer choice (Opx-only vs Opx-Liq)
-        self.opx_temp_barometer_choice_buttons = gui.radioButtons(
-            model_as_p_box, self, "opx_temp_barometer_choice",
-            callback=self.__update_controls_opx)
+        # Barometer models
+        self.opx_only_barometer_model_box = gui.vBox(self.opx_barometer_choice_box, "Opx-Only Barometers")
+        self.opx_only_barometer_model_combo = gui.comboBox(
+            self.opx_only_barometer_model_box, self, "opx_temp_barometer_model_idx_oo",
+            items=[m[0] for m in MODELS_OPX_ONLY_PRESSURE],
+            callback=self.commit.deferred
+        )
+        self.opx_only_barometer_model_box.setVisible(False)
 
-        rb_opx_only_bar = gui.appendRadioButton(self.opx_temp_barometer_choice_buttons, "Use Opx-only barometer")
-        self.opx_temp_barometer_model_box_oo = gui.comboBox(
-            gui.indentedBox(self.opx_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_opx_only_bar)),
-            self, "opx_temp_barometer_model_idx_oo", items=[m[0] for m in MODELS_OPX_ONLY_PRESSURE],
-            callback=self.__update_controls_opx)
-
-        rb_opx_liq_bar = gui.appendRadioButton(self.opx_temp_barometer_choice_buttons, "Use Opx-Liq barometer")
-        self.opx_temp_barometer_model_box_ol = gui.comboBox(
-            gui.indentedBox(self.opx_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_opx_liq_bar)),
-            self, "opx_temp_barometer_model_idx_ol", items=[m[0] for m in MODELS_OPX_LIQ_PRESSURE],
-            callback=self.__update_controls_opx)
+        self.opx_liq_barometer_model_box = gui.vBox(self.opx_barometer_choice_box, "Opx-Liq Barometers")
+        self.opx_liq_barometer_model_combo = gui.comboBox(
+            self.opx_liq_barometer_model_box, self, "opx_temp_barometer_model_idx_ol",
+            items=[m[0] for m in MODELS_OPX_LIQ_PRESSURE],
+            callback=self.commit.deferred
+        )
+        self.opx_liq_barometer_model_box.setVisible(False)
 
         # H2O settings
-        h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "opx_temp_fixed_h2o", "Fixed H₂O", callback=self.__update_controls_opx)
-        self.opx_temp_fixed_h2o_input = gui.lineEdit(
-            h2o_box, self, "opx_temp_fixed_h2o_value_str", label="H₂O (wt%)",
-            orientation=Qt.Horizontal, callback=self.commit.deferred)
+        self.opx_temp_h2o_box = gui.vBox(parent_box, "H2O Content for Thermometer")
+        self.opx_temp_fixed_h2o_checkbox = gui.checkBox(
+            self.opx_temp_h2o_box, self, "opx_temp_fixed_h2o", "Use Fixed H2O",
+            callback=self._update_opx_temp_h2o_input  # Existing callback
+        )
+        self.opx_temp_fixed_h2o_input_box = gui.hBox(self.opx_temp_h2o_box)
+        gui.lineEdit(self.opx_temp_fixed_h2o_input_box, self, "opx_temp_fixed_h2o_value_str",
+                    label="Fixed H2O (wt%)", controlWidth=80,
+                    callback=self._on_fixed_h2o_change)  # Existing callback
+        self.opx_temp_fixed_h2o_input_box.setVisible(False)
+
+    def _on_fixed_pressure_change(self):
+        # This function is called when the fixed pressure value is changed.
+        # You don't necessarily need to call commit here if auto_apply handles it.
+        # But if you want immediate calculation, and you are not already in a
+        # deferred context, you could consider self.commit.now() IF you really need it.
+        # For most cases with auto_apply, simply changing the value is enough.
+        # Let's just pass for now and rely on auto_apply.
+        pass
+
+    def _on_fixed_h2o_change(self):
+        # This function is called when the fixed H2O value is changed.
+        # As with _on_fixed_pressure_change, we just 'pass' here.
+        # auto_apply (if True) will handle triggering the main commit.
+        pass
 
     def _build_opx_press_gui(self, parent_box):
         """Builds the GUI elements for Opx Barometry."""
@@ -452,26 +497,30 @@ class OWThermobar(OWWidget):
         pass # Placeholder for now
 
     def _update_all_controls(self):
-        """General update function to control visibility of all calculation sections."""
-        # Hide all calculation sections
+        """Update visibility of all calculation sections."""
+        # Hide all sections first
         self.cpx_opx_temp_box.setVisible(False)
         self.cpx_opx_press_box.setVisible(False)
         self.opx_temp_box.setVisible(False)
         self.opx_press_box.setVisible(False)
 
-        # Show the selected calculation section and call its specific update
-        if self.calculation_type == 1: # Cpx-Opx Thermometry
+        # Show the selected section
+        if self.calculation_type == 1:  # Cpx-Opx Thermometry
             self.cpx_opx_temp_box.setVisible(True)
-            self.__update_controls_cpx_opx() # Calls the specific Cpx-Opx update
-        elif self.calculation_type == 2: # Cpx-Opx Barometry
+            self.__update_controls_cpx_opx()
+        elif self.calculation_type == 2:  # Cpx-Opx Barometry
             self.cpx_opx_press_box.setVisible(True)
-            self.__update_controls_cpx_opx() # Re-use for consistency, or make a separate one if needed
-        elif self.calculation_type == 3: # Opx Thermometry
+            self.__update_controls_cpx_opx()
+        elif self.calculation_type == 3:  # Opx Thermometry
             self.opx_temp_box.setVisible(True)
-            self.__update_controls_opx() # Calls the new Opx Thermometry update
-        # Add more elifs for other calculation types as they are implemented
+            self._update_controls_opx()  # This now calls the corrected version
+        elif self.calculation_type == 4:  # Opx Barometry
+            self.opx_press_box.setVisible(True)
+            self._update_controls_opx_press()
 
-        self.commit.now() # Trigger the output sending immediately
+        # Only commit if we're fully initialized
+        if hasattr(self, '_initialized') and self._initialized:
+            self.commit.deferred()
 
 
     def __update_controls_cpx_opx(self):
@@ -528,55 +577,77 @@ class OWThermobar(OWWidget):
         self.commit.now() # Trigger the output sending immediately
 
     # Opx
-    def __update_controls_opx(self):
-        """Updates the state of GUI controls for Opx Thermometry."""
+# --- Opx Thermometry Specific Update Functions ---
 
-        # Enable/disable Opx-only vs Opx-Liq thermometer model combos
-        self.opx_temp_models_combo_oo.setEnabled(self.opx_temp_model_type == 0)
-        self.opx_temp_models_combo_ol.setEnabled(self.opx_temp_model_type == 1)
+    def _update_controls_opx(self):
+        """Main update function for Opx Thermometry settings."""
+        # Replace call to non-existent function with existing one
+        self._update_opx_temp_selection_vis()  # This is the function you actually have
 
-        # Determine if the currently selected thermometer model (Opx-only or Opx-Liq)
-        # requires pressure and H2O based on the model metadata.
-        if self.opx_temp_model_type == 0: # Opx-only thermometer selected
-            _, _, requires_pressure_by_model, requires_h2o_by_model = MODELS_OPX_ONLY_TEMPERATURE[self.opx_temp_model_idx_oo]
-        else: # Opx-Liq thermometer selected
-            _, _, requires_pressure_by_model, requires_h2o_by_model = MODELS_OPX_LIQ_TEMPERATURE[self.opx_temp_model_idx_ol]
+        # These are your existing functions that should work
+        self._update_opx_temp_pressure_controls()
+        self._update_opx_barometer_selection()
+        self._update_opx_temp_h2o_input()
 
-        # Enable/disable the overall pressure input section
-        self.opx_temp_box.findChild(gui.radioButtons, "Pressure Input").setEnabled(requires_pressure_by_model)
+    def _update_opx_temp_selection_vis(self):
+        """Handle all model selection updates for Opx thermometry"""
+        try:
+            # Determine current model type and requirements
+            if self.opx_temp_model_type == 0:  # Opx-only
+                model_info = MODELS_OPX_ONLY_TEMPERATURE[self.opx_temp_model_idx_oo]
+                self.opx_only_temp_model_box.setVisible(True)
+                self.opx_liq_temp_model_box.setVisible(False)
+            else:  # Opx-Liq
+                model_info = MODELS_OPX_LIQ_TEMPERATURE[self.opx_temp_model_idx_ol]
+                self.opx_only_temp_model_box.setVisible(False)
+                self.opx_liq_temp_model_box.setVisible(True)
 
-        # Enable/disable fixed pressure input box
-        self.opx_temp_pressure_value_box.setEnabled(
-            requires_pressure_by_model and self.opx_temp_pressure_type == 1
-        )
+            _, _, needs_p, needs_h2o = model_info
 
-        # Enable/disable the "Model as Pressure" barometer choice and dropdowns
-        model_as_p_active = requires_pressure_by_model and self.opx_temp_pressure_type == 2
-        self.opx_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
+            # Update pressure model button state
+            if hasattr(self, 'opx_pressure_input_radiobuttons'):
+                model_rb = self.opx_pressure_input_radiobuttons.buttons[2]  # "From Model" button
+                model_rb.setEnabled(needs_p)
+                if not needs_p and self.opx_temp_pressure_type == 2:
+                    self.opx_temp_pressure_type = 0  # Revert to dataset
 
-        if model_as_p_active:
-            # Logic for enabling/disabling specific barometer dropdowns
-            # If Opx-only thermometer, force Opx-only barometer and disable Opx-Liq barometer radio button
-            if self.opx_temp_model_type == 0:
-                self.opx_temp_barometer_choice = 0 # Force Opx-only
-                self.opx_temp_barometer_choice_buttons.buttons[0].setEnabled(True)
-                self.opx_temp_barometer_choice_buttons.buttons[1].setEnabled(False)
-            else: # Opx-Liq thermometer, allow both
-                self.opx_temp_barometer_choice_buttons.buttons[0].setEnabled(True)
-                self.opx_temp_barometer_choice_buttons.buttons[1].setEnabled(True)
+            # Update H2O controls
+            if hasattr(self, 'opx_temp_fixed_h2o_checkbox'):
+                self.opx_temp_fixed_h2o_checkbox.setEnabled(needs_h2o)
+                self.opx_temp_fixed_h2o_input_box.setEnabled(
+                    needs_h2o and self.opx_temp_fixed_h2o)
 
-            self.opx_temp_barometer_model_box_oo.setEnabled(self.opx_temp_barometer_choice == 0)
-            self.opx_temp_barometer_model_box_ol.setEnabled(self.opx_temp_barometer_choice == 1)
-        else:
-            # If "Model as Pressure" is not active, disable all barometer-related controls
-            self.opx_temp_barometer_model_box_oo.setEnabled(False)
-            self.opx_temp_barometer_model_box_ol.setEnabled(False)
+        except Exception as e:
+            print(f"Error updating Opx temp selection: {e}")
 
-        # H2O settings
-        self.opx_temp_fixed_h2o_input.setEnabled(requires_h2o_by_model and self.opx_temp_fixed_h2o)
-        self.opx_temp_fixed_h2o_input.parent().setEnabled(requires_h2o_by_model) # Enable/disable the H2O box itself
+    def _update_opx_temp_pressure_controls(self):
+        """Controls visibility of fixed pressure input and barometer model selection."""
+        is_fixed_pressure_selected = (self.opx_temp_pressure_type == 1)
+        is_model_pressure_selected = (self.opx_temp_pressure_type == 2)
 
-        # No commit.now() here, it's handled by _update_all_controls
+        self.opx_fixed_pressure_box.setVisible(is_fixed_pressure_selected)
+        self.opx_barometer_choice_box.setVisible(is_model_pressure_selected)
+
+        # If "From Model" is selected, update the barometer choices
+        if is_model_pressure_selected:
+            self._update_opx_barometer_selection()
+
+
+    def _update_opx_barometer_selection(self):
+        """Controls visibility of Opx-only vs Opx-Liq barometer model combos."""
+        if self.opx_temp_barometer_choice == 0: # Opx-only barometer
+            self.opx_only_barometer_model_box.setVisible(True)
+            self.opx_liq_barometer_model_box.setVisible(False)
+        else: # Opx-Liq barometer
+            self.opx_only_barometer_model_box.setVisible(False)
+            self.opx_liq_barometer_model_box.setVisible(True)
+
+
+    def _update_opx_temp_h2o_input(self):
+        """Controls visibility of fixed H2O input for Opx Thermometry."""
+        self.opx_temp_fixed_h2o_input_box.setVisible(self.opx_temp_fixed_h2o)
+
+
 
     @Inputs.data
     def set_data(self, data):
@@ -592,10 +663,12 @@ class OWThermobar(OWWidget):
         self.Error.value_error.clear()
         self.Warning.value_error.clear()
 
-        if self.data is None:
+        # Safeguard against missing data attribute
+        if not hasattr(self, 'data') or self.data is None:
             self.Outputs.data.send(None)
             return
 
+        # Rest of your existing commit logic...
         if len(self.data.domain.attributes) <= 1:
             self.Warning.value_error("Not enough attributes in the dataset for calculations.")
             self.Outputs.data.send(None)
@@ -614,8 +687,11 @@ class OWThermobar(OWWidget):
             try:
                 result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_cpx_opx_temp(df.copy())
             except Exception as e:
-                self.Error.value_error(f"Error in Cpx-Opx Thermometry: {e}")
-                # Ensure output is cleared on error
+                # --- TEMPORARY DEBUGGING CHANGE HERE ---
+                import traceback
+                error_traceback = traceback.format_exc()
+                self.Error.value_error(f"Error in Cpx-Opx Thermometry: {e}\nFull Traceback:\n{error_traceback}")
+                # --- END TEMPORARY DEBUGGING CHANGE ---
                 self.Outputs.data.send(None)
                 return
 
@@ -623,7 +699,11 @@ class OWThermobar(OWWidget):
             try:
                 result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_cpx_opx_press(df.copy())
             except Exception as e:
-                self.Error.value_error(f"Error in Cpx-Opx Barometry: {e}")
+                # --- TEMPORARY DEBUGGING CHANGE HERE ---
+                import traceback
+                error_traceback = traceback.format_exc()
+                self.Error.value_error(f"Error in Cpx-Opx Barometry: {e}\nFull Traceback:\n{error_traceback}")
+                # --- END TEMPORARY DEBUGGING CHANGE ---
                 self.Outputs.data.send(None)
                 return
 
@@ -631,7 +711,11 @@ class OWThermobar(OWWidget):
             try:
                 result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_opx_temp(df.copy())
             except Exception as e:
-                self.Error.value_error(f"Error in Opx Thermometry: {e}")
+                # --- TEMPORARY DEBUGGING CHANGE HERE ---
+                import traceback
+                error_traceback = traceback.format_exc()
+                self.Error.value_error(f"Error in Opx Thermometry: {e}\nFull Traceback:\n{error_traceback}")
+                # --- END TEMPORARY DEBUGGING CHANGE ---
                 self.Outputs.data.send(None)
                 return
 
@@ -648,9 +732,6 @@ class OWThermobar(OWWidget):
                 self.data, result_df, prefix, temp_col_name_suffix, press_col_name_suffix)
             self.Outputs.data.send(output_table)
         else:
-            # This covers cases where a calculation type was selected but
-            # resulted in an empty DataFrame (e.g., due to missing data or an internal error
-            # that didn't raise an exception but returned empty).
             self.Outputs.data.send(None)
 
     def _create_output_table(self, original_table, results_df, prefix, temp_col_suffix, press_col_suffix):
@@ -891,86 +972,87 @@ class OWThermobar(OWWidget):
         return results_df, "CpxOpx", "T_K", "P_kbar"
 
 
-# New functions for Opx Thermometry
     def _calculate_opx_temp(self, df):
-        """Encapsulates the Opx Thermometry calculation logic (Opx-only or Opx-Liq)."""
-        if self.opx_temp_model_type == 0: # Opx-only thermometer
-            _, current_therm_func_name, requires_pressure_by_model, requires_h2o_by_model = MODELS_OPX_ONLY_TEMPERATURE[self.opx_temp_model_idx_oo]
-            # Opx-only thermometers usually don't require H2O, check model definition
-            df = dm.preprocessing(df, my_output='opx') # Adjust preprocessing for Opx only
-            opx_comps_for_calc = df[opx_cols]
-            liq_comps_for_calc = None # Not needed for Opx-only
-            current_barometer_func_name = MODELS_OPX_ONLY_PRESSURE[self.opx_temp_barometer_model_idx_oo][1]
+        """Encapsulates the Opx Thermometry calculation logic."""
+        self.Warning.value_error.clear()
+        self.Error.value_error.clear()
 
-            if current_therm_func_name == 'None_available':
-                self.Error.value_error("No Opx-only thermometer model is available for calculation.")
-                return pd.DataFrame(), "", "", ""
-
-
-        else: # Opx-Liq thermometer
-            _, current_therm_func_name, requires_pressure_by_model, requires_h2o_by_model = MODELS_OPX_LIQ_TEMPERATURE[self.opx_temp_model_idx_ol]
-            df = dm.preprocessing(df, my_output='opx_liq') # Adjust preprocessing for Opx-Liq
-            opx_comps_for_calc = df[opx_cols]
-            liq_comps_for_calc = df[liq_cols]
-            if self.opx_temp_barometer_choice == 0: # Opx-only barometer
-                current_barometer_func_name = MODELS_OPX_ONLY_PRESSURE[self.opx_temp_barometer_model_idx_oo][1]
-            else: # Opx-Liq barometer
-                current_barometer_func_name = MODELS_OPX_LIQ_PRESSURE[self.opx_temp_barometer_model_idx_ol][1]
-
-
-        water = self._get_h2o_value(df, requires_h2o_by_model,
-                                    self.opx_temp_fixed_h2o,
-                                    self.opx_temp_fixed_h2o_value_str,
-                                    "Opx Thermometry")
-        if water is None: return pd.DataFrame(), "", "", "" # Error occurred in H2O fetching
-
-        P_input = self._get_pressure_value(df, requires_pressure_by_model,
-                                           self.opx_temp_pressure_type,
-                                           self.opx_temp_pressure_value,
-                                           "Opx Thermometry")
-
-        temperature = None
-        pressure_output = None # For iterative calculations
-
+        # 1. MODEL SELECTION AND DATA PREP
         try:
-            if requires_pressure_by_model and self.opx_temp_pressure_type == 2: # Model as Pressure
-                # This requires a function that can calculate T and P iteratively for Opx-Liq or Opx-only
-                # Thermobar has calculate_opx_liq_press_temp
-                if self.opx_temp_model_type == 0: # Opx-only
-                    self.Error.value_error("Iterative calculation with Opx-only thermometer and Opx-only barometer is not directly supported by Thermobar for now.")
-                    return pd.DataFrame(), "", "", ""
-                else: # Opx-Liq
-                    calc = calculate_opx_liq_press_temp(
-                        opx_comps=opx_comps_for_calc, liq_comps=liq_comps_for_calc,
-                        equationT=current_therm_func_name, equationP=current_barometer_func_name, H2O_Liq=water)
-                    temperature = calc['T_K_calc']
-                    pressure_output = calc['P_kbar_calc']
-            else: # No pressure, fixed, or dataset pressure
-                if self.opx_temp_model_type == 0: # Opx-only
-                    # Assuming an Opx-only thermometer function exists and takes P
-                    # Check Thermobar documentation for actual function names and arguments
-                    self.Error.value_error("No direct Opx-only temperature calculation without a liquid currently implemented in Thermobar via a simple function call.")
-                    return pd.DataFrame(), "", "", ""
-                else: # Opx-Liq
-                    temperature = calculate_opx_liq_temp(
-                        opx_comps=opx_comps_for_calc, liq_comps=liq_comps_for_calc,
-                        equationT=current_therm_func_name, P=P_input, H2O_Liq=water)
-
+            if self.opx_temp_model_type == 0:  # Opx-only
+                model_info = MODELS_OPX_ONLY_TEMPERATURE[self.opx_temp_model_idx_oo]
+                df = dm.preprocessing(df, my_output='opx_only')
+                comps = {'opx_comps': df[opx_cols]}
+            else:  # Opx-Liq
+                model_info = MODELS_OPX_LIQ_TEMPERATURE[self.opx_temp_model_idx_ol]
+                df = dm.preprocessing(df, my_output='opx_liq')
+                comps = {'opx_comps': df[opx_cols], 'liq_comps': df[liq_cols]}
         except Exception as e:
-            self.Error.value_error(f"Thermobar calculation failed for Opx Thermometry: {e}")
+            self.Error.value_error(f"Data prep failed: {str(e)}")
             return pd.DataFrame(), "", "", ""
 
-        results_df = pd.DataFrame()
-        results_df['T_K_calc'] = temperature
+        model_name, therm_func, needs_p, needs_h2o = model_info
 
-        if pressure_output is not None:
-            results_df['P_kbar_calc'] = pressure_output
-        elif P_input is not None:
-            results_df['P_kbar_input'] = P_input # Store the input pressure if used
-        else:
-            results_df['P_kbar_input'] = np.full(len(df), np.nan) # Placeholder if no P input
+        # 2. H2O HANDLING
+        h2o = 0.0
+        if needs_h2o:
+            if self.opx_temp_fixed_h2o:
+                try:
+                    h2o = float(self.opx_temp_fixed_h2o_value_str)
+                except ValueError:
+                    self.Error.value_error("Invalid H2O value")
+                    return pd.DataFrame(), "", "", ""
+            elif 'H2O_Liq' in df.columns:
+                h2o = df['H2O_Liq']
+            else:
+                self.Warning.value_error("H2O required but column missing")
 
-        return results_df, "Opx", "T_K", "P_kbar"
+        # 3. PRESSURE HANDLING - FIXED ERROR STICKING
+        p_kbar = None
+        if needs_p:
+            if self.opx_temp_pressure_type == 0:  # From dataset
+                if 'P_kbar' in df.columns:
+                    p_kbar = df['P_kbar']
+                else:
+                    # Only show warning but continue with fixed pressure
+                    self.Warning.value_error("'P_kbar' column missing - using fixed pressure value")
+                    p_kbar = self.opx_temp_pressure_value
+            elif self.opx_temp_pressure_type == 1:  # Fixed
+                p_kbar = self.opx_temp_pressure_value
+            elif self.opx_temp_pressure_type == 2:  # From model
+                # No warning needed for model pressure
+                pass  # Handled in calculation section
+
+        # 4. PERFORM CALCULATION
+        results = {}
+        try:
+            if needs_p and self.opx_temp_pressure_type == 2:  # Iterative
+                calc = calculate_opx_liq_press_temp(
+                    **comps,
+                    equationT=therm_func,
+                    equationP=baro_func,
+                    H2O_Liq=h2o
+                )
+                results.update({
+                    'T_K_calc': calc['T_K_calc'],
+                    'P_kbar_calc': calc['P_kbar_calc']
+                })
+            else:  # Standard calculation
+                temp = calculate_opx_liq_temp(
+                    **comps,
+                    equationT=therm_func,
+                    P=p_kbar,
+                    H2O_Liq=h2o
+                )
+                results.update({
+                    'T_K_calc': temp,
+                    'P_kbar_input': p_kbar if p_kbar is not None else np.nan
+                })
+        except Exception as e:
+            self.Error.value_error(f"Calculation error: {str(e)}")
+            return pd.DataFrame(), "", "", ""
+
+        return pd.DataFrame(results), "Opx", "T_K", "P_kbar"
 
 
     def _build_opx_press_gui(self, parent_box):
