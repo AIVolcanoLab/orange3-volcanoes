@@ -34,7 +34,7 @@ liq_cols = ['SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq',
             'Cr2O3_Liq', 'P2O5_Liq', 'H2O_Liq', 'Fe3Fet_Liq', 'NiO_Liq', 'CoO_Liq',
             'CO2_Liq']
 
-# Define all model lists
+## CPX-OPX models
 MODELS_CPX_OPX_TEMP = [
     ('T_Put2008_eq36', 'T_Put2008_eq36', True, False),
     ('T_Put2008_eq37', 'T_Put2008_eq37', True, False),
@@ -47,6 +47,8 @@ MODELS_CPX_OPX_PRESSURE = [
     ('P_Put2008_eq38', 'P_Put2008_eq38', False, False),
     ('P_Put2008_eq39', 'P_Put2008_eq39', True, False),
 ]
+
+## Cpx Models
 
 MODELS_CPX_ONLY_PRESSURE = [
     ('P_Wang2021_eq1', 'P_Wang2021_eq1', False, False),
@@ -89,7 +91,7 @@ MODELS_CPX_LIQ_TEMPERATURE = [
     ('T_Brug2019', 'T_Brug2019', False, False)
 ]
 
-# Opx-specific models
+##  Opx models
 MODELS_OPX_ONLY_PRESSURE = [
     ('P_Put2008_eq29c', 'P_Put2008_eq29c', True, False),
 ]
@@ -166,6 +168,7 @@ class OWThermobar(OWWidget):
     opx_liq_temp_fixed_h2o_value_str = ContextSetting("1.0")
 
     # Opx-Liq Barometry settings
+    opx_barometry_mode = ContextSetting(0)  # 0=Opx-Liq, 1=Opx-only
     opx_liq_press_model_idx = ContextSetting(0)
     opx_liq_press_temp_type = ContextSetting(0)
     opx_liq_press_temp_value = ContextSetting(900.0)
@@ -174,6 +177,7 @@ class OWThermobar(OWWidget):
     opx_liq_press_thermometer_model_idx_ol = ContextSetting(0)
     opx_liq_press_fixed_h2o = ContextSetting(False)
     opx_liq_press_fixed_h2o_value_str = ContextSetting("1.0")
+
 
     resizing_enabled = False
     want_main_area = False
@@ -200,8 +204,8 @@ class OWThermobar(OWWidget):
                 "None",
                 "Cpx-Opx Thermometry",
                 "Cpx-Opx Barometry",
-                "Opx-Liq Thermometry",
-                "Opx-Liq Barometry"
+                "Opx Thermometry",
+                "Opx Barometry"
             ],
             callback=self._update_controls)
 
@@ -350,12 +354,21 @@ class OWThermobar(OWWidget):
             orientation=Qt.Horizontal, callback=self.commit.deferred)
 
     def _build_opx_liq_press_gui(self, parent_box):
-        """Build GUI for Opx-Liq Barometry"""
-        # Models selection
+        """Build GUI for Opx Barometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Barometry Mode:")
+        self.opx_barometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "opx_barometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.opx_barometry_mode_buttons, "Opx-Liq")
+        gui.appendRadioButton(self.opx_barometry_mode_buttons, "Opx-only")
+
+        # Models selection (initially empty, will be populated in _update_controls)
         press_model_box = gui.vBox(parent_box, "Models")
         self.opx_liq_press_models_combo = gui.comboBox(
             press_model_box, self, "opx_liq_press_model_idx",
-            items=[m[0] for m in MODELS_OPX_LIQ_PRESSURE],
+            items=[],  # Start empty
             callback=self._update_controls)
 
         # Temperature settings
@@ -411,14 +424,45 @@ class OWThermobar(OWWidget):
         if self.calculation_type == 1:  # Cpx-Opx Thermometry
             self.cpx_opx_temp_box.setVisible(True)
             self._update_cpx_opx_temp_controls()
+
         elif self.calculation_type == 2:  # Cpx-Opx Barometry
             self.cpx_opx_press_box.setVisible(True)
             self._update_cpx_opx_press_controls()
+
         elif self.calculation_type == 3:  # Opx-Liq Thermometry
             self.opx_liq_temp_box.setVisible(True)
             self._update_opx_liq_temp_controls()
-        elif self.calculation_type == 4:  # Opx-Liq Barometry
+
+        elif self.calculation_type == 4:  # Opx-Liq/Opx-only Barometry
             self.opx_liq_press_box.setVisible(True)
+
+            # Update models list based on current mode
+            if hasattr(self, 'opx_barometry_mode'):
+                if self.opx_barometry_mode == 0:  # Opx-Liq mode
+                    models = MODELS_OPX_LIQ_PRESSURE
+                else:  # Opx-only mode
+                    models = MODELS_OPX_ONLY_PRESSURE
+
+                # Store current selection
+                current_idx = self.opx_liq_press_model_idx
+
+                # Block signals to prevent recursive updates
+                self.opx_liq_press_models_combo.blockSignals(True)
+
+                # Update items
+                self.opx_liq_press_models_combo.clear()
+                self.opx_liq_press_models_combo.addItems([m[0] for m in models])
+
+                # Restore selection if possible
+                if current_idx < len(models):
+                    self.opx_liq_press_model_idx = current_idx
+                else:
+                    self.opx_liq_press_model_idx = 0
+
+                # Unblock signals
+                self.opx_liq_press_models_combo.blockSignals(False)
+
+            # Update the rest of the controls
             self._update_opx_liq_press_controls()
 
         self.commit.now()
@@ -478,8 +522,14 @@ class OWThermobar(OWWidget):
             requires_h2o and self.opx_liq_temp_fixed_h2o)
 
     def _update_opx_liq_press_controls(self):
-        """Update controls for Opx-Liq Barometry"""
-        _, _, requires_temp, requires_h2o = MODELS_OPX_LIQ_PRESSURE[self.opx_liq_press_model_idx]
+        """Update controls for Opx-Liq/Opx-only Barometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'opx_barometry_mode') and self.opx_barometry_mode == 1:  # Opx-only mode
+            model_list = MODELS_OPX_ONLY_PRESSURE
+        else:  # Default to Opx-Liq mode
+            model_list = MODELS_OPX_LIQ_PRESSURE
+
+        _, _, requires_temp, requires_h2o = model_list[self.opx_liq_press_model_idx]
 
         # Enable/disable temperature value box
         self.opx_liq_press_temp_value_box.setEnabled(
@@ -707,8 +757,16 @@ class OWThermobar(OWWidget):
         return results_df, "OpxLiq", "T_K", "P_kbar"
 
     def _calculate_opx_liq_press(self, df):
-        """Calculate Opx-Liq pressures"""
-        _, current_model_func_name, requires_temp, requires_h2o = MODELS_OPX_LIQ_PRESSURE[self.opx_liq_press_model_idx]
+        """Calculate Opx-Liq or Opx-only pressures based on current mode"""
+        # Determine which model set to use
+        if hasattr(self, 'opx_barometry_mode') and self.opx_barometry_mode == 1:  # Opx-only mode
+            model_list = MODELS_OPX_ONLY_PRESSURE
+            mode_name = "Opx-only Barometry"
+        else:  # Default to Opx-Liq mode
+            model_list = MODELS_OPX_LIQ_PRESSURE
+            mode_name = "Opx-Liq Barometry"
+
+        _, current_model_func_name, requires_temp, requires_h2o = model_list[self.opx_liq_press_model_idx]
 
         # Determine thermometer function if using model temperature
         if requires_temp and self.opx_liq_press_temp_type == 2:
@@ -720,30 +778,46 @@ class OWThermobar(OWWidget):
         df = dm.preprocessing(df, my_output='opx_liq')
 
         water = self._get_h2o_value(df, requires_h2o,
-                                   self.opx_liq_press_fixed_h2o,
-                                   self.opx_liq_press_fixed_h2o_value_str,
-                                   "Opx-Liq Barometry")
-        if water is None: return pd.DataFrame(), "", "", ""
+                                self.opx_liq_press_fixed_h2o,
+                                self.opx_liq_press_fixed_h2o_value_str,
+                                mode_name)
+        if water is None:
+            return pd.DataFrame(), "", "", ""
 
         T_input = self._get_temperature_value(df, requires_temp,
                                             self.opx_liq_press_temp_type,
                                             self.opx_liq_press_temp_value,
-                                            "Opx-Liq Barometry")
+                                            mode_name)
 
         pressure = None
         temperature_output = None
 
         if requires_temp and self.opx_liq_press_temp_type == 2:  # Model as Temperature
-            calc = calculate_opx_liq_press_temp(
-                opx_comps=df[opx_cols], liq_comps=df[liq_cols],
-                equationP=current_model_func_name, equationT=current_thermometer_func_name,
-                H2O_Liq=water)
+            if self.opx_barometry_mode == 1:  # Opx-only mode
+                calc = calculate_opx_only_press_temp(
+                    opx_comps=df[opx_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name)
+            else:  # Opx-Liq mode
+                calc = calculate_opx_liq_press_temp(
+                    opx_comps=df[opx_cols], liq_comps=df[liq_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name,
+                    H2O_Liq=water)
             pressure = calc['P_kbar_calc']
             temperature_output = calc['T_K_calc']
         else:  # Fixed or dataset temperature
-            pressure = calculate_opx_liq_press(
-                opx_comps=df[opx_cols], liq_comps=df[liq_cols],
-                equationP=current_model_func_name, T=T_input, H2O_Liq=water)
+            if self.opx_barometry_mode == 1:  # Opx-only mode
+                pressure = calculate_opx_only_press(
+                    opx_comps=df[opx_cols],
+                    equationP=current_model_func_name,
+                    T=T_input)
+            else:  # Opx-Liq mode
+                pressure = calculate_opx_liq_press(
+                    opx_comps=df[opx_cols], liq_comps=df[liq_cols],
+                    equationP=current_model_func_name,
+                    T=T_input,
+                    H2O_Liq=water)
 
         results_df = pd.DataFrame()
         results_df['P_kbar_calc'] = pressure
