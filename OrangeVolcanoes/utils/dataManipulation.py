@@ -18,6 +18,12 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
     'FeOt_Opx', 'MnO_Opx', 'MgO_Opx', 'CaO_Opx', 'Na2O_Opx', 'K2O_Opx',
     'Cr2O3_Opx'])
 
+
+    amp_cols = ['SiO2_Amp', 'TiO2_Amp', 'Al2O3_Amp',
+    'FeOt_Amp', 'MnO_Amp', 'MgO_Amp', 'CaO_Amp', 'Na2O_Amp', 'K2O_Amp',
+    'Cr2O3_Amp', 'F_Amp', 'Cl_Amp']
+
+
     df_ideal_exp = pd.DataFrame(columns=['P_kbar', 'T_K'])
 
     if any(my_input.columns.str.startswith(' ')):
@@ -44,6 +50,10 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
     if any(my_input.columns.str.contains("_liq")):
         w.warn("You've got a column heading with a lower case _liq, this is okay if this column is for your"
         " own use, but if its an input to Thermobar, it needs to be capitalized (_Liq)" )
+
+    if any(my_input.columns.str.contains("_amp")):
+        w.warn("You've got a column heading with a lower case _amp, this is okay if this column is for your"
+        " own use, but if its an input to Thermobar, it needs to be capitalized (_Amp)" )
 
     if suffix is not None:
         if any(my_input.columns.str.contains("FeO")) and (all(my_input.columns.str.contains("FeOt")==False)):
@@ -88,9 +98,22 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
     myOPXs1 = myOPXs1.apply(pd.to_numeric, errors='coerce').fillna(0)
     myOPXs1[myOPXs1 < 0] = 0
 
+    myAMPs1 = my_input_c.reindex(df_ideal_amp.columns, axis=1).fillna(0)
+    myAMPs1 = myAMPs1.apply(pd.to_numeric, errors='coerce').fillna(0)
+    myAMPs1[myAMPs1 < 0] = 0
+
 
     if my_output == 'cpx_only':
         output = myCPXs1
+
+    elif my_output == 'cpx_liq':
+        output = pd.concat([myCPXs1, myLiquids1], axis=1)
+
+    if my_output == 'amp_only':
+        output = myAMPs1
+
+    elif my_output == 'amp_liq':
+        output = pd.concat([myAMPs1, myLiquids1], axis=1)
 
 
     elif my_output == 'opx_only':
@@ -102,8 +125,7 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
     elif my_output == 'opx_liq':
         output = pd.concat([myOPXs1, myLiquids1], axis=1)
 
-    elif my_output == 'cpx_liq':
-        output = pd.concat([myCPXs1, myLiquids1], axis=1)
+
 
     elif my_output == 'cpx_opx':
         output = pd.concat([myCPXs1, myOPXs1], axis=1)
