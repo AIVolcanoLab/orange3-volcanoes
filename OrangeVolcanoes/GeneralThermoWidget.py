@@ -311,6 +311,8 @@ class OWThermobar(OWWidget):
         gui.auto_apply(self.buttonsArea, self)
         self._update_controls()
 
+    ## Opx-Cpx functions
+
     def _build_cpx_opx_temp_gui(self, parent_box):
         """Build GUI for Cpx-Opx Thermometry"""
         # Models selection
@@ -383,334 +385,6 @@ class OWThermobar(OWWidget):
             h2o_box, self, "cpx_opx_press_fixed_h2o_value_str", label="H₂O (wt%)",
             orientation=Qt.Horizontal, callback=self.commit.deferred)
 
-    def _build_opx_liq_temp_gui(self, parent_box):
-        """Build GUI for Opx-Liq Thermometry"""
-        # Models selection
-        temp_model_box = gui.vBox(parent_box, "Models")
-        self.opx_liq_temp_models_combo = gui.comboBox(
-            temp_model_box, self, "opx_liq_temp_model_idx",
-            items=[m[0] for m in MODELS_OPX_LIQ_TEMPERATURE],
-            callback=self._update_controls)
-
-        # Pressure settings
-        pressure_box = gui.radioButtons(
-            parent_box, self, "opx_liq_temp_pressure_type", box="Pressure Input",
-            callback=self._update_controls)
-        gui.appendRadioButton(pressure_box, "Dataset as Pressure (kbar)")
-
-        rb_fixed_p = gui.appendRadioButton(pressure_box, "Fixed Pressure")
-        self.opx_liq_temp_pressure_value_box = gui.doubleSpin(
-            gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
-            "opx_liq_temp_pressure_value", 1.0, 10000.0, step=0.1, label="Pressure Value (kbar)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=1)
-
-        rb_model_p = gui.appendRadioButton(pressure_box, "Model as Pressure")
-        model_as_p_box = gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_model_p))
-
-        # Barometer choice (Opx-only or Opx-Liq)
-        self.opx_liq_temp_barometer_choice_buttons = gui.radioButtons(
-            model_as_p_box, self, "opx_liq_temp_barometer_choice",
-            callback=self._update_controls)
-
-        rb_oo = gui.appendRadioButton(self.opx_liq_temp_barometer_choice_buttons, "Use Opx-only barometer")
-        self.opx_liq_temp_barometer_model_box_oo = gui.comboBox(
-            gui.indentedBox(self.opx_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_oo)),
-            self, "opx_liq_temp_barometer_model_idx_oo",
-            items=[m[0] for m in MODELS_OPX_ONLY_PRESSURE],
-            callback=self._update_controls)
-
-        rb_ol = gui.appendRadioButton(self.opx_liq_temp_barometer_choice_buttons, "Use Opx-Liq barometer")
-        self.opx_liq_temp_barometer_model_box_ol = gui.comboBox(
-            gui.indentedBox(self.opx_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_ol)),
-            self, "opx_liq_temp_barometer_model_idx_ol",
-            items=[m[0] for m in MODELS_OPX_LIQ_PRESSURE],
-            callback=self._update_controls)
-
-        # H2O settings
-        h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "opx_liq_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
-        self.opx_liq_temp_fixed_h2o_input = gui.lineEdit(
-            h2o_box, self, "opx_liq_temp_fixed_h2o_value_str", label="H₂O (wt%)",
-            orientation=Qt.Horizontal, callback=self.commit.deferred)
-
-
-    def _build_opx_liq_press_gui(self, parent_box):
-        """Build GUI for Opx Barometry"""
-        # Mode selection
-        mode_box = gui.hBox(parent_box)
-        gui.label(mode_box, self, "Barometry Mode:")
-        self.opx_barometry_mode_buttons = gui.radioButtons(
-            mode_box, self, "opx_barometry_mode",
-            callback=self._update_controls)
-        gui.appendRadioButton(self.opx_barometry_mode_buttons, "Opx-Liq")
-        gui.appendRadioButton(self.opx_barometry_mode_buttons, "Opx-only")
-
-        # Models selection (initially empty, will be populated in _update_controls)
-        press_model_box = gui.vBox(parent_box, "Models")
-        self.opx_liq_press_models_combo = gui.comboBox(
-            press_model_box, self, "opx_liq_press_model_idx",
-            items=[],  # Start empty
-            callback=self._update_controls)
-
-        # Temperature settings
-        temp_box = gui.radioButtons(
-            parent_box, self, "opx_liq_press_temp_type", box="Temperature Input",
-            callback=self._update_controls)
-        gui.appendRadioButton(temp_box, "Dataset as Temperature (K)")
-
-        rb_fixed_t = gui.appendRadioButton(temp_box, "Fixed Temperature")
-        self.opx_liq_press_temp_value_box = gui.doubleSpin(
-            gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
-            "opx_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
-
-        rb_model_t = gui.appendRadioButton(temp_box, "Model as Temperature")
-        model_as_t_box = gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_model_t))
-
-        # Thermometer choice (Opx-only or Opx-Liq)
-        self.opx_liq_press_thermometer_choice_buttons = gui.radioButtons(
-            model_as_t_box, self, "opx_liq_press_thermometer_choice",
-            callback=self._update_controls)
-
-        rb_oo = gui.appendRadioButton(self.opx_liq_press_thermometer_choice_buttons, "Use Opx-only thermometer")
-        self.opx_liq_press_thermometer_model_box_oo = gui.comboBox(
-            gui.indentedBox(self.opx_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_oo)),
-            self, "opx_liq_press_thermometer_model_idx_oo",
-            items=[m[0] for m in MODELS_OPX_ONLY_TEMPERATURE],
-            callback=self._update_controls)
-
-        rb_ol = gui.appendRadioButton(self.opx_liq_press_thermometer_choice_buttons, "Use Opx-Liq thermometer")
-        self.opx_liq_press_thermometer_model_box_ol = gui.comboBox(
-            gui.indentedBox(self.opx_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_ol)),
-            self, "opx_liq_press_thermometer_model_idx_ol",
-            items=[m[0] for m in MODELS_OPX_LIQ_TEMPERATURE],
-            callback=self._update_controls)
-
-        # H2O settings
-        h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "opx_liq_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
-        self.opx_liq_press_fixed_h2o_input = gui.lineEdit(
-            h2o_box, self, "opx_liq_press_fixed_h2o_value_str", label="H₂O (wt%)",
-            orientation=Qt.Horizontal, callback=self.commit.deferred)
-
-    def _build_amp_liq_temp_gui(self, parent_box):
-        """Build GUI for Amp Thermometry"""
-        # Mode selection
-        mode_box = gui.hBox(parent_box)
-        gui.label(mode_box, self, "Thermometry Mode:")
-        self.amp_thermometry_mode_buttons = gui.radioButtons(
-            mode_box, self, "amp_thermometry_mode",
-            callback=self._update_controls)
-        gui.appendRadioButton(self.amp_thermometry_mode_buttons, "Amp-Liq")
-        gui.appendRadioButton(self.amp_thermometry_mode_buttons, "Amp-only")
-
-        # Models selection (initially empty, will be populated in _update_controls)
-        temp_model_box = gui.vBox(parent_box, "Models")
-        self.amp_liq_temp_models_combo = gui.comboBox(
-            temp_model_box, self, "amp_liq_temp_model_idx",
-            items=[],  # Start empty
-            callback=self._update_controls)
-
-        # Temperature settings
-        press_box = gui.radioButtons(
-            parent_box, self, "amp_liq_press_temp_type", box="Pressure Input",
-            callback=self._update_controls)
-        gui.appendRadioButton(press_box, "Dataset as Pressure (kbar)")
-
-        rb_fixed_p = gui.appendRadioButton(press_box, "Fixed Pressure")
-        self.amp_liq_press_temp_value_box = gui.doubleSpin(
-            gui.indentedBox(press_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
-            "amp_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Pressure Value (kbar)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
-
-        rb_model_p = gui.appendRadioButton(press_box, "Model as Pressure")
-        model_as_p_box = gui.indentedBox(press_box, gui.checkButtonOffsetHint(rb_model_p))
-
-        # barometer choice (Amp-only or Amp-Liq)
-        self.amp_liq_temp_barometer_choice_buttons = gui.radioButtons(
-            model_as_p_box, self, "amp_liq_temp_barometer_choice",
-            callback=self._update_controls)
-
-        rb_ao = gui.appendRadioButton(self.amp_liq_temp_barometer_choice_buttons, "Use Amp-only barometer")
-        self.amp_liq_temp_barometer_model_box_ao = gui.comboBox(
-            gui.indentedBox(self.amp_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_ao)),
-            self, "amp_liq_temp_barometer_model_idx_ao",
-            items=[m[0] for m in MODELS_AMP_ONLY_PRESSURE],  # Define AMP_ONLY temp models
-            callback=self._update_controls)
-
-        rb_al = gui.appendRadioButton(self.amp_liq_temp_barometer_choice_buttons, "Use Amp-Liq barometer")
-        self.amp_liq_temp_barometer_model_box_al = gui.comboBox(
-            gui.indentedBox(self.amp_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_al)),
-            self, "amp_liq_temp_barometer_model_idx_al",
-            items=[m[0] for m in MODELS_AMP_LIQ_PRESSURE],  # Define AMP_LIQ temp models
-            callback=self._update_controls)
-
-        # H2O settings
-        h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "amp_liq_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
-        self.amp_liq_temp_fixed_h2o_input = gui.lineEdit(
-            h2o_box, self, "amp_liq_temp_fixed_h2o_value_str", label="H₂O (wt%)",
-            orientation=Qt.Horizontal, callback=self.commit.deferred)
-
-
-    def _build_amp_liq_press_gui(self, parent_box):
-        """Build GUI for Amp Barometry"""
-        # Mode selection
-        mode_box = gui.hBox(parent_box)
-        gui.label(mode_box, self, "Barometry Mode:")
-        self.amp_barometry_mode_buttons = gui.radioButtons(
-            mode_box, self, "amp_barometry_mode",
-            callback=self._update_controls)
-        gui.appendRadioButton(self.amp_barometry_mode_buttons, "Amp-Liq")
-        gui.appendRadioButton(self.amp_barometry_mode_buttons, "Amp-only")
-
-        # Models selection (initially empty, will be populated in _update_controls)
-        press_model_box = gui.vBox(parent_box, "Models")
-        self.amp_liq_press_models_combo = gui.comboBox(
-            press_model_box, self, "amp_liq_press_model_idx",
-            items=[],  # Start empty
-            callback=self._update_controls)
-
-        # Temperature settings
-        temp_box = gui.radioButtons(
-            parent_box, self, "amp_liq_press_temp_type", box="Temperature Input",
-            callback=self._update_controls)
-        gui.appendRadioButton(temp_box, "Dataset as Temperature (K)")
-
-        rb_fixed_t = gui.appendRadioButton(temp_box, "Fixed Temperature")
-        self.amp_liq_press_temp_value_box = gui.doubleSpin(
-            gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
-            "amp_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
-
-        rb_model_t = gui.appendRadioButton(temp_box, "Model as Temperature")
-        model_as_t_box = gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_model_t))
-
-        # Thermometer choice (Amp-only or Amp-Liq)
-        self.amp_liq_press_thermometer_choice_buttons = gui.radioButtons(
-            model_as_t_box, self, "amp_liq_press_thermometer_choice",
-            callback=self._update_controls)
-
-        rb_ao = gui.appendRadioButton(self.amp_liq_press_thermometer_choice_buttons, "Use Amp-only thermometer")
-        self.amp_liq_press_thermometer_model_box_ao = gui.comboBox(
-            gui.indentedBox(self.amp_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_ao)),
-            self, "amp_liq_press_thermometer_model_idx_ao",
-            items=[m[0] for m in MODELS_AMP_ONLY_TEMPERATURE],  # Define AMP_ONLY temp models
-            callback=self._update_controls)
-
-        rb_al = gui.appendRadioButton(self.amp_liq_press_thermometer_choice_buttons, "Use Amp-Liq thermometer")
-        self.amp_liq_press_thermometer_model_box_al = gui.comboBox(
-            gui.indentedBox(self.amp_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_al)),
-            self, "amp_liq_press_thermometer_model_idx_al",
-            items=[m[0] for m in MODELS_AMP_LIQ_TEMPERATURE],  # Define AMP_LIQ temp models
-            callback=self._update_controls)
-
-        # H2O settings
-        h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "amp_liq_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
-        self.amp_liq_press_fixed_h2o_input = gui.lineEdit(
-            h2o_box, self, "amp_liq_press_fixed_h2o_value_str", label="H₂O (wt%)",
-            orientation=Qt.Horizontal, callback=self.commit.deferred)
-
-
-## Updating controls
-    def _update_controls(self):
-        """Update all controls based on current settings"""
-        # Hide all calculation boxes first
-        self.cpx_opx_temp_box.setVisible(False)
-        self.cpx_opx_press_box.setVisible(False)
-        self.opx_liq_temp_box.setVisible(False)
-        self.opx_liq_press_box.setVisible(False)
-        self.amp_liq_temp_box.setVisible(False)
-        self.amp_liq_press_box.setVisible(False)
-
-        # Show the selected calculation box
-        if self.calculation_type == 1:  # Cpx-Opx Thermometry
-            self.cpx_opx_temp_box.setVisible(True)
-            self._update_cpx_opx_temp_controls()
-
-        elif self.calculation_type == 2:  # Cpx-Opx Barometry
-            self.cpx_opx_press_box.setVisible(True)
-            self._update_cpx_opx_press_controls()
-
-        elif self.calculation_type == 3:  # Opx-Liq Thermometry
-            self.opx_liq_temp_box.setVisible(True)
-            self._update_opx_liq_temp_controls()
-
-        elif self.calculation_type == 4:  # Opx-Liq/Opx-only Barometry
-            self.opx_liq_press_box.setVisible(True)
-
-            # Keep your existing Opx barometry model update code
-            if hasattr(self, 'opx_barometry_mode'):
-                if self.opx_barometry_mode == 0:  # Opx-Liq mode
-                    models = MODELS_OPX_LIQ_PRESSURE
-                else:  # Opx-only mode
-                    models = MODELS_OPX_ONLY_PRESSURE
-
-                current_idx = self.opx_liq_press_model_idx
-                self.opx_liq_press_models_combo.blockSignals(True)
-                self.opx_liq_press_models_combo.clear()
-                self.opx_liq_press_models_combo.addItems([m[0] for m in models])
-
-                if current_idx < len(models):
-                    self.opx_liq_press_model_idx = current_idx
-                else:
-                    self.opx_liq_press_model_idx = 0
-
-                self.opx_liq_press_models_combo.blockSignals(False)
-
-            self._update_opx_liq_press_controls()
-
-        elif self.calculation_type == 5:  # Amp-Liq/Amp-only Thermometry
-            self.amp_liq_temp_box.setVisible(True)
-
-            # Add Amp thermometry model update (similar to Opx)
-            if hasattr(self, 'amp_thermometry_mode'):
-                if self.amp_thermometry_mode == 0:  # Amp-Liq mode
-                    models = MODELS_AMP_LIQ_TEMPERATURE
-                else:  # Amp-only mode
-                    models = MODELS_AMP_ONLY_TEMPERATURE
-
-                current_idx = self.amp_liq_temp_model_idx
-                self.amp_liq_temp_models_combo.blockSignals(True)
-                self.amp_liq_temp_models_combo.clear()
-                self.amp_liq_temp_models_combo.addItems([m[0] for m in models])
-
-                if current_idx < len(models):
-                    self.amp_liq_temp_model_idx = current_idx
-                else:
-                    self.amp_liq_temp_model_idx = 0
-
-                self.amp_liq_temp_models_combo.blockSignals(False)
-
-            self._update_amp_liq_temp_controls()
-
-        elif self.calculation_type == 6:  # Amp-Liq/Amp-only Barometry
-            self.amp_liq_press_box.setVisible(True)
-
-            # Add Amp barometry model update (similar to Opx)
-            if hasattr(self, 'amp_barometry_mode'):
-                if self.amp_barometry_mode == 0:  # Amp-Liq mode
-                    models = MODELS_AMP_LIQ_PRESSURE
-                else:  # Amp-only mode
-                    models = MODELS_AMP_ONLY_PRESSURE
-
-                current_idx = self.amp_liq_press_model_idx
-                self.amp_liq_press_models_combo.blockSignals(True)
-                self.amp_liq_press_models_combo.clear()
-                self.amp_liq_press_models_combo.addItems([m[0] for m in models])
-
-                if current_idx < len(models):
-                    self.amp_liq_press_model_idx = current_idx
-                else:
-                    self.amp_liq_press_model_idx = 0
-
-                self.amp_liq_press_models_combo.blockSignals(False)
-
-            self._update_amp_liq_press_controls()
-
-        self.commit.now()
-
     def _update_cpx_opx_temp_controls(self):
         """Update controls for Cpx-Opx Thermometry"""
         _, _, requires_pressure, requires_h2o = MODELS_CPX_OPX_TEMP[self.cpx_opx_temp_model_idx]
@@ -742,214 +416,6 @@ class OWThermobar(OWWidget):
         # Enable/disable H2O input
         self.cpx_opx_press_fixed_h2o_input.setEnabled(
             requires_h2o and self.cpx_opx_press_fixed_h2o)
-
-    def _update_opx_liq_temp_controls(self):
-        """Update controls for Opx-Liq Thermometry"""
-        _, _, requires_pressure, requires_h2o = MODELS_OPX_LIQ_TEMPERATURE[self.opx_liq_temp_model_idx]
-
-        # Enable/disable pressure value box
-        self.opx_liq_temp_pressure_value_box.setEnabled(
-            requires_pressure and self.opx_liq_temp_pressure_type == 1)
-
-        # Enable/disable barometer choice and model boxes
-        model_as_p_active = requires_pressure and self.opx_liq_temp_pressure_type == 2
-        self.opx_liq_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
-
-        if model_as_p_active:
-            self.opx_liq_temp_barometer_model_box_oo.setEnabled(
-                self.opx_liq_temp_barometer_choice == 0)
-            self.opx_liq_temp_barometer_model_box_ol.setEnabled(
-                self.opx_liq_temp_barometer_choice == 1)
-
-        # Enable/disable H2O input
-        self.opx_liq_temp_fixed_h2o_input.setEnabled(
-            requires_h2o and self.opx_liq_temp_fixed_h2o)
-
-    def _update_opx_liq_press_controls(self):
-        """Update controls for Opx-Liq/Opx-only Barometry"""
-        # Get the appropriate model list based on current mode
-        if hasattr(self, 'opx_barometry_mode') and self.opx_barometry_mode == 1:  # Opx-only mode
-            model_list = MODELS_OPX_ONLY_PRESSURE
-        else:  # Default to Opx-Liq mode
-            model_list = MODELS_OPX_LIQ_PRESSURE
-
-        _, _, requires_temp, requires_h2o = model_list[self.opx_liq_press_model_idx]
-
-        # Enable/disable temperature value box
-        self.opx_liq_press_temp_value_box.setEnabled(
-            requires_temp and self.opx_liq_press_temp_type == 1)
-
-        # Enable/disable thermometer choice and model boxes
-        model_as_t_active = requires_temp and self.opx_liq_press_temp_type == 2
-        self.opx_liq_press_thermometer_choice_buttons.setEnabled(model_as_t_active)
-
-        if model_as_t_active:
-            self.opx_liq_press_thermometer_model_box_oo.setEnabled(
-                self.opx_liq_press_thermometer_choice == 0)
-            self.opx_liq_press_thermometer_model_box_ol.setEnabled(
-                self.opx_liq_press_thermometer_choice == 1)
-
-        # Enable/disable H2O input
-        self.opx_liq_press_fixed_h2o_input.setEnabled(
-            requires_h2o and self.opx_liq_press_fixed_h2o)
-
-
-    def _update_amp_liq_temp_controls(self):
-        """Update controls for Opx-Liq/Opx-only Thermometry"""
-        # Get the appropriate model list based on current mode
-        if hasattr(self, 'amp_thermometry_mode') and self.amp_barometry_mode == 1:  # Opx-only mode
-            model_list = MODELS_AMP_ONLY_TEMPERATURE
-        else:  # Default to Opx-Liq mode
-            model_list = MODELS_AMP_LIQ_TEMPERATURE
-
-        _, _, requires_press, requires_h2o = model_list[self.amp_liq_temp_model_idx]
-
-        # Enable/disable temperature value box
-        self.amp_liq_press_temp_value_box.setEnabled(
-            requires_press and self.amp_liq_press_temp_type == 1)
-
-        # Enable/disable thermometer choice and model boxes
-        model_as_p_active = requires_press and self.amp_liq_press_temp_type == 2
-        self.amp_liq_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
-
-        if model_as_p_active:
-            self.amp_liq_temp_barometer_model_box_oo.setEnabled(
-                self.amp_liq_press_thermometer_choice == 0)
-            self.amp_liq_temp_barometer_model_box_ol.setEnabled(
-                self.amp_liq_press_thermometer_choice == 1)
-
-        # Enable/disable H2O input
-        self.amp_liq_temp_fixed_h2o_input.setEnabled(
-            requires_h2o and self.amp_liq_temp_fixed_h2o)
-
-    def _update_amp_liq_press_controls(self):
-        """Update controls for Opx-Liq/Opx-only Barometry"""
-        # Get the appropriate model list based on current mode
-        if hasattr(self, 'amp_barometry_mode') and self.amp_barometry_mode == 1:  # Opx-only mode
-            model_list = MODELS_AMP_ONLY_PRESSURE
-        else:  # Default to Opx-Liq mode
-            model_list = MODELS_AMP_LIQ_PRESSURE
-
-        _, _, requires_temp, requires_h2o = model_list[self.amp_liq_press_model_idx]
-
-        # Enable/disable temperature value box
-        self.amp_liq_press_temp_value_box.setEnabled(
-            requires_temp and self.amp_liq_press_temp_type == 1)
-
-        # Enable/disable thermometer choice and model boxes
-        model_as_t_active = requires_temp and self.amp_liq_press_temp_type == 2
-        self.amp_liq_press_thermometer_choice_buttons.setEnabled(model_as_t_active)
-
-        if model_as_t_active:
-            self.amp_liq_press_thermometer_model_box_oo.setEnabled(
-                self.amp_liq_press_thermometer_choice == 0)
-            self.amp_liq_press_thermometer_model_box_ol.setEnabled(
-                self.amp_liq_press_thermometer_choice == 1)
-
-        # Enable/disable H2O input
-        self.amp_liq_press_fixed_h2o_input.setEnabled(
-            requires_h2o and self.amp_liq_press_fixed_h2o)
-
-    @Inputs.data
-    def set_data(self, data):
-        self.data = data
-        self.commit.now()
-
-    @gui.deferred
-    def commit(self):
-        self.clear_messages()
-        self.Error.value_error.clear()
-        self.Warning.value_error.clear()
-
-        if self.data is None:
-            self.Outputs.data.send(None)
-            return
-
-        if len(self.data.domain.attributes) <= 1:
-            self.Warning.value_error("Not enough attributes in the dataset for calculations.")
-            self.Outputs.data.send(None)
-            return
-
-        df = pd.DataFrame(data=np.array(self.data.X), columns=[a.name for a in self.data.domain.attributes])
-
-        result_df = pd.DataFrame()
-        prefix = ""
-        temp_col_name_suffix = ""
-        press_col_name_suffix = ""
-
-        # Perform calculation based on selected type
-        if self.calculation_type == 1:  # Cpx-Opx Thermometry
-            try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_cpx_opx_temp(df.copy())
-            except Exception as e:
-                self.Error.value_error(f"Error in Cpx-Opx Thermometry: {e}")
-                self.Outputs.data.send(None)
-                return
-
-        elif self.calculation_type == 2:  # Cpx-Opx Barometry
-            try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_cpx_opx_press(df.copy())
-            except Exception as e:
-                self.Error.value_error(f"Error in Cpx-Opx Barometry: {e}")
-                self.Outputs.data.send(None)
-                return
-
-        elif self.calculation_type == 3:  # Opx-Liq Thermometry
-            try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_opx_liq_temp(df.copy())
-            except Exception as e:
-                self.Error.value_error(f"Error in Opx-Liq Thermometry: {e}")
-                self.Outputs.data.send(None)
-                return
-
-        elif self.calculation_type == 4:  # Opx-Liq Barometry
-            try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_opx_liq_press(df.copy())
-            except Exception as e:
-                self.Error.value_error(f"Error in Opx-Liq Barometry: {e}")
-                self.Outputs.data.send(None)
-                return
-
-        # NEW AMPHIBOLE CALCULATIONS ADDED HERE
-        elif self.calculation_type == 5:  # Amp-only Thermometry
-            try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_temp(df.copy())
-            except Exception as e:
-                self.Error.value_error(f"Error in Amp-only Thermometry: {e}")
-                self.Outputs.data.send(None)
-                return
-
-        elif self.calculation_type == 6:  # Amp-only Barometry
-            try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_press(df.copy())
-            except Exception as e:
-                self.Error.value_error(f"Error in Amp-only Barometry: {e}")
-                self.Outputs.data.send(None)
-                return
-
-        elif self.calculation_type == 7:  # Amp-Liq Thermometry
-            try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_temp(df.copy())
-            except Exception as e:
-                self.Error.value_error(f"Error in Amp-Liq Thermometry: {e}")
-                self.Outputs.data.send(None)
-                return
-
-        elif self.calculation_type == 8:  # Amp-Liq Barometry
-            try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_press(df.copy())
-            except Exception as e:
-                self.Error.value_error(f"Error in Amp-Liq Barometry: {e}")
-                self.Outputs.data.send(None)
-                return
-
-        # Prepare output if calculation was successful
-        if not result_df.empty:
-            output_table = self._create_output_table(
-                self.data, result_df, prefix, temp_col_name_suffix, press_col_name_suffix)
-            self.Outputs.data.send(output_table)
-        else:
-            self.Outputs.data.send(None)
 
     def _calculate_cpx_opx_press(self, df):
         """Calculate Cpx-Opx pressures"""
@@ -1021,6 +487,218 @@ class OWThermobar(OWWidget):
                 return pd.DataFrame(), "", "", ""
 
         return results_df, "CpxOpx", "T_K", "P_kbar"
+
+    def _calculate_cpx_opx_temp(self, df):
+        """Encapsulates the Cpx-Opx Thermometry calculation logic."""
+        _, current_model_func_name, requires_pressure_by_model, requires_h2o_by_model = MODELS_CPX_OPX_TEMP[self.cpx_opx_temp_model_idx]
+        current_barometer_func_name = MODELS_CPX_OPX_PRESSURE[self.cpx_opx_temp_barometer_model_idx][1]
+
+        df = dm.preprocessing(df, my_output='cpx_opx')
+
+        water = self._get_h2o_value(df, requires_h2o_by_model,
+                                    self.cpx_opx_temp_fixed_h2o,
+                                    self.cpx_opx_temp_fixed_h2o_value_str,
+                                    "Cpx-Opx Thermometry")
+        if water is None: return pd.DataFrame(), "", "", "" # Error occurred in H2O fetching
+
+        P_input = self._get_pressure_value(df, requires_pressure_by_model,
+                                           self.cpx_opx_temp_pressure_type,
+                                           self.cpx_opx_temp_pressure_value,
+                                           "Cpx-Opx Thermometry")
+
+        temperature = None
+        pressure_output = None # This is for when pressure is calculated iteratively with temp
+
+        if requires_pressure_by_model and self.cpx_opx_temp_pressure_type == 2: # Model as Pressure
+            calc = calculate_cpx_opx_press_temp(
+                opx_comps=df[opx_cols], cpx_comps=df[cpx_cols],
+                equationT=current_model_func_name, equationP=current_barometer_func_name)
+            temperature = calc['T_K_calc']
+            pressure_output = calc['P_kbar_calc']
+        else: # No pressure, fixed, or dataset pressure
+            temperature = calculate_cpx_opx_temp(
+                opx_comps=df[opx_cols], cpx_comps=df[cpx_cols],
+                equationT=current_model_func_name, P=P_input)
+
+
+        results_df = pd.DataFrame()
+        results_df['T_K_calc'] = temperature
+
+        if pressure_output is not None:
+            results_df['P_kbar_calc'] = pressure_output
+        elif P_input is not None:
+            results_df['P_kbar_input'] = P_input # Store the input pressure if used
+        else:
+            results_df['P_kbar_input'] = np.full(len(df), np.nan) # Placeholder if no P input
+
+        return results_df, "CpxOpx", "T_K", "P_kbar"
+
+
+
+
+    ## Opx Liq and Opx-only stuff
+
+    def _build_opx_liq_temp_gui(self, parent_box):
+        """Build GUI for Opx-Liq Thermometry"""
+        # Models selection
+        temp_model_box = gui.vBox(parent_box, "Models")
+        self.opx_liq_temp_models_combo = gui.comboBox(
+            temp_model_box, self, "opx_liq_temp_model_idx",
+            items=[m[0] for m in MODELS_OPX_LIQ_TEMPERATURE],
+            callback=self._update_controls)
+
+        # Pressure settings
+        pressure_box = gui.radioButtons(
+            parent_box, self, "opx_liq_temp_pressure_type", box="Pressure Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(pressure_box, "Dataset as Pressure (kbar)")
+
+        rb_fixed_p = gui.appendRadioButton(pressure_box, "Fixed Pressure")
+        self.opx_liq_temp_pressure_value_box = gui.doubleSpin(
+            gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
+            "opx_liq_temp_pressure_value", 1.0, 10000.0, step=0.1, label="Pressure Value (kbar)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=1)
+
+        rb_model_p = gui.appendRadioButton(pressure_box, "Model as Pressure")
+        model_as_p_box = gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_model_p))
+
+        # Barometer choice (Opx-only or Opx-Liq)
+        self.opx_liq_temp_barometer_choice_buttons = gui.radioButtons(
+            model_as_p_box, self, "opx_liq_temp_barometer_choice",
+            callback=self._update_controls)
+
+        rb_oo = gui.appendRadioButton(self.opx_liq_temp_barometer_choice_buttons, "Use Opx-only barometer")
+        self.opx_liq_temp_barometer_model_box_oo = gui.comboBox(
+            gui.indentedBox(self.opx_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_oo)),
+            self, "opx_liq_temp_barometer_model_idx_oo",
+            items=[m[0] for m in MODELS_OPX_ONLY_PRESSURE],
+            callback=self._update_controls)
+
+        rb_ol = gui.appendRadioButton(self.opx_liq_temp_barometer_choice_buttons, "Use Opx-Liq barometer")
+        self.opx_liq_temp_barometer_model_box_ol = gui.comboBox(
+            gui.indentedBox(self.opx_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_ol)),
+            self, "opx_liq_temp_barometer_model_idx_ol",
+            items=[m[0] for m in MODELS_OPX_LIQ_PRESSURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.opx_liq_temp_fixed_h2o_checkbox = gui.checkBox(h2o_box, self, "opx_liq_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.opx_liq_temp_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "opx_liq_temp_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _build_opx_liq_press_gui(self, parent_box):
+        """Build GUI for Opx Barometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Barometry Mode:")
+        self.opx_barometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "opx_barometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.opx_barometry_mode_buttons, "Opx-Liq")
+        gui.appendRadioButton(self.opx_barometry_mode_buttons, "Opx-only")
+
+        # Models selection (initially empty, will be populated in _update_controls)
+        press_model_box = gui.vBox(parent_box, "Models")
+        self.opx_liq_press_models_combo = gui.comboBox(
+            press_model_box, self, "opx_liq_press_model_idx",
+            items=[],  # Start empty
+            callback=self._update_controls)
+
+        # Temperature settings
+        temp_box = gui.radioButtons(
+            parent_box, self, "opx_liq_press_temp_type", box="Temperature Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(temp_box, "Dataset as Temperature (K)")
+
+        rb_fixed_t = gui.appendRadioButton(temp_box, "Fixed Temperature")
+        self.opx_liq_press_temp_value_box = gui.doubleSpin(
+            gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
+            "opx_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+
+        rb_model_t = gui.appendRadioButton(temp_box, "Model as Temperature")
+        model_as_t_box = gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_model_t))
+
+        # Thermometer choice (Opx-only or Opx-Liq)
+        self.opx_liq_press_thermometer_choice_buttons = gui.radioButtons(
+            model_as_t_box, self, "opx_liq_press_thermometer_choice",
+            callback=self._update_controls)
+
+        rb_oo = gui.appendRadioButton(self.opx_liq_press_thermometer_choice_buttons, "Use Opx-only thermometer")
+        self.opx_liq_press_thermometer_model_box_oo = gui.comboBox(
+            gui.indentedBox(self.opx_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_oo)),
+            self, "opx_liq_press_thermometer_model_idx_oo",
+            items=[m[0] for m in MODELS_OPX_ONLY_TEMPERATURE],
+            callback=self._update_controls)
+
+        rb_ol = gui.appendRadioButton(self.opx_liq_press_thermometer_choice_buttons, "Use Opx-Liq thermometer")
+        self.opx_liq_press_thermometer_model_box_ol = gui.comboBox(
+            gui.indentedBox(self.opx_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_ol)),
+            self, "opx_liq_press_thermometer_model_idx_ol",
+            items=[m[0] for m in MODELS_OPX_LIQ_TEMPERATURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.opx_liq_press_fixed_h2o_checkbox = gui.checkBox(h2o_box, self, "opx_liq_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.opx_liq_press_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "opx_liq_press_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+    def _update_opx_liq_temp_controls(self):
+        """Update controls for Opx-Liq Thermometry"""
+        _, _, requires_pressure, requires_h2o = MODELS_OPX_LIQ_TEMPERATURE[self.opx_liq_temp_model_idx]
+
+        # Enable/disable pressure value box
+        self.opx_liq_temp_pressure_value_box.setEnabled(
+            requires_pressure and self.opx_liq_temp_pressure_type == 1)
+
+        # Enable/disable barometer choice and model boxes
+        model_as_p_active = requires_pressure and self.opx_liq_temp_pressure_type == 2
+        self.opx_liq_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
+
+        if model_as_p_active:
+            self.opx_liq_temp_barometer_model_box_oo.setEnabled(
+                self.opx_liq_temp_barometer_choice == 0)
+            self.opx_liq_temp_barometer_model_box_ol.setEnabled(
+                self.opx_liq_temp_barometer_choice == 1)
+
+        # Enable/disable H2O input
+        self.opx_liq_temp_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.opx_liq_temp_fixed_h2o_input.setEnabled(
+            requires_h2o and self.opx_liq_temp_fixed_h2o)
+
+    def _update_opx_liq_press_controls(self):
+        """Update controls for Opx-Liq/Opx-only Barometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'opx_barometry_mode') and self.opx_barometry_mode == 1:  # Opx-only mode
+            model_list = MODELS_OPX_ONLY_PRESSURE
+        else:  # Default to Opx-Liq mode
+            model_list = MODELS_OPX_LIQ_PRESSURE
+
+        _, _, requires_temp, requires_h2o = model_list[self.opx_liq_press_model_idx]
+
+        # Enable/disable temperature value box
+        self.opx_liq_press_temp_value_box.setEnabled(
+            requires_temp and self.opx_liq_press_temp_type == 1)
+
+        # Enable/disable thermometer choice and model boxes
+        model_as_t_active = requires_temp and self.opx_liq_press_temp_type == 2
+        self.opx_liq_press_thermometer_choice_buttons.setEnabled(model_as_t_active)
+
+        if model_as_t_active:
+            self.opx_liq_press_thermometer_model_box_oo.setEnabled(
+                self.opx_liq_press_thermometer_choice == 0)
+            self.opx_liq_press_thermometer_model_box_ol.setEnabled(
+                self.opx_liq_press_thermometer_choice == 1)
+
+        # Enable/disable H2O input
+        self.opx_liq_press_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.opx_liq_press_fixed_h2o_input.setEnabled(
+            requires_h2o and self.opx_liq_press_fixed_h2o)
 
     def _calculate_opx_liq_temp(self, df):
         """Calculate Opx-Liq temperatures"""
@@ -1148,6 +826,208 @@ class OWThermobar(OWWidget):
 
         return results_df, "OpxLiq", "T_K", "P_kbar"
 
+    ## Amp-only and Amp-Liq stuff
+
+    def _build_amp_liq_temp_gui(self, parent_box):
+        """Build GUI for Amp Thermometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Thermometry Mode:")
+        self.amp_thermometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "amp_thermometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.amp_thermometry_mode_buttons, "Amp-Liq")
+        gui.appendRadioButton(self.amp_thermometry_mode_buttons, "Amp-only")
+
+        # Models selection (initially empty, will be populated in _update_controls)
+        temp_model_box = gui.vBox(parent_box, "Models")
+        self.amp_liq_temp_models_combo = gui.comboBox(
+            temp_model_box, self, "amp_liq_temp_model_idx",
+            items=[],  # Start empty
+            callback=self._update_controls)
+
+        # Temperature settings
+        press_box = gui.radioButtons(
+            parent_box, self, "amp_liq_press_temp_type", box="Pressure Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(press_box, "Dataset as Pressure (kbar)")
+
+        rb_fixed_p = gui.appendRadioButton(press_box, "Fixed Pressure")
+        self.amp_liq_press_temp_value_box = gui.doubleSpin(
+            gui.indentedBox(press_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
+            "amp_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Pressure Value (kbar)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+
+        rb_model_p = gui.appendRadioButton(press_box, "Model as Pressure")
+        model_as_p_box = gui.indentedBox(press_box, gui.checkButtonOffsetHint(rb_model_p))
+
+        # barometer choice (Amp-only or Amp-Liq)
+        self.amp_liq_temp_barometer_choice_buttons = gui.radioButtons(
+            model_as_p_box, self, "amp_liq_temp_barometer_choice",
+            callback=self._update_controls)
+
+        rb_ao = gui.appendRadioButton(self.amp_liq_temp_barometer_choice_buttons, "Use Amp-only barometer")
+        self.amp_liq_temp_barometer_model_box_ao = gui.comboBox(
+            gui.indentedBox(self.amp_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_ao)),
+            self, "amp_liq_temp_barometer_model_idx_ao",
+            items=[m[0] for m in MODELS_AMP_ONLY_PRESSURE],  # Define AMP_ONLY temp models
+            callback=self._update_controls)
+
+        rb_al = gui.appendRadioButton(self.amp_liq_temp_barometer_choice_buttons, "Use Amp-Liq barometer")
+        self.amp_liq_temp_barometer_model_box_al = gui.comboBox(
+            gui.indentedBox(self.amp_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_al)),
+            self, "amp_liq_temp_barometer_model_idx_al",
+            items=[m[0] for m in MODELS_AMP_LIQ_PRESSURE],  # Define AMP_LIQ temp models
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        gui.checkBox(h2o_box, self, "amp_liq_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.amp_liq_temp_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "amp_liq_temp_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _build_amp_liq_press_gui(self, parent_box):
+        """Build GUI for Amp Barometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Barometry Mode:")
+        self.amp_barometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "amp_barometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.amp_barometry_mode_buttons, "Amp-Liq")
+        gui.appendRadioButton(self.amp_barometry_mode_buttons, "Amp-only")
+
+        # Models selection (initially empty, will be populated in _update_controls)
+        press_model_box = gui.vBox(parent_box, "Models")
+        self.amp_liq_press_models_combo = gui.comboBox(
+            press_model_box, self, "amp_liq_press_model_idx",
+            items=[],  # Start empty
+            callback=self._update_controls)
+
+        # Temperature settings
+        temp_box = gui.radioButtons(
+            parent_box, self, "amp_liq_press_temp_type", box="Temperature Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(temp_box, "Dataset as Temperature (K)")
+
+        rb_fixed_t = gui.appendRadioButton(temp_box, "Fixed Temperature")
+        self.amp_liq_press_temp_value_box = gui.doubleSpin(
+            gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
+            "amp_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+
+        rb_model_t = gui.appendRadioButton(temp_box, "Model as Temperature")
+        model_as_t_box = gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_model_t))
+
+        # Thermometer choice (Amp-only or Amp-Liq)
+        self.amp_liq_press_thermometer_choice_buttons = gui.radioButtons(
+            model_as_t_box, self, "amp_liq_press_thermometer_choice",
+            callback=self._update_controls)
+
+        rb_ao = gui.appendRadioButton(self.amp_liq_press_thermometer_choice_buttons, "Use Amp-only thermometer")
+        self.amp_liq_press_thermometer_model_box_ao = gui.comboBox(
+            gui.indentedBox(self.amp_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_ao)),
+            self, "amp_liq_press_thermometer_model_idx_ao",
+            items=[m[0] for m in MODELS_AMP_ONLY_TEMPERATURE],  # Define AMP_ONLY temp models
+            callback=self._update_controls)
+
+        rb_al = gui.appendRadioButton(self.amp_liq_press_thermometer_choice_buttons, "Use Amp-Liq thermometer")
+        self.amp_liq_press_thermometer_model_box_al = gui.comboBox(
+            gui.indentedBox(self.amp_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_al)),
+            self, "amp_liq_press_thermometer_model_idx_al",
+            items=[m[0] for m in MODELS_AMP_LIQ_TEMPERATURE],  # Define AMP_LIQ temp models
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        gui.checkBox(h2o_box, self, "amp_liq_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.amp_liq_press_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "amp_liq_press_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+    def _update_amp_liq_temp_controls(self):
+        """Update controls for Amp-Liq/Amp-only Thermometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'amp_thermometry_mode') and self.amp_thermometry_mode == 1:  # Amp-only mode
+            model_list = MODELS_AMP_ONLY_TEMPERATURE
+        else:  # Default to Amp-Liq mode
+            model_list = MODELS_AMP_LIQ_TEMPERATURE
+
+        _, _, requires_press, requires_h2o = model_list[self.amp_liq_temp_model_idx]
+
+        # Enable/disable ALL pressure-related controls
+        self.amp_liq_temp_value_box.setEnabled(requires_press and self.amp_liq_temp_type == 1)
+        if hasattr(self, 'amp_liq_temp_type_buttons'):
+            self.amp_liq_temp_type_buttons.setEnabled(requires_press)
+
+        # Enable/disable barometer choice and model boxes
+        model_as_p_active = requires_press and self.amp_liq_temp_type == 2
+        if hasattr(self, 'amp_liq_temp_barometer_choice_buttons'):
+            self.amp_liq_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
+
+        # Only enable specific barometer model boxes if both required and using model pressure
+        if model_as_p_active:
+            if hasattr(self, 'amp_liq_temp_barometer_model_box_oo'):
+                self.amp_liq_temp_barometer_model_box_oo.setEnabled(
+                    self.amp_liq_temp_barometer_choice == 0)
+            if hasattr(self, 'amp_liq_temp_barometer_model_box_ol'):
+                self.amp_liq_temp_barometer_model_box_ol.setEnabled(
+                    self.amp_liq_temp_barometer_choice == 1)
+        else:
+            if hasattr(self, 'amp_liq_temp_barometer_model_box_oo'):
+                self.amp_liq_temp_barometer_model_box_oo.setEnabled(False)
+            if hasattr(self, 'amp_liq_temp_barometer_model_box_ol'):
+                self.amp_liq_temp_barometer_model_box_ol.setEnabled(False)
+
+        # Enable/disable ALL H2O-related controls
+        if hasattr(self, 'amp_liq_temp_fixed_h2o_checkbox'):
+            self.amp_liq_temp_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        if hasattr(self, 'amp_liq_temp_fixed_h2o_input'):
+            self.amp_liq_temp_fixed_h2o_input.setEnabled(
+                requires_h2o and self.amp_liq_temp_fixed_h2o)
+
+    def _update_amp_liq_press_controls(self):
+        """Update controls for Amp-Liq/Amp-only Barometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'amp_barometry_mode') and self.amp_barometry_mode == 1:  # Amp-only mode
+            model_list = MODELS_AMP_ONLY_PRESSURE
+        else:  # Default to Amp-Liq mode
+            model_list = MODELS_AMP_LIQ_PRESSURE
+
+        _, _, requires_temp, requires_h2o = model_list[self.amp_liq_press_model_idx]
+
+        # Enable/disable ALL temperature-related controls
+        self.amp_liq_press_temp_value_box.setEnabled(requires_temp and self.amp_liq_press_temp_type == 1)
+        if hasattr(self, 'amp_liq_press_temp_type_buttons'):
+            self.amp_liq_press_temp_type_buttons.setEnabled(requires_temp)
+
+        # Enable/disable thermometer choice and model boxes
+        model_as_t_active = requires_temp and self.amp_liq_press_temp_type == 2
+        if hasattr(self, 'amp_liq_press_thermometer_choice_buttons'):
+            self.amp_liq_press_thermometer_choice_buttons.setEnabled(model_as_t_active)
+
+        # Only enable specific thermometer model boxes if both required and using model temp
+        if model_as_t_active:
+            if hasattr(self, 'amp_liq_press_thermometer_model_box_oo'):
+                self.amp_liq_press_thermometer_model_box_oo.setEnabled(
+                    self.amp_liq_press_thermometer_choice == 0)
+            if hasattr(self, 'amp_liq_press_thermometer_model_box_ol'):
+                self.amp_liq_press_thermometer_model_box_ol.setEnabled(
+                    self.amp_liq_press_thermometer_choice == 1)
+        else:
+            if hasattr(self, 'amp_liq_press_thermometer_model_box_oo'):
+                self.amp_liq_press_thermometer_model_box_oo.setEnabled(False)
+            if hasattr(self, 'amp_liq_press_thermometer_model_box_ol'):
+                self.amp_liq_press_thermometer_model_box_ol.setEnabled(False)
+
+        # Enable/disable ALL H2O-related controls
+        if hasattr(self, 'amp_liq_press_fixed_h2o_checkbox'):
+            self.amp_liq_press_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        if hasattr(self, 'amp_liq_press_fixed_h2o_input'):
+            self.amp_liq_press_fixed_h2o_input.setEnabled(
+                requires_h2o and self.amp_liq_press_fixed_h2o)
     def _calculate_amp_liq_temp(self, df):
         """Calculate Amp-Liq or Amp-only temperatures based on current mode"""
         # Determine which model set to use
@@ -1306,6 +1186,218 @@ class OWThermobar(OWWidget):
             results_df['T_K_input'] = np.full(len(df), np.nan)
 
         return results_df, "AmpLiq", "T_K", "P_kbar"
+
+## Updating controls
+    def _update_controls(self):
+        """Update all controls based on current settings"""
+        # Hide all calculation boxes first
+        self.cpx_opx_temp_box.setVisible(False)
+        self.cpx_opx_press_box.setVisible(False)
+        self.opx_liq_temp_box.setVisible(False)
+        self.opx_liq_press_box.setVisible(False)
+        self.amp_liq_temp_box.setVisible(False)
+        self.amp_liq_press_box.setVisible(False)
+
+        # Show the selected calculation box
+        if self.calculation_type == 1:  # Cpx-Opx Thermometry
+            self.cpx_opx_temp_box.setVisible(True)
+            self._update_cpx_opx_temp_controls()
+
+        elif self.calculation_type == 2:  # Cpx-Opx Barometry
+            self.cpx_opx_press_box.setVisible(True)
+            self._update_cpx_opx_press_controls()
+
+        elif self.calculation_type == 3:  # Opx-Liq Thermometry
+            self.opx_liq_temp_box.setVisible(True)
+            self._update_opx_liq_temp_controls()
+
+        elif self.calculation_type == 4:  # Opx-Liq/Opx-only Barometry
+            self.opx_liq_press_box.setVisible(True)
+
+            # Keep your existing Opx barometry model update code
+            if hasattr(self, 'opx_barometry_mode'):
+                if self.opx_barometry_mode == 0:  # Opx-Liq mode
+                    models = MODELS_OPX_LIQ_PRESSURE
+                else:  # Opx-only mode
+                    models = MODELS_OPX_ONLY_PRESSURE
+
+                current_idx = self.opx_liq_press_model_idx
+                self.opx_liq_press_models_combo.blockSignals(True)
+                self.opx_liq_press_models_combo.clear()
+                self.opx_liq_press_models_combo.addItems([m[0] for m in models])
+
+                if current_idx < len(models):
+                    self.opx_liq_press_model_idx = current_idx
+                else:
+                    self.opx_liq_press_model_idx = 0
+
+                self.opx_liq_press_models_combo.blockSignals(False)
+
+            self._update_opx_liq_press_controls()
+
+        elif self.calculation_type == 5:  # Amp-Liq/Amp-only Thermometry
+            self.amp_liq_temp_box.setVisible(True)
+
+            # Add Amp thermometry model update (similar to Opx)
+            if hasattr(self, 'amp_thermometry_mode'):
+                if self.amp_thermometry_mode == 0:  # Amp-Liq mode
+                    models = MODELS_AMP_LIQ_TEMPERATURE
+                else:  # Amp-only mode
+                    models = MODELS_AMP_ONLY_TEMPERATURE
+
+                current_idx = self.amp_liq_temp_model_idx
+                self.amp_liq_temp_models_combo.blockSignals(True)
+                self.amp_liq_temp_models_combo.clear()
+                self.amp_liq_temp_models_combo.addItems([m[0] for m in models])
+
+                if current_idx < len(models):
+                    self.amp_liq_temp_model_idx = current_idx
+                else:
+                    self.amp_liq_temp_model_idx = 0
+
+                self.amp_liq_temp_models_combo.blockSignals(False)
+
+            self._update_amp_liq_temp_controls()
+
+        elif self.calculation_type == 6:  # Amp-Liq/Amp-only Barometry
+            self.amp_liq_press_box.setVisible(True)
+
+            # Add Amp barometry model update (similar to Opx)
+            if hasattr(self, 'amp_barometry_mode'):
+                if self.amp_barometry_mode == 0:  # Amp-Liq mode
+                    models = MODELS_AMP_LIQ_PRESSURE
+                else:  # Amp-only mode
+                    models = MODELS_AMP_ONLY_PRESSURE
+
+                current_idx = self.amp_liq_press_model_idx
+                self.amp_liq_press_models_combo.blockSignals(True)
+                self.amp_liq_press_models_combo.clear()
+                self.amp_liq_press_models_combo.addItems([m[0] for m in models])
+
+                if current_idx < len(models):
+                    self.amp_liq_press_model_idx = current_idx
+                else:
+                    self.amp_liq_press_model_idx = 0
+
+                self.amp_liq_press_models_combo.blockSignals(False)
+
+            self._update_amp_liq_press_controls()
+
+        self.commit.now()
+
+
+
+
+
+
+
+
+    ##
+
+    @Inputs.data
+    def set_data(self, data):
+        self.data = data
+        self.commit.now()
+
+    @gui.deferred
+    def commit(self):
+        self.clear_messages()
+        self.Error.value_error.clear()
+        self.Warning.value_error.clear()
+
+        if self.data is None:
+            self.Outputs.data.send(None)
+            return
+
+        if len(self.data.domain.attributes) <= 1:
+            self.Warning.value_error("Not enough attributes in the dataset for calculations.")
+            self.Outputs.data.send(None)
+            return
+
+        df = pd.DataFrame(data=np.array(self.data.X), columns=[a.name for a in self.data.domain.attributes])
+
+        result_df = pd.DataFrame()
+        prefix = ""
+        temp_col_name_suffix = ""
+        press_col_name_suffix = ""
+
+        # Perform calculation based on selected type
+        if self.calculation_type == 1:  # Cpx-Opx Thermometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_cpx_opx_temp(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Cpx-Opx Thermometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        elif self.calculation_type == 2:  # Cpx-Opx Barometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_cpx_opx_press(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Cpx-Opx Barometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        elif self.calculation_type == 3:  # Opx-Liq Thermometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_opx_liq_temp(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Opx-Liq Thermometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        elif self.calculation_type == 4:  # Opx-Liq Barometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_opx_liq_press(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Opx-Liq Barometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        # NEW AMPHIBOLE CALCULATIONS ADDED HERE
+        elif self.calculation_type == 5:  # Amp-only Thermometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_temp(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Amp-only Thermometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        elif self.calculation_type == 6:  # Amp-only Barometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_press(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Amp-only Barometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        elif self.calculation_type == 7:  # Amp-Liq Thermometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_temp(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Amp-Liq Thermometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        elif self.calculation_type == 8:  # Amp-Liq Barometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_press(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Amp-Liq Barometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        # Prepare output if calculation was successful
+        if not result_df.empty:
+            output_table = self._create_output_table(
+                self.data, result_df, prefix, temp_col_name_suffix, press_col_name_suffix)
+            self.Outputs.data.send(output_table)
+        else:
+            self.Outputs.data.send(None)
+
+
+
+
 
 ## Helper functions to update buttons
     def _get_h2o_value(self, df, requires_h2o, fixed_h2o, fixed_h2o_value_str, calculation_name):
