@@ -249,6 +249,29 @@ class OWThermobar(OWWidget):
     amp_liq_press_fixed_h2o_value_str = ContextSetting("1.0")
 
 
+    # cpx-Liq Thermometry settings
+    cpx_thermometry_mode = ContextSetting(0)  # 0=Cpx-Liq, 1=Cpx-only
+    cpx_liq_temp_model_idx = ContextSetting(0)
+    cpx_liq_temp_pressure_type = ContextSetting(0)
+    cpx_liq_temp_pressure_value = ContextSetting(1.0)
+    cpx_liq_temp_barometer_choice = ContextSetting(1)  # 0=cpx-only, 1=cpx-Liq
+    cpx_liq_temp_barometer_model_idx_co = ContextSetting(0)
+    cpx_liq_temp_barometer_model_idx_cl = ContextSetting(0)
+    cpx_liq_temp_fixed_h2o = ContextSetting(False)
+    cpx_liq_temp_fixed_h2o_value_str = ContextSetting("1.0")
+
+    # cpx-Liq Barometry settings
+    cpx_barometry_mode = ContextSetting(0)  # 0=cpx-Liq, 1=cpx-only
+    cpx_liq_press_model_idx = ContextSetting(0)
+    cpx_liq_press_temp_type = ContextSetting(0)
+    cpx_liq_press_temp_value = ContextSetting(900.0)
+    cpx_liq_press_thermometer_choice = ContextSetting(1)  # 0=cpx-only, 1=cpx-Liq
+    cpx_liq_press_thermometer_model_idx_co = ContextSetting(0)
+    cpx_liq_press_thermometer_model_idx_cl = ContextSetting(0)
+    cpx_liq_press_fixed_h2o = ContextSetting(False)
+    cpx_liq_press_fixed_h2o_value_str = ContextSetting("1.0")
+
+
     resizing_enabled = False
     want_main_area = False
 
@@ -277,7 +300,9 @@ class OWThermobar(OWWidget):
                 "Opx Thermometry",
                 "Opx Barometry",
                 "Amp Thermometry",
-                "Amp Barometry"
+                "Amp Barometry",
+                "Cpx Thermometry",
+                "Cpx Barometry",
             ],
             callback=self._update_controls)
 
@@ -308,8 +333,393 @@ class OWThermobar(OWWidget):
         self._build_amp_liq_press_gui(self.amp_liq_press_box)
         self.amp_liq_press_box.setVisible(False)
 
+
+        self.cpx_liq_temp_box = gui.vBox(self.controlArea, "Opx Thermometry Settings")
+        self._build_cpx_liq_temp_gui(self.cpx_liq_temp_box)
+        self.cpx_liq_temp_box.setVisible(False)
+
+        self.cpx_liq_press_box = gui.vBox(self.controlArea, "Cpx Barometry Settings")
+        self._build_cpx_liq_press_gui(self.cpx_liq_press_box)
+        self.cpx_liq_press_box.setVisible(False)
+
         gui.auto_apply(self.buttonsArea, self)
         self._update_controls()
+## Cpx_Liq functions
+
+    ## Cpx-only and Cpx-Liq stuff
+
+    def _build_cpx_liq_temp_gui(self, parent_box):
+        """Build GUI for Cpx Thermometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Thermometry Mode:")
+        self.cpx_thermometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "cpx_thermometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.cpx_thermometry_mode_buttons, "Cpx-Liq")
+        gui.appendRadioButton(self.cpx_thermometry_mode_buttons, "Cpx-only")
+
+        # Models selection
+        temp_model_box = gui.vBox(parent_box, "Models")
+        self.cpx_liq_temp_models_combo = gui.comboBox(
+            temp_model_box, self, "cpx_liq_temp_model_idx",
+            items=[],  # Populated later
+            callback=self._update_controls)
+
+        # Pressure settings
+        self.cpx_liq_temp_pressure_box = gui.radioButtons(
+            parent_box, self, "cpx_liq_press_temp_type", box="Pressure Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.cpx_liq_temp_pressure_box, "Dataset as Pressure (kbar)")
+
+        rb_fixed_p = gui.appendRadioButton(self.cpx_liq_temp_pressure_box, "Fixed Pressure")
+        self.cpx_liq_press_temp_value_box = gui.doubleSpin(
+            gui.indentedBox(self.cpx_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
+            "cpx_liq_press_temp_value", 0, 1000, step=1.0, label="Pressure Value (kbar)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+
+        rb_model_p = gui.appendRadioButton(self.cpx_liq_temp_pressure_box, "Model as Pressure")
+        model_as_p_box = gui.indentedBox(self.cpx_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_model_p))
+
+        self.cpx_liq_temp_barometer_choice_buttons = gui.radioButtons(
+            model_as_p_box, self, "cpx_liq_temp_barometer_choice",
+            callback=self._update_controls)
+
+        rb_co = gui.appendRadioButton(self.cpx_liq_temp_barometer_choice_buttons, "Use Cpx-only barometer")
+        self.cpx_liq_temp_barometer_model_box_co = gui.comboBox(
+            gui.indentedBox(self.cpx_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_co)),
+            self, "cpx_liq_temp_barometer_model_idx_co",
+            items=[m[0] for m in MODELS_CPX_ONLY_PRESSURE],
+            callback=self._update_controls)
+
+        rb_cl = gui.appendRadioButton(self.cpx_liq_temp_barometer_choice_buttons, "Use Cpx-Liq barometer")
+        self.cpx_liq_temp_barometer_model_box_cl = gui.comboBox(
+            gui.indentedBox(self.cpx_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_cl)),
+            self, "cpx_liq_temp_barometer_model_idx_cl",
+            items=[m[0] for m in MODELS_CPX_LIQ_PRESSURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.cpx_liq_temp_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "cpx_liq_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.cpx_liq_temp_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "cpx_liq_temp_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _build_cpx_liq_press_gui(self, parent_box):
+        """Build GUI for Cpx Barometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Barometry Mode:")
+        self.cpx_barometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "cpx_barometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.cpx_barometry_mode_buttons, "Cpx-Liq")
+        gui.appendRadioButton(self.cpx_barometry_mode_buttons, "Cpx-only")
+
+        # Models selection
+        press_model_box = gui.vBox(parent_box, "Models")
+        self.cpx_liq_press_models_combo = gui.comboBox(
+            press_model_box, self, "cpx_liq_press_model_idx",
+            items=[],  # Populated later
+            callback=self._update_controls)
+
+        # Temperature settings
+        self.cpx_liq_press_temp_box = gui.radioButtons(
+            parent_box, self, "cpx_liq_press_temp_type", box="Temperature Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.cpx_liq_press_temp_box, "Dataset as Temperature (K)")
+
+        rb_fixed_t = gui.appendRadioButton(self.cpx_liq_press_temp_box, "Fixed Temperature")
+        self.cpx_liq_press_temp_value_box = gui.doubleSpin(
+            gui.indentedBox(self.cpx_liq_press_temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
+            "cpx_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+
+        rb_model_t = gui.appendRadioButton(self.cpx_liq_press_temp_box, "Model as Temperature")
+        model_as_t_box = gui.indentedBox(self.cpx_liq_press_temp_box, gui.checkButtonOffsetHint(rb_model_t))
+
+        self.cpx_liq_press_thermometer_choice_buttons = gui.radioButtons(
+            model_as_t_box, self, "cpx_liq_press_thermometer_choice",
+            callback=self._update_controls)
+
+        rb_co = gui.appendRadioButton(self.cpx_liq_press_thermometer_choice_buttons, "Use Cpx-only thermometer")
+        self.cpx_liq_press_thermometer_model_box_co = gui.comboBox(
+            gui.indentedBox(self.cpx_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_co)),
+            self, "cpx_liq_press_thermometer_model_idx_co",
+            items=[m[0] for m in MODELS_CPX_ONLY_TEMPERATURE],
+            callback=self._update_controls)
+
+        rb_cl = gui.appendRadioButton(self.cpx_liq_press_thermometer_choice_buttons, "Use Cpx-Liq thermometer")
+        self.cpx_liq_press_thermometer_model_box_cl = gui.comboBox(
+            gui.indentedBox(self.cpx_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_cl)),
+            self, "cpx_liq_press_thermometer_model_idx_cl",
+            items=[m[0] for m in MODELS_CPX_LIQ_TEMPERATURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.cpx_liq_press_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "cpx_liq_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.cpx_liq_press_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "cpx_liq_press_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _update_cpx_liq_temp_controls(self):
+        """Update controls for Cpx-Liq/Cpx-only Thermometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'cpx_thermometry_mode') and self.cpx_thermometry_mode == 1:  # Cpx-only mode
+            model_list = MODELS_CPX_ONLY_TEMPERATURE
+        else:  # Default to Cpx-Liq mode
+            model_list = MODELS_CPX_LIQ_TEMPERATURE
+
+        _, _, requires_press, requires_h2o = model_list[self.cpx_liq_temp_model_idx]
+
+        # Enable/disable pressure input group
+        self.cpx_liq_temp_pressure_box.setEnabled(requires_press)
+
+        # Enable/disable pressure value box
+        self.cpx_liq_press_temp_value_box.setEnabled(
+            requires_press and self.cpx_liq_press_temp_type == 1)
+
+        # Enable/disable barometer choice and model boxes
+        model_as_p_active = requires_press and self.cpx_liq_press_temp_type == 2
+        self.cpx_liq_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
+
+        if model_as_p_active:
+            self.cpx_liq_temp_barometer_model_box_co.setEnabled(
+                self.cpx_liq_temp_barometer_choice == 0)
+            self.cpx_liq_temp_barometer_model_box_cl.setEnabled(
+                self.cpx_liq_temp_barometer_choice == 1)
+        else:
+            self.cpx_liq_temp_barometer_model_box_co.setEnabled(False)
+            self.cpx_liq_temp_barometer_model_box_cl.setEnabled(False)
+
+        # Enable/disable H2O controls
+        self.cpx_liq_temp_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.cpx_liq_temp_fixed_h2o_input.setEnabled(
+            requires_h2o and self.cpx_liq_temp_fixed_h2o)
+
+    def _update_cpx_liq_press_controls(self):
+        """Update controls for Cpx-Liq/Cpx-only Barometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'cpx_barometry_mode') and self.cpx_barometry_mode == 1:  # Cpx-only mode
+            model_list = MODELS_CPX_ONLY_PRESSURE
+        else:  # Default to Cpx-Liq mode
+            model_list = MODELS_CPX_LIQ_PRESSURE
+
+        _, _, requires_temp, requires_h2o = model_list[self.cpx_liq_press_model_idx]
+
+        # Enable/disable temperature input group
+        self.cpx_liq_press_temp_box.setEnabled(requires_temp)
+
+        # Enable/disable temperature value box
+        self.cpx_liq_press_temp_value_box.setEnabled(
+            requires_temp and self.cpx_liq_press_temp_type == 1)
+
+        # Enable/disable thermometer choice and model boxes
+        model_as_t_active = requires_temp and self.cpx_liq_press_temp_type == 2
+        self.cpx_liq_press_thermometer_choice_buttons.setEnabled(model_as_t_active)
+
+        if model_as_t_active:
+            self.cpx_liq_press_thermometer_model_box_co.setEnabled(
+                self.cpx_liq_press_thermometer_choice == 0)
+            self.cpx_liq_press_thermometer_model_box_cl.setEnabled(
+                self.cpx_liq_press_thermometer_choice == 1)
+        else:
+            self.cpx_liq_press_thermometer_model_box_co.setEnabled(False)
+            self.cpx_liq_press_thermometer_model_box_cl.setEnabled(False)
+
+        # Enable/disable H2O controls
+        self.cpx_liq_press_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.cpx_liq_press_fixed_h2o_input.setEnabled(
+            requires_h2o and self.cpx_liq_press_fixed_h2o)
+
+
+
+
+
+
+
+
+
+
+
+    def _calculate_cpx_liq_press(self, df):
+        """Calculate Cpx-Liq or Cpx-only pressures based on current mode"""
+        # Determine which model set to use
+        if hasattr(self, 'cpx_barometry_mode') and self.cpx_barometry_mode == 1:  # Cpx-only mode
+            model_list = MODELS_CPX_ONLY_PRESSURE
+            mode_name = "Cpx-only Barometry"
+            print(f"DEBUG: Using Cpx-only mode with model index {self.cpx_liq_press_model_idx}")
+        else:  # Default to Cpx-Liq mode
+            model_list = MODELS_CPX_LIQ_PRESSURE
+            mode_name = "Cpx-Liq Barometry"
+            print(f"DEBUG: Using Cpx-Liq mode with model index {self.cpx_liq_press_model_idx}")
+
+        _, current_model_func_name, requires_temp, requires_h2o = model_list[self.cpx_liq_press_model_idx]
+        print(f"DEBUG: Selected model function: {current_model_func_name}")
+
+        # Determine thermometer function if using model temperature
+        if requires_temp and self.cpx_liq_press_temp_type == 2:
+            if self.cpx_liq_press_thermometer_choice == 0:  # Cpx-only
+                current_thermometer_func_name = MODELS_CPX_ONLY_TEMPERATURE[self.cpx_liq_press_thermometer_model_idx_co][1]
+                print(f"DEBUG: Using Cpx-only thermometer model: {current_thermometer_func_name}")
+            else:  # Cpx-Liq
+                current_thermometer_func_name = MODELS_CPX_LIQ_TEMPERATURE[self.cpx_liq_press_thermometer_model_idx_cl][1]
+                print(f"DEBUG: Using Cpx-Liq thermometer model: {current_thermometer_func_name}")
+
+        df = dm.preprocessing(df, my_output='cpx_liq')
+
+        water = self._get_h2o_value(df, requires_h2o,
+                                self.cpx_liq_press_fixed_h2o,
+                                self.cpx_liq_press_fixed_h2o_value_str,
+                                mode_name)
+        if water is None:
+            return pd.DataFrame(), "", "", ""
+
+        T_input = self._get_temperature_value(df, requires_temp,
+                                            self.cpx_liq_press_temp_type,
+                                            self.cpx_liq_press_temp_value,
+                                            mode_name)
+
+        pressure = None
+        temperature_output = None
+
+        if requires_temp and self.cpx_liq_press_temp_type == 2:  # Model as Temperature
+            if self.cpx_barometry_mode == 1:  # Cpx-only mode
+                calc = calculate_cpx_liq_press_temp(
+                    cpx_comps=df[cpx_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name)
+            else:  # Cpx-Liq mode
+                calc = calculate_cpx_liq_press_temp(
+                    cpx_comps=df[cpx_cols], liq_comps=df[liq_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name,
+                    H2O_Liq=water)
+            pressure = calc['P_kbar_calc']
+            temperature_output = calc['T_K_calc']
+        else:  # Fixed or dataset temperature
+            if self.cpx_barometry_mode == 1:  # Cpx-only mode
+                pressure_result = calculate_cpx_only_press(
+                    cpx_comps=df[cpx_cols],
+                    equationP=current_model_func_name,
+                    T=T_input)
+                # Handle cases where the function returns a DataFrame (like Ridolfi2021)
+                if isinstance(pressure_result, pd.DataFrame):
+                    pressure = pressure_result['P_kbar_calc']
+                else:
+                    pressure = pressure_result
+            else:  # Cpx-Liq mode
+                pressure = calculate_cpx_liq_press(
+                    cpx_comps=df[cpx_cols], liq_comps=df[liq_cols],
+                    equationP=current_model_func_name,
+                    T=T_input,
+                    H2O_Liq=water)
+
+        results_df = pd.DataFrame()
+        results_df['P_kbar_calc'] = pressure
+
+        if temperature_output is not None:
+            results_df['T_K_calc'] = temperature_output
+        elif T_input is not None:
+            results_df['T_K_input'] = T_input
+        else:
+            results_df['T_K_input'] = np.full(len(df), np.nan)
+
+        return results_df, "CpxLiq", "T_K", "P_kbar"
+
+    def _calculate_cpx_liq_temp(self, df):
+        """Calculate Cpx-Liq or Cpx-only temperatures based on current mode"""
+
+
+
+        # Determine which model set to use
+        if hasattr(self, 'cpx_thermometry_mode') and self.cpx_thermometry_mode == 1:  # Cpx-only mode
+            model_list = MODELS_CPX_ONLY_TEMPERATURE
+            mode_name = "Cpx-only Thermometry"
+        else:  # Default to Cpx-Liq mode
+            model_list = MODELS_CPX_LIQ_TEMPERATURE
+            mode_name = "Cpx-Liq Thermometry"
+
+        _, current_model_func_name, requires_pressure, requires_h2o = model_list[self.cpx_liq_temp_model_idx]
+
+        print(">>> Entered _calculate_cpx_liq_temp")
+        print(f"Model index: {self.cpx_liq_temp_model_idx}")
+        print(f"Mode: {'Cpx-only' if self.cpx_thermometry_mode == 1 else 'Cpx-Liq'}")
+        print(f"Returned df length: {len(df)}")
+        print(f"Requires pressure: {requires_pressure}, requires H2O: {requires_h2o}")
+
+
+        # Determine barometer function if using model pressure
+        if requires_pressure and self.cpx_liq_temp_pressure_type == 2:
+            if self.cpx_liq_temp_barometer_choice == 0:  # Cpx-only
+                current_barometer_func_name = MODELS_CPX_ONLY_PRESSURE[self.cpx_liq_temp_barometer_model_idx_co][1]
+            else:  # Cpx-Liq
+                current_barometer_func_name = MODELS_CPX_LIQ_PRESSURE[self.cpx_liq_temp_barometer_model_idx_cl][1]
+
+        df = dm.preprocessing(df, my_output='cpx_liq')
+
+        water = self._get_h2o_value(df, requires_h2o,
+                                self.cpx_liq_temp_fixed_h2o,
+                                self.cpx_liq_temp_fixed_h2o_value_str,
+                                mode_name)
+        if water is None: return pd.DataFrame(), "", "", ""
+
+        P_input = self._get_pressure_value(df, requires_pressure,
+                                        self.cpx_liq_temp_pressure_type,
+                                        self.cpx_liq_temp_pressure_value,
+                                        mode_name)
+
+        temperature = None
+        pressure_output = None
+
+        if requires_pressure and self.cpx_liq_temp_pressure_type == 2:  # Model as Pressure
+            if self.cpx_thermometry_mode == 1:  # Cpx-only mode
+                calc = calculate_cpx_only_press_temp(
+                    cpx_comps=df[cpx_cols],
+                    equationT=current_model_func_name,
+                    equationP=current_barometer_func_name)
+            else:  # Cpx-Liq mode
+                calc = calculate_cpx_liq_press_temp(
+                    cpx_comps=df[cpx_cols], liq_comps=df[liq_cols],
+                    equationT=current_model_func_name,
+                    equationP=current_barometer_func_name,
+                    H2O_Liq=water)
+            temperature = calc['T_K_calc']
+            pressure_output = calc['P_kbar_calc']
+        else:  # Fixed or dataset pressure
+            if self.cpx_thermometry_mode == 1:  # Cpx-only mode
+                temperature = calculate_cpx_only_temp(
+                    cpx_comps=df[cpx_cols],
+                    equationT=current_model_func_name,
+                    P=P_input)
+            else:  # Cpx-Liq mode
+                temperature = calculate_cpx_liq_temp(
+                    cpx_comps=df[cpx_cols], liq_comps=df[liq_cols],
+                    equationT=current_model_func_name,
+                    P=P_input,
+                    H2O_Liq=water)
+
+        results_df = pd.DataFrame()
+        results_df['T_K_calc'] = temperature
+
+        if pressure_output is not None:
+            results_df['P_kbar_calc'] = pressure_output
+        elif P_input is not None:
+            results_df['P_kbar_input'] = P_input
+        else:
+            results_df['P_kbar_input'] = np.full(len(df), np.nan)
+
+        print(">>> Result columns:", results_df.columns)
+
+        return results_df, "CpxLiq", "T_K", "P_kbar"
+
+
 
     ## Opx-Cpx functions
 
@@ -867,7 +1277,7 @@ class OWThermobar(OWWidget):
         rb_fixed_p = gui.appendRadioButton(self.amp_liq_temp_pressure_box, "Fixed Pressure")
         self.amp_liq_press_temp_value_box = gui.doubleSpin(
             gui.indentedBox(self.amp_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
-            "amp_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Pressure Value (kbar)",
+            "amp_liq_press_temp_value", 0, 1000.0, step=1.0, label="Pressure Value (kbar)",
             alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
 
         rb_model_p = gui.appendRadioButton(self.amp_liq_temp_pressure_box, "Model as Pressure")
@@ -1210,7 +1620,8 @@ class OWThermobar(OWWidget):
         self.opx_liq_press_box.setVisible(False)
         self.amp_liq_temp_box.setVisible(False)
         self.amp_liq_press_box.setVisible(False)
-
+        self.cpx_liq_temp_box.setVisible(False)
+        self.cpx_liq_press_box.setVisible(False)
         # Show the selected calculation box
         if self.calculation_type == 1:  # Cpx-Opx Thermometry
             self.cpx_opx_temp_box.setVisible(True)
@@ -1295,6 +1706,54 @@ class OWThermobar(OWWidget):
                 self.amp_liq_press_models_combo.blockSignals(False)
 
             self._update_amp_liq_press_controls()
+
+        elif self.calculation_type == 7:  # Cpx-Liq/Cpx-only Thermometry
+            self.cpx_liq_temp_box.setVisible(True)
+
+            # Add Cpx thermometry model update (similar to Opx)
+            if hasattr(self, 'cpx_thermometry_mode'):
+                if self.cpx_thermometry_mode == 0:  # Cpx-Liq mode
+                    models = MODELS_CPX_LIQ_TEMPERATURE
+                else:  # Cpx-only mode
+                    models = MODELS_CPX_ONLY_TEMPERATURE
+
+                current_idx = self.cpx_liq_temp_model_idx
+                self.cpx_liq_temp_models_combo.blockSignals(True)
+                self.cpx_liq_temp_models_combo.clear()
+                self.cpx_liq_temp_models_combo.addItems([m[0] for m in models])
+
+                if current_idx < len(models):
+                    self.cpx_liq_temp_model_idx = current_idx
+                else:
+                    self.cpx_liq_temp_model_idx = 0
+
+                self.cpx_liq_temp_models_combo.blockSignals(False)
+
+            self._update_cpx_liq_temp_controls()
+
+        elif self.calculation_type == 8:  # Cpx-Liq/Cpx-only Barometry
+            self.cpx_liq_press_box.setVisible(True)
+
+            # Add Cpx barometry model update (similar to Opx)
+            if hasattr(self, 'cpx_barometry_mode'):
+                if self.cpx_barometry_mode == 0:  # Cpx-Liq mode
+                    models = MODELS_CPX_LIQ_PRESSURE
+                else:  # Cpx-only mode
+                    models = MODELS_CPX_ONLY_PRESSURE
+
+                current_idx = self.cpx_liq_press_model_idx
+                self.cpx_liq_press_models_combo.blockSignals(True)
+                self.cpx_liq_press_models_combo.clear()
+                self.cpx_liq_press_models_combo.addItems([m[0] for m in models])
+
+                if current_idx < len(models):
+                    self.cpx_liq_press_model_idx = current_idx
+                else:
+                    self.cpx_liq_press_model_idx = 0
+
+                self.cpx_liq_press_models_combo.blockSignals(False)
+
+            self._update_cpx_liq_press_controls()
 
         self.commit.now()
 
@@ -1384,21 +1843,22 @@ class OWThermobar(OWWidget):
                 self.Outputs.data.send(None)
                 return
 
-        elif self.calculation_type == 7:  # Amp-Liq Thermometry
+        elif self.calculation_type == 7:  # Cpx-Liq Thermometry
             try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_temp(df.copy())
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_cpx_liq_temp(df.copy())
             except Exception as e:
-                self.Error.value_error(f"Error in Amp-Liq Thermometry: {e}")
+                self.Error.value_error(f"Error in Cpx-Liq Thermometry: {e}")
                 self.Outputs.data.send(None)
                 return
 
-        elif self.calculation_type == 8:  # Amp-Liq Barometry
+        elif self.calculation_type == 8:  # Cpx-Liq Barometry
             try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_amp_liq_press(df.copy())
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_cpx_liq_press(df.copy())
             except Exception as e:
-                self.Error.value_error(f"Error in Amp-Liq Barometry: {e}")
+                self.Error.value_error(f"Error in Cpx-Liq Barometry: {e}")
                 self.Outputs.data.send(None)
                 return
+
 
         # Prepare output if calculation was successful
         if not result_df.empty:
