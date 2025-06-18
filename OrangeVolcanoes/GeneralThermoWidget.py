@@ -1277,11 +1277,16 @@ class OWThermobar(OWWidget):
             callback=self._update_controls)
         gui.appendRadioButton(self.amp_liq_temp_pressure_box, "Dataset as Pressure (kbar)")
 
+
+
+
         rb_fixed_p = gui.appendRadioButton(self.amp_liq_temp_pressure_box, "Fixed Pressure")
-        self.amp_liq_press_temp_value_box = gui.doubleSpin(
+
+
+        self.amp_liq_temp_pressure_value_box = gui.doubleSpin(
             gui.indentedBox(self.amp_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
-            "amp_liq_press_temp_value", 0, 1000.0, step=1.0, label="Pressure Value (kbar)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+            "amp_liq_temp_pressure_value", 0, 1000, step=1.0, label="Pressure Value (kbar)",
+            alignment=Qt.AlignRight, callback=self.commit.deferred, controlWidth=80, decimals=0)
 
         rb_model_p = gui.appendRadioButton(self.amp_liq_temp_pressure_box, "Model as Pressure")
         model_as_p_box = gui.indentedBox(self.amp_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_model_p))
