@@ -323,19 +323,19 @@ class OWThermobar(OWWidget):
             callback=self._update_controls)
 
         # Pressure settings
-        pressure_box = gui.radioButtons(
+        self.cpx_opx_temp_pressure_box = gui.radioButtons(
             parent_box, self, "cpx_opx_temp_pressure_type", box="Pressure Input",
             callback=self._update_controls)
-        gui.appendRadioButton(pressure_box, "Dataset as Pressure (kbar)")
+        gui.appendRadioButton(self.cpx_opx_temp_pressure_box, "Dataset as Pressure (kbar)")
 
-        rb_fixed_p = gui.appendRadioButton(pressure_box, "Fixed Pressure")
+        rb_fixed_p = gui.appendRadioButton(self.cpx_opx_temp_pressure_box, "Fixed Pressure")
         self.cpx_opx_temp_pressure_value_box = gui.doubleSpin(
-            gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
+            gui.indentedBox(self.cpx_opx_temp_pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
             "cpx_opx_temp_pressure_value", 1.0, 10000.0, step=0.1, label="Pressure Value (kbar)",
             alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=1)
 
-        rb_model_p = gui.appendRadioButton(pressure_box, "Model as Pressure")
-        model_as_p_box = gui.indentedBox(pressure_box, gui.checkButtonOffsetHint(rb_model_p))
+        rb_model_p = gui.appendRadioButton(self.cpx_opx_temp_pressure_box, "Model as Pressure")
+        model_as_p_box = gui.indentedBox(self.cpx_opx_temp_pressure_box, gui.checkButtonOffsetHint(rb_model_p))
 
         self.cpx_opx_temp_barometer_model_box = gui.comboBox(
             model_as_p_box, self, "cpx_opx_temp_barometer_model_idx",
@@ -344,7 +344,8 @@ class OWThermobar(OWWidget):
 
         # H2O settings
         h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "cpx_opx_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.cpx_opx_temp_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "cpx_opx_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
         self.cpx_opx_temp_fixed_h2o_input = gui.lineEdit(
             h2o_box, self, "cpx_opx_temp_fixed_h2o_value_str", label="H₂O (wt%)",
             orientation=Qt.Horizontal, callback=self.commit.deferred)
@@ -359,19 +360,19 @@ class OWThermobar(OWWidget):
             callback=self._update_controls)
 
         # Temperature settings
-        temp_box = gui.radioButtons(
+        self.cpx_opx_press_temp_box = gui.radioButtons(
             parent_box, self, "cpx_opx_press_temp_type", box="Temperature Input",
             callback=self._update_controls)
-        gui.appendRadioButton(temp_box, "Dataset as Temperature (K)")
+        gui.appendRadioButton(self.cpx_opx_press_temp_box, "Dataset as Temperature (K)")
 
-        rb_fixed_t = gui.appendRadioButton(temp_box, "Fixed Temperature")
+        rb_fixed_t = gui.appendRadioButton(self.cpx_opx_press_temp_box, "Fixed Temperature")
         self.cpx_opx_press_temp_value_box = gui.doubleSpin(
-            gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
+            gui.indentedBox(self.cpx_opx_press_temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
             "cpx_opx_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
             alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
 
-        rb_model_t = gui.appendRadioButton(temp_box, "Model as Temperature")
-        model_as_t_box = gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_model_t))
+        rb_model_t = gui.appendRadioButton(self.cpx_opx_press_temp_box, "Model as Temperature")
+        model_as_t_box = gui.indentedBox(self.cpx_opx_press_temp_box, gui.checkButtonOffsetHint(rb_model_t))
 
         self.cpx_opx_press_thermometer_model_box = gui.comboBox(
             model_as_t_box, self, "cpx_opx_press_thermometer_model_idx",
@@ -380,14 +381,20 @@ class OWThermobar(OWWidget):
 
         # H2O settings
         h2o_box = gui.vBox(parent_box, "H₂O Settings")
-        gui.checkBox(h2o_box, self, "cpx_opx_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.cpx_opx_press_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "cpx_opx_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+
         self.cpx_opx_press_fixed_h2o_input = gui.lineEdit(
             h2o_box, self, "cpx_opx_press_fixed_h2o_value_str", label="H₂O (wt%)",
             orientation=Qt.Horizontal, callback=self.commit.deferred)
 
+
     def _update_cpx_opx_temp_controls(self):
         """Update controls for Cpx-Opx Thermometry"""
         _, _, requires_pressure, requires_h2o = MODELS_CPX_OPX_TEMP[self.cpx_opx_temp_model_idx]
+
+        # Enable/disable pressure radio group
+        self.cpx_opx_temp_pressure_box.setEnabled(requires_pressure)
 
         # Enable/disable pressure value box
         self.cpx_opx_temp_pressure_value_box.setEnabled(
@@ -398,12 +405,15 @@ class OWThermobar(OWWidget):
             requires_pressure and self.cpx_opx_temp_pressure_type == 2)
 
         # Enable/disable H2O input
-        self.cpx_opx_temp_fixed_h2o_input.setEnabled(
-            requires_h2o and self.cpx_opx_temp_fixed_h2o)
+        self.cpx_opx_temp_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.cpx_opx_temp_fixed_h2o_input.setEnabled(requires_h2o and self.cpx_opx_temp_fixed_h2o)
 
     def _update_cpx_opx_press_controls(self):
         """Update controls for Cpx-Opx Barometry"""
         _, _, requires_temp, requires_h2o = MODELS_CPX_OPX_PRESSURE[self.cpx_opx_press_model_idx]
+
+        # Enable/disable temperature radio group
+        self.cpx_opx_press_temp_box.setEnabled(requires_temp)
 
         # Enable/disable temperature value box
         self.cpx_opx_press_temp_value_box.setEnabled(
@@ -414,8 +424,10 @@ class OWThermobar(OWWidget):
             requires_temp and self.cpx_opx_press_temp_type == 2)
 
         # Enable/disable H2O input
-        self.cpx_opx_press_fixed_h2o_input.setEnabled(
-            requires_h2o and self.cpx_opx_press_fixed_h2o)
+        self.cpx_opx_press_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.cpx_opx_press_fixed_h2o_input.setEnabled(requires_h2o and self.cpx_opx_press_fixed_h2o)
+
+
 
     def _calculate_cpx_opx_press(self, df):
         """Calculate Cpx-Opx pressures"""
