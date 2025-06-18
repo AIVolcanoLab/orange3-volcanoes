@@ -608,19 +608,18 @@ class OWThermobar(OWWidget):
             callback=self._update_controls)
 
         # Temperature settings
-        temp_box = gui.radioButtons(
+        self.opx_liq_press_temp_box = gui.radioButtons(
             parent_box, self, "opx_liq_press_temp_type", box="Temperature Input",
             callback=self._update_controls)
-        gui.appendRadioButton(temp_box, "Dataset as Temperature (K)")
 
-        rb_fixed_t = gui.appendRadioButton(temp_box, "Fixed Temperature")
+        rb_fixed_t = gui.appendRadioButton(self.opx_liq_press_temp_box, "Fixed Temperature")
         self.opx_liq_press_temp_value_box = gui.doubleSpin(
-            gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
+            gui.indentedBox(self.opx_liq_press_temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
             "opx_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
             alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
 
-        rb_model_t = gui.appendRadioButton(temp_box, "Model as Temperature")
-        model_as_t_box = gui.indentedBox(temp_box, gui.checkButtonOffsetHint(rb_model_t))
+        rb_model_t = gui.appendRadioButton(self.opx_liq_press_temp_box, "Model as Temperature")
+        model_as_t_box = gui.indentedBox(self.opx_liq_press_temp_box, gui.checkButtonOffsetHint(rb_model_t))
 
         # Thermometer choice (Opx-only or Opx-Liq)
         self.opx_liq_press_thermometer_choice_buttons = gui.radioButtons(
@@ -682,6 +681,7 @@ class OWThermobar(OWWidget):
         _, _, requires_temp, requires_h2o = model_list[self.opx_liq_press_model_idx]
 
         # Enable/disable temperature value box
+        self.opx_liq_press_temp_box.setEnabled(requires_temp)
         self.opx_liq_press_temp_value_box.setEnabled(
             requires_temp and self.opx_liq_press_temp_type == 1)
 
