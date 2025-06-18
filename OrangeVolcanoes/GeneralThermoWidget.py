@@ -368,15 +368,17 @@ class OWThermobar(OWWidget):
 
         # Pressure settings
         self.cpx_liq_temp_pressure_box = gui.radioButtons(
-            parent_box, self, "cpx_liq_press_temp_type", box="Pressure Input",
+            parent_box, self, "cpx_liq_temp_pressure_type", box="Pressure Input",
             callback=self._update_controls)
         gui.appendRadioButton(self.cpx_liq_temp_pressure_box, "Dataset as Pressure (kbar)")
 
         rb_fixed_p = gui.appendRadioButton(self.cpx_liq_temp_pressure_box, "Fixed Pressure")
-        self.cpx_liq_press_temp_value_box = gui.doubleSpin(
+
+
+        self.cpx_liq_temp_pressure_value_box = gui.doubleSpin(
             gui.indentedBox(self.cpx_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
-            "cpx_liq_press_temp_value", 0, 1000, step=1.0, label="Pressure Value (kbar)",
-            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+            "cpx_liq_temp_pressure_value", 0, 1000, step=1.0, label="Pressure Value (kbar)",
+            alignment=Qt.AlignRight, callback=self.commit.deferred, controlWidth=80, decimals=0)
 
         rb_model_p = gui.appendRadioButton(self.cpx_liq_temp_pressure_box, "Model as Pressure")
         model_as_p_box = gui.indentedBox(self.cpx_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_model_p))
@@ -483,10 +485,10 @@ class OWThermobar(OWWidget):
 
         # Enable/disable pressure value box
         self.cpx_liq_press_temp_value_box.setEnabled(
-            requires_press and self.cpx_liq_press_temp_type == 1)
+            requires_press and self.cpx_liq_temp_pressure_type == 1)
 
         # Enable/disable barometer choice and model boxes
-        model_as_p_active = requires_press and self.cpx_liq_press_temp_type == 2
+        model_as_p_active = requires_press and self.cpx_liq_temp_pressure_type == 2
         self.cpx_liq_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
 
         if model_as_p_active:
@@ -674,6 +676,7 @@ class OWThermobar(OWWidget):
                                         self.cpx_liq_temp_pressure_type,
                                         self.cpx_liq_temp_pressure_value,
                                         mode_name)
+
 
         temperature = None
         pressure_output = None
@@ -1270,7 +1273,7 @@ class OWThermobar(OWWidget):
 
         # Pressure settings
         self.amp_liq_temp_pressure_box = gui.radioButtons(
-            parent_box, self, "amp_liq_press_temp_type", box="Pressure Input",
+            parent_box, self, "amp_liq_temp_pressure_type", box="Pressure Input",
             callback=self._update_controls)
         gui.appendRadioButton(self.amp_liq_temp_pressure_box, "Dataset as Pressure (kbar)")
 
@@ -1420,10 +1423,10 @@ class OWThermobar(OWWidget):
 
         # Enable/disable temperature value box
         self.amp_liq_press_temp_value_box.setEnabled(
-            requires_temp and self.amp_liq_press_temp_type == 1)
+            requires_temp and self.amp_liq_temp_pressure_type == 1)
 
         # Enable/disable thermometer choice and model boxes
-        model_as_t_active = requires_temp and self.amp_liq_press_temp_type == 2
+        model_as_t_active = requires_temp and self.amp_liq_temp_pressure_type == 2
         self.amp_liq_press_thermometer_choice_buttons.setEnabled(model_as_t_active)
 
         if model_as_t_active:
