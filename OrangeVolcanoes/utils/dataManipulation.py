@@ -177,6 +177,9 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
     elif my_output == 'liq_ol':
         output = pd.concat([myLiquids1, myOls1], axis=1)
 
+    elif my_output=='plag_kspar':
+        output = pd.concat([myPlags1, myKspars1], axis=1)
+
 
 
     elif my_output == 'cpx_opx':

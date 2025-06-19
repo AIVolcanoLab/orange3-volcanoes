@@ -21,7 +21,7 @@ from Thermobar import (
     calculate_amp_only_press,  calculate_amp_only_temp, calculate_amp_liq_temp,
     calculate_amp_liq_press, calculate_amp_liq_press_temp,
     calculate_liq_only_temp, calculate_ol_liq_temp,
-    calculate_ol_sp_temp
+    calculate_ol_sp_temp, calculate_plag_kspar_temp,
 )
 
 # Define column names
@@ -49,6 +49,14 @@ sp_cols=['SiO2_Sp', 'TiO2_Sp', 'Al2O3_Sp',
 amp_cols = ['SiO2_Amp', 'TiO2_Amp', 'Al2O3_Amp',
  'FeOt_Amp', 'MnO_Amp', 'MgO_Amp', 'CaO_Amp', 'Na2O_Amp', 'K2O_Amp',
  'Cr2O3_Amp', 'F_Amp', 'Cl_Amp']
+
+plag_cols=['SiO2_Plag', 'TiO2_Plag', 'Al2O3_Plag',
+'FeOt_Plag', 'MnO_Plag', 'MgO_Plag', 'CaO_Plag', 'Na2O_Plag', 'K2O_Plag',
+'Cr2O3_Plag']
+
+kspar_cols=['SiO2_Kspar', 'TiO2_Kspar',
+ 'Al2O3_Kspar', 'FeOt_Kspar','MnO_Kspar', 'MgO_Kspar', 'CaO_Kspar',
+ 'Na2O_Kspar', 'K2O_Kspar', 'Cr2O3_Kspar']
 
 ## CPX-OPX models
 MODELS_CPX_OPX_TEMP = [
@@ -106,6 +114,17 @@ MODELS_CPX_LIQ_TEMPERATURE = [
     ('T_Mas2013_Talk2012', 'T_Mas2013_Talk2012', False, True),
     ('T_Brug2019', 'T_Brug2019', False, False)
 ]
+## Extend Cpx models
+try:
+    import Thermobar_onnx
+    MODELS_CPX_ONLY_PRESSURE.extend([
+        ('T_Jorgenson2022_Cpx_only_(ML)', 'T_Jorgenson2022_Cpx_only_onnx', False, False)
+    ])
+    MODELS_CPX_LIQ_TEMPERATURE.extend([
+        ('T_Petrelli2020_Cpx_Liq_(ML)', 'T_Petrelli2020_Cpx_Liq_onnx', False, False),
+    ])
+except ImportError:
+    print("You cannot use Machine Learning Models. Install Thermobar_onnx.")
 
 ##  Opx models
 MODELS_OPX_ONLY_PRESSURE = [
@@ -169,7 +188,7 @@ MODELS_AMP_ONLY_TEMPERATURE = [
     ('T_Put2016_eq8', 'T_Put2016_eq8', True, False),
 ]
 
-## Liquid models
+## Liquid and olivine models
 MODELS_LIQ_ONLY_TEMPERATURE = [
     ('T_Put2008_eq13', 'T_Put2008_eq13',False,False),
     ('T_Put2008_eq14', 'T_Put2008_eq14',False,True),
@@ -223,18 +242,18 @@ MODELS_LIQ_ONLY_PRESSURE = [
 MODELS_LIQ_OL_PRESSURE = [
     ('None_available', 'None_available', True, True),
 ]
+## Two feldspar-Plag models
+MODELS_PLAG_KSPAR_TEMP = [
+    ('T_Put2008_eq27a', 'T_Put2008_eq27a', True, False),
+    ('T_Put2008_eq27b', 'T_Put2008_eq27b', True, False),
+    ('T_Put_Global_2Fspar', 'T_Put_Global_2Fspar', True, False),
 
-## Extend Cpx models
-try:
-    import Thermobar_onnx
-    MODELS_CPX_ONLY_PRESSURE.extend([
-        ('T_Jorgenson2022_Cpx_only_(ML)', 'T_Jorgenson2022_Cpx_only_onnx', False, False)
-    ])
-    MODELS_CPX_LIQ_TEMPERATURE.extend([
-        ('T_Petrelli2020_Cpx_Liq_(ML)', 'T_Petrelli2020_Cpx_Liq_onnx', False, False),
-    ])
-except ImportError:
-    print("You cannot use Machine Learning Models. Install Thermobar_onnx.")
+]
+
+MODELS_PLAG_KSPAR_PRESSURE = [
+    ('None_available', 'None_available', True, False),
+]
+
 
 class OWThermobar(OWWidget):
     name = "Thermobar Calculations"
@@ -359,6 +378,23 @@ class OWThermobar(OWWidget):
     liq_ol_press_fixed_h2o = ContextSetting(False)
     liq_ol_press_fixed_h2o_value_str = ContextSetting("1.0")
 
+    # Plag-Kspar Thermometry settings
+    plag_kspar_temp_model_idx = ContextSetting(0)
+    plag_kspar_temp_pressure_type = ContextSetting(0)
+    plag_kspar_temp_pressure_value = ContextSetting(1.0)
+    plag_kspar_temp_barometer_model_idx = ContextSetting(0)
+    plag_kspar_temp_fixed_h2o = ContextSetting(False)
+    plag_kspar_temp_fixed_h2o_value_str = ContextSetting("1.0")
+
+    # Plag-Kspar Barometry settings
+    plag_kspar_press_model_idx = ContextSetting(0)
+    plag_kspar_press_temp_type = ContextSetting(0)
+    plag_kspar_press_temp_value = ContextSetting(900.0)
+    plag_kspar_press_thermometer_model_idx = ContextSetting(0)
+    plag_kspar_press_fixed_h2o = ContextSetting(False)
+    plag_kspar_press_fixed_h2o_value_str = ContextSetting("1.0")
+
+
 
     resizing_enabled = False
     want_main_area = False
@@ -392,7 +428,9 @@ class OWThermobar(OWWidget):
                 "Cpx±Liq Thermometry", #7
                 "Cpx±Liq Barometry", #8
                 "Liq±Ol Thermometry", #9
-                "Liq±Ol Barometry", #10
+                "Plag-Kspar Thermometry" #10
+
+                #"Liq±Ol Barometry", #10
             ],
             callback=self._update_controls)
 
@@ -439,6 +477,17 @@ class OWThermobar(OWWidget):
         self.liq_ol_press_box = gui.vBox(self.controlArea, "Liq±Ol Barometry Settings")
         self._build_liq_ol_press_gui(self.liq_ol_press_box)
         self.liq_ol_press_box.setVisible(False)
+
+
+        self.plag_kspar_temp_box = gui.vBox(self.controlArea, "Plag-Kspar Thermometry Settings")
+        self._build_plag_kspar_temp_gui(self.plag_kspar_temp_box)
+        self.plag_kspar_temp_box.setVisible(False)
+
+        self.plag_kspar_press_box = gui.vBox(self.controlArea, "Plag-Kspar Barometry Settings")
+        self._build_plag_kspar_press_gui(self.plag_kspar_press_box)
+        self.plag_kspar_press_box.setVisible(False)
+
+
 
         gui.auto_apply(self.buttonsArea, self)
         self._update_controls()
@@ -2097,7 +2146,239 @@ class OWThermobar(OWWidget):
 
             return results_df, "AmpLiq", "T_K", "P_kbar"
 
+    ## Kspar-Plag functions
 
+    def _build_plag_kspar_temp_gui(self, parent_box):
+        """Build GUI for Plag-Kspar Thermometry"""
+        # Models selection
+        temp_model_box = gui.vBox(parent_box, "Models")
+        self.plag_kspar_temp_models_combo = gui.comboBox(
+            temp_model_box, self, "plag_kspar_temp_model_idx",
+            items=[m[0] for m in MODELS_PLAG_KSPAR_TEMP],
+            callback=self._update_controls)
+
+        # Pressure settings
+        self.plag_kspar_temp_pressure_box = gui.radioButtons(
+            parent_box, self, "plag_kspar_temp_pressure_type", box="Pressure Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.plag_kspar_temp_pressure_box, "Dataset as Pressure (kbar)")
+
+        rb_fixed_p = gui.appendRadioButton(self.plag_kspar_temp_pressure_box, "Fixed Pressure")
+        self.plag_kspar_temp_pressure_value_box = gui.doubleSpin(
+            gui.indentedBox(self.plag_kspar_temp_pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
+            "plag_kspar_temp_pressure_value", 1.0, 10000.0, step=0.1, label="Pressure Value (kbar)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=1)
+
+        rb_model_p = gui.appendRadioButton(self.plag_kspar_temp_pressure_box, "Model as Pressure")
+        model_as_p_box = gui.indentedBox(self.plag_kspar_temp_pressure_box, gui.checkButtonOffsetHint(rb_model_p))
+
+        self.plag_kspar_temp_barometer_model_box = gui.comboBox(
+            model_as_p_box, self, "plag_kspar_temp_barometer_model_idx",
+            items=[m[0] for m in MODELS_PLAG_KSPAR_PRESSURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.plag_kspar_temp_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "plag_kspar_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.plag_kspar_temp_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "plag_kspar_temp_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+    def _build_plag_kspar_press_gui(self, parent_box):
+        """Build GUI for Plag-Kspar Barometry"""
+        # Models selection
+        press_model_box = gui.vBox(parent_box, "Models")
+        self.plag_kspar_press_models_combo = gui.comboBox(
+            press_model_box, self, "plag_kspar_press_model_idx",
+            items=[m[0] for m in MODELS_PLAG_KSPAR_PRESSURE],
+            callback=self._update_controls)
+
+        # Temperature settings
+        self.plag_kspar_press_temp_box = gui.radioButtons(
+            parent_box, self, "plag_kspar_press_temp_type", box="Temperature Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.plag_kspar_press_temp_box, "Dataset as Temperature (K)")
+
+        rb_fixed_t = gui.appendRadioButton(self.plag_kspar_press_temp_box, "Fixed Temperature")
+        self.plag_kspar_press_temp_value_box = gui.doubleSpin(
+            gui.indentedBox(self.plag_kspar_press_temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
+            "plag_kspar_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+
+        rb_model_t = gui.appendRadioButton(self.plag_kspar_press_temp_box, "Model as Temperature")
+        model_as_t_box = gui.indentedBox(self.plag_kspar_press_temp_box, gui.checkButtonOffsetHint(rb_model_t))
+
+        self.plag_kspar_press_thermometer_model_box = gui.comboBox(
+            model_as_t_box, self, "plag_kspar_press_thermometer_model_idx",
+            items=[m[0] for m in MODELS_PLAG_KSPAR_TEMP],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.plag_kspar_press_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "plag_kspar_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+
+        self.plag_kspar_press_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "plag_kspar_press_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _update_plag_kspar_temp_controls(self):
+        """Update controls for Plag-Kspar Thermometry"""
+        _, _, requires_pressure, requires_h2o = MODELS_PLAG_KSPAR_TEMP[self.plag_kspar_temp_model_idx]
+
+        # Enable/disable pressure radio group
+        self.plag_kspar_temp_pressure_box.setEnabled(requires_pressure)
+
+        # Enable/disable pressure value box
+        self.plag_kspar_temp_pressure_value_box.setEnabled(
+            requires_pressure and self.plag_kspar_temp_pressure_type == 1)
+
+        # Enable/disable barometer model box
+        self.plag_kspar_temp_barometer_model_box.setEnabled(
+            requires_pressure and self.plag_kspar_temp_pressure_type == 2)
+
+        # Enable/disable H2O input
+        self.plag_kspar_temp_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.plag_kspar_temp_fixed_h2o_input.setEnabled(requires_h2o and self.plag_kspar_temp_fixed_h2o)
+
+    def _update_plag_kspar_press_controls(self):
+        """Update controls for Plag-Kspar Barometry"""
+        _, _, requires_temp, requires_h2o = MODELS_PLAG_KSPAR_PRESSURE[self.plag_kspar_press_model_idx]
+
+        # Enable/disable temperature radio group
+        self.plag_kspar_press_temp_box.setEnabled(requires_temp)
+
+        # Enable/disable temperature value box
+        self.plag_kspar_press_temp_value_box.setEnabled(
+            requires_temp and self.plag_kspar_press_temp_type == 1)
+
+        # Enable/disable thermometer model box
+        self.plag_kspar_press_thermometer_model_box.setEnabled(
+            requires_temp and self.plag_kspar_press_temp_type == 2)
+
+        # Enable/disable H2O input
+        self.plag_kspar_press_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.plag_kspar_press_fixed_h2o_input.setEnabled(requires_h2o and self.plag_kspar_press_fixed_h2o)
+
+
+
+    def _calculate_plag_kspar_press(self, df):
+        """Calculate Plag-Kspar pressures"""
+        _, current_model_func_name, requires_temp, requires_h2o = MODELS_PLAG_KSPAR_PRESSURE[self.plag_kspar_press_model_idx]
+        current_thermometer_func_name = MODELS_PLAG_KSPAR_TEMP[self.plag_kspar_press_thermometer_model_idx][1]
+
+        df = dm.preprocessing(df, my_output='plag_kspar')
+
+        water = self._get_h2o_value(df, requires_h2o,
+                                self.plag_kspar_press_fixed_h2o,
+                                self.plag_kspar_press_fixed_h2o_value_str,
+                                "Plag-Kspar Barometry")
+        if water is None:
+            return pd.DataFrame(), "", "", ""
+
+        T_input = self._get_temperature_value(df, requires_temp,
+                                            self.plag_kspar_press_temp_type,
+                                            self.plag_kspar_press_temp_value,
+                                            "Plag-Kspar Barometry")
+
+        # Initialize results
+        results_df = pd.DataFrame()
+
+        if requires_temp and self.plag_kspar_press_temp_type == 2:  # Model as Temperature
+            try:
+                calc = calculate_plag_kspar_press_temp(
+                    kspar_comps=df[kspar_cols],
+                    plag_comps=df[plag_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name)
+
+                # Ensure we're getting the expected columns
+                if 'P_kbar_calc' in calc:
+                    results_df['P_kbar_calc'] = calc['P_kbar_calc']
+                else:
+                    self.Error.value_error("Pressure calculation failed - no 'P_kbar_calc' in results")
+                    return pd.DataFrame(), "", "", ""
+
+                if 'T_K_calc' in calc:
+                    results_df['T_K_calc'] = calc['T_K_calc']
+                else:
+                    results_df['T_K_calc'] = np.nan  # Fill with NaN if missing
+
+            except Exception as e:
+                self.Error.value_error(f"Calculation failed: {str(e)}")
+                return pd.DataFrame(), "", "", ""
+
+        else:  # Fixed or dataset temperature
+            try:
+                pressure = calculate_plag_kspar_press(
+                    kspar_comps=df[kspar_cols],
+                    plag_comps=df[plag_cols],
+                    equationP=current_model_func_name,
+                    T=T_input)
+
+                results_df['P_kbar_calc'] = pressure
+
+                # Store the input temperature if provided
+                if T_input is not None:
+                    if isinstance(T_input, (int, float)):
+                        results_df['T_K_input'] = np.full(len(df), T_input)
+                    else:  # Assume it's a pandas Series
+                        results_df['T_K_input'] = T_input.values
+                else:
+                    results_df['T_K_input'] = np.nan
+
+            except Exception as e:
+                self.Error.value_error(f"Pressure calculation failed: {str(e)}")
+                return pd.DataFrame(), "", "", ""
+
+        return results_df, "PlagKspar", "T_K", "P_kbar"
+
+    def _calculate_plag_kspar_temp(self, df):
+        """Encapsulates the Plag-Kspar Thermometry calculation logic."""
+        _, current_model_func_name, requires_pressure_by_model, requires_h2o_by_model = MODELS_PLAG_KSPAR_TEMP[self.plag_kspar_temp_model_idx]
+        current_barometer_func_name = MODELS_PLAG_KSPAR_PRESSURE[self.plag_kspar_temp_barometer_model_idx][1]
+
+        df = dm.preprocessing(df, my_output='plag_kspar')
+
+        water = self._get_h2o_value(df, requires_h2o_by_model,
+                                    self.plag_kspar_temp_fixed_h2o,
+                                    self.plag_kspar_temp_fixed_h2o_value_str,
+                                    "Plag-Kspar Thermometry")
+        if water is None: return pd.DataFrame(), "", "", "" # Error occurred in H2O fetching
+
+        P_input = self._get_pressure_value(df, requires_pressure_by_model,
+                                           self.plag_kspar_temp_pressure_type,
+                                           self.plag_kspar_temp_pressure_value,
+                                           "Plag-Kspar Thermometry")
+
+        temperature = None
+        pressure_output = None # This is for when pressure is calculated iteratively with temp
+
+        if requires_pressure_by_model and self.plag_kspar_temp_pressure_type == 2: # Model as Pressure
+            calc = calculate_plag_kspar_press_temp(
+                kspar_comps=df[kspar_cols], plag_comps=df[plag_cols],
+                equationT=current_model_func_name, equationP=current_barometer_func_name)
+            temperature = calc['T_K_calc']
+            pressure_output = calc['P_kbar_calc']
+        else: # No pressure, fixed, or dataset pressure
+            temperature = calculate_plag_kspar_temp(
+                kspar_comps=df[kspar_cols], plag_comps=df[plag_cols],
+                equationT=current_model_func_name, P=P_input)
+
+
+        results_df = pd.DataFrame()
+        results_df['T_K_calc'] = temperature
+
+        if pressure_output is not None:
+            results_df['P_kbar_calc'] = pressure_output
+        elif P_input is not None:
+            results_df['P_kbar_input'] = P_input # Store the input pressure if used
+        else:
+            results_df['P_kbar_input'] = np.full(len(df), np.nan) # Placeholder if no P input
+
+        return results_df, "PlagKspar", "T_K", "P_kbar"
 ## Updating controls
     def _update_controls(self):
         """Update all controls based on current settings"""
@@ -2112,6 +2393,9 @@ class OWThermobar(OWWidget):
         self.cpx_liq_press_box.setVisible(False)
         self.liq_ol_temp_box.setVisible(False)
         self.liq_ol_press_box.setVisible(False)
+        self.plag_kspar_temp_box.setVisible(False)
+        self.plag_kspar_press_box.setVisible(False)
+
         # Show the selected calculation box
         if self.calculation_type == 1:  # Cpx-Opx Thermometry
             self.cpx_opx_temp_box.setVisible(True)
@@ -2271,29 +2555,37 @@ class OWThermobar(OWWidget):
 
             self._update_liq_ol_temp_controls()
 
-        elif self.calculation_type == 10:  # Liq-Ol/Liq-only Barometry
-            self.liq_ol_press_box.setVisible(True)
+        # elif self.calculation_type == 10:  # Liq-Ol/Liq-only Barometry
+        #     self.liq_ol_press_box.setVisible(True)
+        #
+        #     # Add Liq barometry model update (similar to Opx)
+        #     if hasattr(self, 'liq_barometry_mode'):
+        #         if self.liq_barometry_mode == 0:  # Liq-Ol mode
+        #             models = MODELS_LIQ_OL_PRESSURE
+        #         else:  # Liq-only mode
+        #             models = MODELS_LIQ_ONLY_PRESSURE
+        #
+        #         current_idx = self.liq_ol_press_model_idx
+        #         self.liq_ol_press_models_combo.blockSignals(True)
+        #         self.liq_ol_press_models_combo.clear()
+        #         self.liq_ol_press_models_combo.addItems([m[0] for m in models])
+        #
+        #         if current_idx < len(models):
+        #             self.liq_ol_press_model_idx = current_idx
+        #         else:
+        #             self.liq_ol_press_model_idx = 0
+        #
+        #         self.liq_ol_press_models_combo.blockSignals(False)
+        #
+        #     self._update_liq_ol_press_controls()
 
-            # Add Liq barometry model update (similar to Opx)
-            if hasattr(self, 'liq_barometry_mode'):
-                if self.liq_barometry_mode == 0:  # Liq-Ol mode
-                    models = MODELS_LIQ_OL_PRESSURE
-                else:  # Liq-only mode
-                    models = MODELS_LIQ_ONLY_PRESSURE
+        if self.calculation_type == 10:  # Cpx-Opx Thermometry
+            self.plag_kspar_temp_box.setVisible(True)
+            self._update_plag_kspar_temp_controls()
 
-                current_idx = self.liq_ol_press_model_idx
-                self.liq_ol_press_models_combo.blockSignals(True)
-                self.liq_ol_press_models_combo.clear()
-                self.liq_ol_press_models_combo.addItems([m[0] for m in models])
-
-                if current_idx < len(models):
-                    self.liq_ol_press_model_idx = current_idx
-                else:
-                    self.liq_ol_press_model_idx = 0
-
-                self.liq_ol_press_models_combo.blockSignals(False)
-
-            self._update_liq_ol_press_controls()
+        # elif self.calculation_type == 2:  # Cpx-Opx Barometry
+        #     self.cpx_opx_press_box.setVisible(True)
+        #     self._update_cpx_opx_press_controls()
 
         self.commit.now()
 
@@ -2409,14 +2701,30 @@ class OWThermobar(OWWidget):
                 self.Outputs.data.send(None)
                 return
 
-        elif self.calculation_type == 10:  # Liq-ol Barometry
+        # elif self.calculation_type == 10:  # Liq-ol Barometry
+        #     try:
+        #         result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_liq_ol_press(df.copy())
+        #     except Exception as e:
+        #         self.Error.value_error(f"Error in Liq-Ol Barometry: {e}")
+        #         self.Outputs.data.send(None)
+        #         return
+
+
+        if self.calculation_type == 10:  # Plag-Kspar Thermometry
             try:
-                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_liq_ol_press(df.copy())
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_plag_kspar_temp(df.copy())
             except Exception as e:
-                self.Error.value_error(f"Error in Liq-Ol Barometry: {e}")
+                self.Error.value_error(f"Error in Plag-Kspar Thermometry: {e}")
                 self.Outputs.data.send(None)
                 return
 
+        # elif self.calculation_type == 2:  # Plag-Kspar Barometry
+        #     try:
+        #         result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_plag_kspar_press(df.copy())
+        #     except Exception as e:
+        #         self.Error.value_error(f"Error in Plag-Kspar Barometry: {e}")
+        #         self.Outputs.data.send(None)
+        #         return
 
         # Prepare output if calculation was successful
         if not result_df.empty:
