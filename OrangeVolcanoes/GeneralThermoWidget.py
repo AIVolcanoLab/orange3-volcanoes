@@ -22,8 +22,8 @@ from Thermobar import (
     calculate_amp_liq_press, calculate_amp_liq_press_temp,
     calculate_liq_only_temp, calculate_ol_liq_temp,
     calculate_ol_sp_temp, calculate_plag_kspar_temp,
-    calculate_plag_liq_temp, calculate_plag_liq_press,
-    calculate_plag_liq_press_temp,
+    calculate_fspar_liq_temp, calculate_fspar_liq_press,
+    calculate_fspar_liq_press_temp,
 )
 
 # Define column names
@@ -275,6 +275,25 @@ MODELS_PLAG_LIQ_TEMPERATURE = [
 
 ]
 
+
+## Kspar-Liq
+MODELS_KSPAR_ONLY_PRESSURE = [
+    ('None_available', 'None_available', False, False),
+]
+
+MODELS_KSPAR_LIQ_PRESSURE = [
+    ('None_available', 'None_available', False, False),
+]
+
+MODELS_KSPAR_ONLY_TEMPERATURE = [
+    ('None_available', 'None_available', False, False),
+]
+
+MODELS_KSPAR_LIQ_TEMPERATURE = [
+    (T_Put2008_eq24b', 'T_Put2008_eq24b', True,False),
+
+
+]
 ## Actual class calling Thermobar
 class OWThermobar(OWWidget):
     name = "Thermobar Calculations"
@@ -2683,12 +2702,12 @@ class OWThermobar(OWWidget):
 
         if requires_temp and self.plag_liq_press_temp_type == 2:  # Model as Temperature
             if self.plag_barometry_mode == 1:  # Plag-only mode
-                calc = calculate_plag_liq_press_temp(
+                calc = calculate_fspar_liq_press_temp(
                     plag_comps=df[plag_cols],
                     equationP=current_model_func_name,
                     equationT=current_thermometer_func_name)
             else:  # Plag-Liq mode
-                calc = calculate_plag_liq_press_temp(
+                calc = calculate_fspar_liq_press_temp(
                     plag_comps=df[plag_cols], liq_comps=df[liq_cols],
                     equationP=current_model_func_name,
                     equationT=current_thermometer_func_name,
@@ -2697,7 +2716,7 @@ class OWThermobar(OWWidget):
             temperature_output = calc['T_K_calc']
         else:  # Fixed or dataset temperature
             if self.plag_barometry_mode == 1:  # Plag-only mode
-                pressure_result = calculate_plag_only_press(
+                pressure_result = calculate_fspar_only_press(
                     plag_comps=df[plag_cols],
                     equationP=current_model_func_name,
                     T=T_input)
@@ -2707,7 +2726,7 @@ class OWThermobar(OWWidget):
                 else:
                     pressure = pressure_result
             else:  # Plag-Liq mode
-                pressure = calculate_plag_liq_press(
+                pressure = calculate_fspar_liq_press(
                     plag_comps=df[plag_cols], liq_comps=df[liq_cols],
                     equationP=current_model_func_name,
                     T=T_input,
@@ -2778,7 +2797,7 @@ class OWThermobar(OWWidget):
                     equationT=current_model_func_name,
                     equationP=current_barometer_func_name)
             else:  # Plag-Liq mode
-                calc = calculate_plag_liq_press_temp(
+                calc = calculate_fspar_liq_press_temp(
                     plag_comps=df[plag_cols], liq_comps=df[liq_cols],
                     equationT=current_model_func_name,
                     equationP=current_barometer_func_name,
@@ -2792,7 +2811,7 @@ class OWThermobar(OWWidget):
                     equationT=current_model_func_name,
                     P=P_input)
             else:  # Plag-Liq mode
-                temperature = calculate_plag_liq_temp(
+                temperature = calculate_fspar_liq_temp(
                     plag_comps=df[plag_cols], liq_comps=df[liq_cols],
                     equationT=current_model_func_name,
                     P=P_input,
