@@ -5,23 +5,48 @@ from Thermobar.core import *
 def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False, suffix=None):
 
         ## This specifies the default order for each dataframe type used in calculations
+
+
     df_ideal_liq = pd.DataFrame(columns=['SiO2_Liq', 'TiO2_Liq', 'Al2O3_Liq',
     'FeOt_Liq', 'MnO_Liq', 'MgO_Liq', 'CaO_Liq', 'Na2O_Liq', 'K2O_Liq',
     'Cr2O3_Liq', 'P2O5_Liq', 'H2O_Liq', 'Fe3Fet_Liq', 'NiO_Liq', 'CoO_Liq',
-     'CO2_Liq'])
+    'CO2_Liq'])
+
+    df_ideal_oxide = pd.DataFrame(columns=['SiO2', 'TiO2', 'Al2O3',
+    'FeOt', 'MnO', 'MgO', 'CaO', 'Na2O', 'K2O',
+    'Cr2O3', 'P2O5'])
 
     df_ideal_cpx = pd.DataFrame(columns=['SiO2_Cpx', 'TiO2_Cpx', 'Al2O3_Cpx',
     'FeOt_Cpx','MnO_Cpx', 'MgO_Cpx', 'CaO_Cpx', 'Na2O_Cpx', 'K2O_Cpx',
     'Cr2O3_Cpx'])
 
+    df_ideal_ol = pd.DataFrame(columns=['SiO2_Ol', 'TiO2_Ol', 'Al2O3_Ol',
+    'FeOt_Ol', 'MnO_Ol', 'MgO_Ol', 'CaO_Ol', 'Na2O_Ol', 'K2O_Ol', 'Cr2O3_Ol',
+    'NiO_Ol'])
+
+    df_ideal_gt = pd.DataFrame(columns=['SiO2_Gt', 'TiO2_Gt', 'Al2O3_Gt',
+    'Cr2O3_Gt', 'FeOt_Gt', 'MnO_Gt', 'MgO_Gt', 'CaO_Gt', 'Na2O_Gt', 'K2O_Gt',
+    'Ni_Gt', 'Ti_Gt', 'Zr_Gt', 'Zn_Gt', 'Ga_Gt', 'Sr_Gt', 'Y_Gt'])
+
+    df_ideal_sp = pd.DataFrame(columns=['SiO2_Sp', 'TiO2_Sp', 'Al2O3_Sp',
+    'FeOt_Sp', 'MnO_Sp', 'MgO_Sp', 'CaO_Sp', 'Na2O_Sp', 'K2O_Sp', 'Cr2O3_Sp',
+    'NiO_Sp'])
+
     df_ideal_opx = pd.DataFrame(columns=['SiO2_Opx', 'TiO2_Opx', 'Al2O3_Opx',
     'FeOt_Opx', 'MnO_Opx', 'MgO_Opx', 'CaO_Opx', 'Na2O_Opx', 'K2O_Opx',
     'Cr2O3_Opx'])
 
+    df_ideal_plag = pd.DataFrame(columns=['SiO2_Plag', 'TiO2_Plag', 'Al2O3_Plag',
+    'FeOt_Plag', 'MnO_Plag', 'MgO_Plag', 'CaO_Plag', 'Na2O_Plag', 'K2O_Plag',
+    'Cr2O3_Plag'])
 
-    amp_cols = ['SiO2_Amp', 'TiO2_Amp', 'Al2O3_Amp',
+    df_ideal_kspar = pd.DataFrame(columns=['SiO2_Kspar', 'TiO2_Kspar',
+    'Al2O3_Kspar', 'FeOt_Kspar','MnO_Kspar', 'MgO_Kspar', 'CaO_Kspar',
+    'Na2O_Kspar', 'K2O_Kspar', 'Cr2O3_Kspar'])
+
+    df_ideal_amp = pd.DataFrame(columns=['SiO2_Amp', 'TiO2_Amp', 'Al2O3_Amp',
     'FeOt_Amp', 'MnO_Amp', 'MgO_Amp', 'CaO_Amp', 'Na2O_Amp', 'K2O_Amp',
-    'Cr2O3_Amp', 'F_Amp', 'Cl_Amp']
+    'Cr2O3_Amp', 'F_Amp', 'Cl_Amp'])
 
 
     df_ideal_exp = pd.DataFrame(columns=['P_kbar', 'T_K'])
@@ -86,6 +111,10 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
 
 
 
+    myOxides1 = my_input_c.reindex(df_ideal_oxide.columns, axis=1).fillna(0)
+    myOxides1 = myOxides1.apply(pd.to_numeric, errors='coerce').fillna(0)
+    myOxides1[myOxides1 < 0] = 0
+
     myLiquids1 = my_input_c.reindex(df_ideal_liq.columns, axis=1).fillna(0)
     myLiquids1 = myLiquids1.apply(pd.to_numeric, errors='coerce').fillna(0)
     myLiquids1[myLiquids1 < 0] = 0
@@ -94,13 +123,33 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
     myCPXs1 = myCPXs1.apply(pd.to_numeric, errors='coerce').fillna(0)
     myCPXs1[myCPXs1 < 0] = 0
 
+    myOls1 = my_input_c.reindex(df_ideal_ol.columns, axis=1).fillna(0)
+    myOls1 = myOls1.apply(pd.to_numeric, errors='coerce').fillna(0)
+    myOls1[myOls1 < 0] = 0
+
+    myPlags1 = my_input_c.reindex(df_ideal_plag.columns, axis=1).fillna(0)
+    myPlags1 = myPlags1.apply(pd.to_numeric, errors='coerce').fillna(0)
+    myPlags1[myPlags1 < 0] = 0
+
+    myKspars1 = my_input_c.reindex(df_ideal_kspar.columns, axis=1).fillna(0)
+    myKspars1 = myKspars1.apply(pd.to_numeric, errors='coerce').fillna(0)
+    myKspars1[myKspars1 < 0] = 0
+
     myOPXs1 = my_input_c.reindex(df_ideal_opx.columns, axis=1).fillna(0)
     myOPXs1 = myOPXs1.apply(pd.to_numeric, errors='coerce').fillna(0)
     myOPXs1[myOPXs1 < 0] = 0
 
-    myAMPs1 = my_input_c.reindex(df_ideal_amp.columns, axis=1).fillna(0)
-    myAMPs1 = myAMPs1.apply(pd.to_numeric, errors='coerce').fillna(0)
-    myAMPs1[myAMPs1 < 0] = 0
+    mySps1 = my_input_c.reindex(df_ideal_sp.columns, axis=1).fillna(0)
+    mySps1 = mySps1.apply(pd.to_numeric, errors='coerce').fillna(0)
+    mySps1[mySps1 < 0] = 0
+
+    myAmphs1 = my_input_c.reindex(df_ideal_amp.columns, axis=1).fillna(0)
+    myAmphs1 = myAmphs1.apply(pd.to_numeric, errors='coerce').fillna(0)
+    myAmphs1[myAmphs1 < 0] = 0
+
+    myGts1 = my_input_c.reindex(df_ideal_gt.columns, axis=1).fillna(0)
+    myGts1 = myGts1.apply(pd.to_numeric, errors='coerce').fillna(0)
+    myGts1[myGts1 < 0] = 0
 
 
     if my_output == 'cpx_only':
@@ -124,6 +173,9 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
 
     elif my_output == 'opx_liq':
         output = pd.concat([myOPXs1, myLiquids1], axis=1)
+
+    elif my_output == 'liq_ol':
+        output = pd.concat([myLiquids1, myOls1], axis=1)
 
 
 
