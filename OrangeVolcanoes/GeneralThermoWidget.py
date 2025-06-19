@@ -778,12 +778,14 @@ class OWThermobar(OWWidget):
         temperature = None
         pressure_output = None
 
+        # Not relevant right now, as no barometers.
         if requires_pressure and self.liq_ol_temp_pressure_type == 2:  # Model as Pressure
             if self.liq_thermometry_mode == 1:  # Liq-only mode
                 calc = calculate_liq_only_press_temp(
                     liq_comps=df[liq_cols],
                     equationT=current_model_func_name,
-                    equationP=current_barometer_func_name)
+                    equationP=current_barometer_func_name
+                    , H2O_Liq=water)
             else:  # Liq-Ol mode
                 calc = calculate_liq_ol_press_temp(
                     liq_comps=df[liq_cols], ol_comps=df[ol_cols],
@@ -792,18 +794,20 @@ class OWThermobar(OWWidget):
                     H2O_Liq=water)
             temperature = calc['T_K_calc']
             pressure_output = calc['P_kbar_calc']
+
+        # This is the relevant one for us.
         else:  # Fixed or dataset pressure
             if self.liq_thermometry_mode == 1:  # Liq-only mode
                 temperature = calculate_liq_only_temp(
                     liq_comps=df[liq_cols],
                     equationT=current_model_func_name,
-                    P=P_input)
-            else:  # Liq-Ol mode
+                    P=P_input, H2O_Liq=water)
+            else:  # Liq-Ol mode - outputs Kd hence need .T_K_calc
                 temperature = calculate_ol_liq_temp(
                     liq_comps=df[liq_cols], ol_comps=df[ol_cols],
                     equationT=current_model_func_name,
                     P=P_input,
-                    H2O_Liq=water)
+                    H2O_Liq=water).T_K_calc
 
         results_df = pd.DataFrame()
         results_df['T_K_calc'] = temperature
