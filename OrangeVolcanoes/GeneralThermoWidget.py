@@ -22,6 +22,8 @@ from Thermobar import (
     calculate_amp_liq_press, calculate_amp_liq_press_temp,
     calculate_liq_only_temp, calculate_ol_liq_temp,
     calculate_ol_sp_temp, calculate_plag_kspar_temp,
+    calculate_plag_liq_temp, calculate_plag_liq_press,
+    calculate_plag_liq_press_temp,
 )
 
 # Define column names
@@ -254,13 +256,32 @@ MODELS_PLAG_KSPAR_PRESSURE = [
     ('None_available', 'None_available', True, False),
 ]
 
+## Plag-Liq
+MODELS_PLAG_ONLY_PRESSURE = [
+    ('None_available', 'None_available', False, False),
+]
 
+MODELS_PLAG_LIQ_PRESSURE = [
+    ('P_Put2008_eq25', 'P_Put2008_eq25', True, False),
+]
+
+MODELS_PLAG_ONLY_TEMPERATURE = [
+    ('None_available', 'None_available', False, False),
+]
+
+MODELS_PLAG_LIQ_TEMPERATURE = [
+    ('T_Put2008_eq23', 'T_Put2008_eq23', True, True),
+    ('T_Put2008_eq24a', 'T_Put2008_eq24a', True, True),
+
+]
+
+## Actual class calling Thermobar
 class OWThermobar(OWWidget):
     name = "Thermobar Calculations"
     description = "Perform various thermobarometric calculations on mineral data."
     icon = "icons/thermobar.png"
     priority = 5
-    keywords = ['Thermobar', 'Cpx', 'Opx', 'Amp', 'Liquid', 'Temperature', 'Pressure']
+    keywords = ['Thermobar', 'Cpx', 'Opx', 'Amp', 'Liquid', 'Plag', 'Kspar', 'Temperature', 'Pressure']
 
     class Inputs:
         data = Input("Data", Table)
@@ -394,6 +415,29 @@ class OWThermobar(OWWidget):
     plag_kspar_press_fixed_h2o = ContextSetting(False)
     plag_kspar_press_fixed_h2o_value_str = ContextSetting("1.0")
 
+    # plag-Liq Thermometry settings
+    plag_thermometry_mode = ContextSetting(0)  # 0=Plag-Liq, 1=Plag-only
+    plag_liq_temp_model_idx = ContextSetting(0)
+    plag_liq_temp_pressure_type = ContextSetting(0)
+    plag_liq_temp_pressure_value = ContextSetting(1.0)
+    plag_liq_temp_barometer_choice = ContextSetting(1)  # 0=plag-only, 1=plag-Liq
+    plag_liq_temp_barometer_model_idx_co = ContextSetting(0)
+    plag_liq_temp_barometer_model_idx_cl = ContextSetting(0)
+    plag_liq_temp_fixed_h2o = ContextSetting(False)
+    plag_liq_temp_fixed_h2o_value_str = ContextSetting("1.0")
+
+    # plag-Liq Barometry settings
+    plag_barometry_mode = ContextSetting(0)  # 0=plag-Liq, 1=plag-only
+    plag_liq_press_model_idx = ContextSetting(0)
+    plag_liq_press_temp_type = ContextSetting(0)
+    plag_liq_press_temp_value = ContextSetting(900.0)
+    plag_liq_press_thermometer_choice = ContextSetting(1)  # 0=plag-only, 1=plag-Liq
+    plag_liq_press_thermometer_model_idx_co = ContextSetting(0)
+    plag_liq_press_thermometer_model_idx_cl = ContextSetting(0)
+    plag_liq_press_fixed_h2o = ContextSetting(False)
+    plag_liq_press_fixed_h2o_value_str = ContextSetting("1.0")
+
+
 
 
     resizing_enabled = False
@@ -428,8 +472,9 @@ class OWThermobar(OWWidget):
                 "Cpx±Liq Thermometry", #7
                 "Cpx±Liq Barometry", #8
                 "Liq±Ol Thermometry", #9
-                "Plag-Kspar Thermometry" #10
-
+                "Plag-Kspar Thermometry",#10
+                "Plag-Liq Thermometry", # 11
+                "Plag-Liq Barometry", # 12
                 #"Liq±Ol Barometry", #10
             ],
             callback=self._update_controls)
@@ -486,6 +531,15 @@ class OWThermobar(OWWidget):
         self.plag_kspar_press_box = gui.vBox(self.controlArea, "Plag-Kspar Barometry Settings")
         self._build_plag_kspar_press_gui(self.plag_kspar_press_box)
         self.plag_kspar_press_box.setVisible(False)
+
+        self.plag_liq_temp_box = gui.vBox(self.controlArea, "Plag±Liq Thermometry Settings")
+        self._build_plag_liq_temp_gui(self.plag_liq_temp_box)
+        self.plag_liq_temp_box.setVisible(False)
+
+        self.plag_liq_press_box = gui.vBox(self.controlArea, "Plag±Liq Barometry Settings")
+        self._build_plag_liq_press_gui(self.plag_liq_press_box)
+        self.plag_liq_press_box.setVisible(False)
+
 
 
 
@@ -2379,6 +2433,385 @@ class OWThermobar(OWWidget):
             results_df['P_kbar_input'] = np.full(len(df), np.nan) # Placeholder if no P input
 
         return results_df, "PlagKspar", "T_K", "P_kbar"
+
+## Plag-Liq
+
+    ## Plag-only and Plag-Liq stuff
+
+    def _build_plag_liq_temp_gui(self, parent_box):
+        """Build GUI for Plag Thermometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Thermometry Mode:")
+        self.plag_thermometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "plag_thermometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.plag_thermometry_mode_buttons, "Plag-Liq")
+        gui.appendRadioButton(self.plag_thermometry_mode_buttons, "Plag-only")
+
+        # Models selection
+        temp_model_box = gui.vBox(parent_box, "Models")
+        self.plag_liq_temp_models_combo = gui.comboBox(
+            temp_model_box, self, "plag_liq_temp_model_idx",
+            items=[],  # Populated later
+            callback=self._update_controls)
+
+        # Pressure settings
+        self.plag_liq_temp_pressure_box = gui.radioButtons(
+            parent_box, self, "plag_liq_temp_pressure_type", box="Pressure Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.plag_liq_temp_pressure_box, "Dataset as Pressure (kbar)")
+
+        rb_fixed_p = gui.appendRadioButton(self.plag_liq_temp_pressure_box, "Fixed Pressure")
+
+
+        self.plag_liq_temp_pressure_value_box = gui.doubleSpin(
+            gui.indentedBox(self.plag_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
+            "plag_liq_temp_pressure_value", 0, 1000, step=1.0, label="Pressure Value (kbar)",
+            alignment=Qt.AlignRight, callback=self.commit.deferred, controlWidth=80, decimals=0)
+
+        rb_model_p = gui.appendRadioButton(self.plag_liq_temp_pressure_box, "Model as Pressure")
+        model_as_p_box = gui.indentedBox(self.plag_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_model_p))
+
+        self.plag_liq_temp_barometer_choice_buttons = gui.radioButtons(
+            model_as_p_box, self, "plag_liq_temp_barometer_choice",
+            callback=self._update_controls)
+
+        rb_co = gui.appendRadioButton(self.plag_liq_temp_barometer_choice_buttons, "Use Plag-only barometer")
+        self.plag_liq_temp_barometer_model_box_co = gui.comboBox(
+            gui.indentedBox(self.plag_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_co)),
+            self, "plag_liq_temp_barometer_model_idx_co",
+            items=[m[0] for m in MODELS_PLAG_ONLY_PRESSURE],
+            callback=self._update_controls)
+
+        rb_cl = gui.appendRadioButton(self.plag_liq_temp_barometer_choice_buttons, "Use Plag-Liq barometer")
+        self.plag_liq_temp_barometer_model_box_cl = gui.comboBox(
+            gui.indentedBox(self.plag_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_cl)),
+            self, "plag_liq_temp_barometer_model_idx_cl",
+            items=[m[0] for m in MODELS_PLAG_LIQ_PRESSURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.plag_liq_temp_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "plag_liq_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.plag_liq_temp_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "plag_liq_temp_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _build_plag_liq_press_gui(self, parent_box):
+        """Build GUI for Plag Barometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Barometry Mode:")
+        self.plag_barometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "plag_barometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.plag_barometry_mode_buttons, "Plag-Liq")
+        gui.appendRadioButton(self.plag_barometry_mode_buttons, "Plag-only")
+
+        # Models selection
+        press_model_box = gui.vBox(parent_box, "Models")
+        self.plag_liq_press_models_combo = gui.comboBox(
+            press_model_box, self, "plag_liq_press_model_idx",
+            items=[],  # Populated later
+            callback=self._update_controls)
+
+        # Temperature settings
+        self.plag_liq_press_temp_box = gui.radioButtons(
+            parent_box, self, "plag_liq_press_temp_type", box="Temperature Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.plag_liq_press_temp_box, "Dataset as Temperature (K)")
+
+        rb_fixed_t = gui.appendRadioButton(self.plag_liq_press_temp_box, "Fixed Temperature")
+        self.plag_liq_press_temp_value_box = gui.doubleSpin(
+            gui.indentedBox(self.plag_liq_press_temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
+            "plag_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+
+        rb_model_t = gui.appendRadioButton(self.plag_liq_press_temp_box, "Model as Temperature")
+        model_as_t_box = gui.indentedBox(self.plag_liq_press_temp_box, gui.checkButtonOffsetHint(rb_model_t))
+
+        self.plag_liq_press_thermometer_choice_buttons = gui.radioButtons(
+            model_as_t_box, self, "plag_liq_press_thermometer_choice",
+            callback=self._update_controls)
+
+        rb_co = gui.appendRadioButton(self.plag_liq_press_thermometer_choice_buttons, "Use Plag-only thermometer")
+        self.plag_liq_press_thermometer_model_box_co = gui.comboBox(
+            gui.indentedBox(self.plag_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_co)),
+            self, "plag_liq_press_thermometer_model_idx_co",
+            items=[m[0] for m in MODELS_PLAG_ONLY_TEMPERATURE],
+            callback=self._update_controls)
+
+        rb_cl = gui.appendRadioButton(self.plag_liq_press_thermometer_choice_buttons, "Use Plag-Liq thermometer")
+        self.plag_liq_press_thermometer_model_box_cl = gui.comboBox(
+            gui.indentedBox(self.plag_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_cl)),
+            self, "plag_liq_press_thermometer_model_idx_cl",
+            items=[m[0] for m in MODELS_PLAG_LIQ_TEMPERATURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.plag_liq_press_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "plag_liq_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.plag_liq_press_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "plag_liq_press_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _update_plag_liq_temp_controls(self):
+        """Update controls for Plag-Liq/Plag-only Thermometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'plag_thermometry_mode') and self.plag_thermometry_mode == 1:  # Plag-only mode
+            model_list = MODELS_PLAG_ONLY_TEMPERATURE
+        else:  # Default to Plag-Liq mode
+            model_list = MODELS_PLAG_LIQ_TEMPERATURE
+
+        _, _, requires_press, requires_h2o = model_list[self.plag_liq_temp_model_idx]
+
+        # Enable/disable pressure input group
+        self.plag_liq_temp_pressure_box.setEnabled(requires_press)
+
+        # Enable/disable pressure value box
+        self.plag_liq_press_temp_value_box.setEnabled(
+            requires_press and self.plag_liq_temp_pressure_type == 1)
+
+        # Enable/disable barometer choice and model boxes
+        model_as_p_active = requires_press and self.plag_liq_temp_pressure_type == 2
+        self.plag_liq_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
+
+        if model_as_p_active:
+            self.plag_liq_temp_barometer_model_box_co.setEnabled(
+                self.plag_liq_temp_barometer_choice == 0)
+            self.plag_liq_temp_barometer_model_box_cl.setEnabled(
+                self.plag_liq_temp_barometer_choice == 1)
+        else:
+            self.plag_liq_temp_barometer_model_box_co.setEnabled(False)
+            self.plag_liq_temp_barometer_model_box_cl.setEnabled(False)
+
+        # Enable/disable H2O controls
+        self.plag_liq_temp_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.plag_liq_temp_fixed_h2o_input.setEnabled(
+            requires_h2o and self.plag_liq_temp_fixed_h2o)
+
+    def _update_plag_liq_press_controls(self):
+        """Update controls for Plag-Liq/Plag-only Barometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'plag_barometry_mode') and self.plag_barometry_mode == 1:  # Plag-only mode
+            model_list = MODELS_PLAG_ONLY_PRESSURE
+        else:  # Default to Plag-Liq mode
+            model_list = MODELS_PLAG_LIQ_PRESSURE
+
+        _, _, requires_temp, requires_h2o = model_list[self.plag_liq_press_model_idx]
+
+        # Enable/disable temperature input group
+        self.plag_liq_press_temp_box.setEnabled(requires_temp)
+
+        # Enable/disable temperature value box
+        self.plag_liq_press_temp_value_box.setEnabled(
+            requires_temp and self.plag_liq_press_temp_type == 1)
+
+        # Enable/disable thermometer choice and model boxes
+        model_as_t_active = requires_temp and self.plag_liq_press_temp_type == 2
+        self.plag_liq_press_thermometer_choice_buttons.setEnabled(model_as_t_active)
+
+        if model_as_t_active:
+            self.plag_liq_press_thermometer_model_box_co.setEnabled(
+                self.plag_liq_press_thermometer_choice == 0)
+            self.plag_liq_press_thermometer_model_box_cl.setEnabled(
+                self.plag_liq_press_thermometer_choice == 1)
+        else:
+            self.plag_liq_press_thermometer_model_box_co.setEnabled(False)
+            self.plag_liq_press_thermometer_model_box_cl.setEnabled(False)
+
+        # Enable/disable H2O controls
+        self.plag_liq_press_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.plag_liq_press_fixed_h2o_input.setEnabled(
+            requires_h2o and self.plag_liq_press_fixed_h2o)
+
+
+
+
+
+
+
+
+
+
+
+    def _calculate_plag_liq_press(self, df):
+        """Calculate Plag-Liq or Plag-only pressures based on current mode"""
+        # Determine which model set to use
+        if hasattr(self, 'plag_barometry_mode') and self.plag_barometry_mode == 1:  # Plag-only mode
+            model_list = MODELS_PLAG_ONLY_PRESSURE
+            mode_name = "Plag-only Barometry"
+            print(f"DEBUG: Using Plag-only mode with model index {self.plag_liq_press_model_idx}")
+        else:  # Default to Plag-Liq mode
+            model_list = MODELS_PLAG_LIQ_PRESSURE
+            mode_name = "Plag-Liq Barometry"
+            print(f"DEBUG: Using Plag-Liq mode with model index {self.plag_liq_press_model_idx}")
+
+        _, current_model_func_name, requires_temp, requires_h2o = model_list[self.plag_liq_press_model_idx]
+        print(f"DEBUG: Selected model function: {current_model_func_name}")
+
+        # Determine thermometer function if using model temperature
+        if requires_temp and self.plag_liq_press_temp_type == 2:
+            if self.plag_liq_press_thermometer_choice == 0:  # Plag-only
+                current_thermometer_func_name = MODELS_PLAG_ONLY_TEMPERATURE[self.plag_liq_press_thermometer_model_idx_co][1]
+                print(f"DEBUG: Using Plag-only thermometer model: {current_thermometer_func_name}")
+            else:  # Plag-Liq
+                current_thermometer_func_name = MODELS_PLAG_LIQ_TEMPERATURE[self.plag_liq_press_thermometer_model_idx_cl][1]
+                print(f"DEBUG: Using Plag-Liq thermometer model: {current_thermometer_func_name}")
+
+        df = dm.preprocessing(df, my_output='plag_liq')
+
+        water = self._get_h2o_value(df, requires_h2o,
+                                self.plag_liq_press_fixed_h2o,
+                                self.plag_liq_press_fixed_h2o_value_str,
+                                mode_name)
+        if water is None:
+            return pd.DataFrame(), "", "", ""
+
+        T_input = self._get_temperature_value(df, requires_temp,
+                                            self.plag_liq_press_temp_type,
+                                            self.plag_liq_press_temp_value,
+                                            mode_name)
+
+        pressure = None
+        temperature_output = None
+
+        if requires_temp and self.plag_liq_press_temp_type == 2:  # Model as Temperature
+            if self.plag_barometry_mode == 1:  # Plag-only mode
+                calc = calculate_plag_liq_press_temp(
+                    plag_comps=df[plag_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name)
+            else:  # Plag-Liq mode
+                calc = calculate_plag_liq_press_temp(
+                    plag_comps=df[plag_cols], liq_comps=df[liq_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name,
+                    H2O_Liq=water)
+            pressure = calc['P_kbar_calc']
+            temperature_output = calc['T_K_calc']
+        else:  # Fixed or dataset temperature
+            if self.plag_barometry_mode == 1:  # Plag-only mode
+                pressure_result = calculate_plag_only_press(
+                    plag_comps=df[plag_cols],
+                    equationP=current_model_func_name,
+                    T=T_input)
+                # Handle cases where the function returns a DataFrame (like Ridolfi2021)
+                if isinstance(pressure_result, pd.DataFrame):
+                    pressure = pressure_result['P_kbar_calc']
+                else:
+                    pressure = pressure_result
+            else:  # Plag-Liq mode
+                pressure = calculate_plag_liq_press(
+                    plag_comps=df[plag_cols], liq_comps=df[liq_cols],
+                    equationP=current_model_func_name,
+                    T=T_input,
+                    H2O_Liq=water)
+
+        results_df = pd.DataFrame()
+        results_df['P_kbar_calc'] = pressure
+
+        if temperature_output is not None:
+            results_df['T_K_calc'] = temperature_output
+        elif T_input is not None:
+            results_df['T_K_input'] = T_input
+        else:
+            results_df['T_K_input'] = np.full(len(df), np.nan)
+
+        return results_df, "PlagLiq", "T_K", "P_kbar"
+
+    def _calculate_plag_liq_temp(self, df):
+        """Calculate Plag-Liq or Plag-only temperatures based on current mode"""
+
+
+
+        # Determine which model set to use
+        if hasattr(self, 'plag_thermometry_mode') and self.plag_thermometry_mode == 1:  # Plag-only mode
+            model_list = MODELS_PLAG_ONLY_TEMPERATURE
+            mode_name = "Plag-only Thermometry"
+        else:  # Default to Plag-Liq mode
+            model_list = MODELS_PLAG_LIQ_TEMPERATURE
+            mode_name = "Plag-Liq Thermometry"
+
+        _, current_model_func_name, requires_pressure, requires_h2o = model_list[self.plag_liq_temp_model_idx]
+
+        print(">>> Entered _calculate_plag_liq_temp")
+        print(f"Model index: {self.plag_liq_temp_model_idx}")
+        print(f"Mode: {'Plag-only' if self.plag_thermometry_mode == 1 else 'Plag-Liq'}")
+        print(f"Returned df length: {len(df)}")
+        print(f"Requires pressure: {requires_pressure}, requires H2O: {requires_h2o}")
+
+
+        # Determine barometer function if using model pressure
+        if requires_pressure and self.plag_liq_temp_pressure_type == 2:
+            if self.plag_liq_temp_barometer_choice == 0:  # Plag-only
+                current_barometer_func_name = MODELS_PLAG_ONLY_PRESSURE[self.plag_liq_temp_barometer_model_idx_co][1]
+            else:  # Plag-Liq
+                current_barometer_func_name = MODELS_PLAG_LIQ_PRESSURE[self.plag_liq_temp_barometer_model_idx_cl][1]
+
+        df = dm.preprocessing(df, my_output='plag_liq')
+
+        water = self._get_h2o_value(df, requires_h2o,
+                                self.plag_liq_temp_fixed_h2o,
+                                self.plag_liq_temp_fixed_h2o_value_str,
+                                mode_name)
+        if water is None: return pd.DataFrame(), "", "", ""
+
+        P_input = self._get_pressure_value(df, requires_pressure,
+                                        self.plag_liq_temp_pressure_type,
+                                        self.plag_liq_temp_pressure_value,
+                                        mode_name)
+
+
+        temperature = None
+        pressure_output = None
+
+        if requires_pressure and self.plag_liq_temp_pressure_type == 2:  # Model as Pressure
+            if self.plag_thermometry_mode == 1:  # Plag-only mode
+                calc = calculate_plag_only_press_temp(
+                    plag_comps=df[plag_cols],
+                    equationT=current_model_func_name,
+                    equationP=current_barometer_func_name)
+            else:  # Plag-Liq mode
+                calc = calculate_plag_liq_press_temp(
+                    plag_comps=df[plag_cols], liq_comps=df[liq_cols],
+                    equationT=current_model_func_name,
+                    equationP=current_barometer_func_name,
+                    H2O_Liq=water)
+            temperature = calc['T_K_calc']
+            pressure_output = calc['P_kbar_calc']
+        else:  # Fixed or dataset pressure
+            if self.plag_thermometry_mode == 1:  # Plag-only mode
+                temperature = calculate_plag_only_temp(
+                    plag_comps=df[plag_cols],
+                    equationT=current_model_func_name,
+                    P=P_input)
+            else:  # Plag-Liq mode
+                temperature = calculate_plag_liq_temp(
+                    plag_comps=df[plag_cols], liq_comps=df[liq_cols],
+                    equationT=current_model_func_name,
+                    P=P_input,
+                    H2O_Liq=water)
+
+        results_df = pd.DataFrame()
+        results_df['T_K_calc'] = temperature
+
+        if pressure_output is not None:
+            results_df['P_kbar_calc'] = pressure_output
+        elif P_input is not None:
+            results_df['P_kbar_input'] = P_input
+        else:
+            results_df['P_kbar_input'] = np.full(len(df), np.nan)
+
+        print(">>> Result columns:", results_df.columns)
+
+        return results_df, "PlagLiq", "T_K", "P_kbar"
+
 ## Updating controls
     def _update_controls(self):
         """Update all controls based on current settings"""
@@ -2395,7 +2828,10 @@ class OWThermobar(OWWidget):
         self.liq_ol_press_box.setVisible(False)
         self.plag_kspar_temp_box.setVisible(False)
         self.plag_kspar_press_box.setVisible(False)
-
+        self.plag_liq_temp_box.setVisible(False)
+        self.plag_liq_press_box.setVisible(False)
+        # self.kspar_liq_temp_box.setVisible(False)
+        # self.kspar_liq_press_box.setVisible(False)
         # Show the selected calculation box
         if self.calculation_type == 1:  # Cpx-Opx Thermometry
             self.cpx_opx_temp_box.setVisible(True)
@@ -2583,6 +3019,54 @@ class OWThermobar(OWWidget):
             self.plag_kspar_temp_box.setVisible(True)
             self._update_plag_kspar_temp_controls()
 
+        elif self.calculation_type == 11:  # Plag-Liq/Plag-only Thermometry
+            self.plag_liq_temp_box.setVisible(True)
+
+            # Add Plag thermometry model update (similar to Opx)
+            if hasattr(self, 'plag_thermometry_mode'):
+                if self.plag_thermometry_mode == 0:  # Plag-Liq mode
+                    models = MODELS_PLAG_LIQ_TEMPERATURE
+                else:  # Plag-only mode
+                    models = MODELS_PLAG_ONLY_TEMPERATURE
+
+                current_idx = self.plag_liq_temp_model_idx
+                self.plag_liq_temp_models_combo.blockSignals(True)
+                self.plag_liq_temp_models_combo.clear()
+                self.plag_liq_temp_models_combo.addItems([m[0] for m in models])
+
+                if current_idx < len(models):
+                    self.plag_liq_temp_model_idx = current_idx
+                else:
+                    self.plag_liq_temp_model_idx = 0
+
+                self.plag_liq_temp_models_combo.blockSignals(False)
+
+            self._update_plag_liq_temp_controls()
+
+        elif self.calculation_type == 12:  # Plag-Liq/Plag-only Barometry
+            self.plag_liq_press_box.setVisible(True)
+
+            # Add Plag barometry model update (similar to Opx)
+            if hasattr(self, 'plag_barometry_mode'):
+                if self.plag_barometry_mode == 0:  # Plag-Liq mode
+                    models = MODELS_PLAG_LIQ_PRESSURE
+                else:  # Plag-only mode
+                    models = MODELS_PLAG_ONLY_PRESSURE
+
+                current_idx = self.plag_liq_press_model_idx
+                self.plag_liq_press_models_combo.blockSignals(True)
+                self.plag_liq_press_models_combo.clear()
+                self.plag_liq_press_models_combo.addItems([m[0] for m in models])
+
+                if current_idx < len(models):
+                    self.plag_liq_press_model_idx = current_idx
+                else:
+                    self.plag_liq_press_model_idx = 0
+
+                self.plag_liq_press_models_combo.blockSignals(False)
+
+            self._update_plag_liq_press_controls()
+
         # elif self.calculation_type == 2:  # Cpx-Opx Barometry
         #     self.cpx_opx_press_box.setVisible(True)
         #     self._update_cpx_opx_press_controls()
@@ -2725,6 +3209,22 @@ class OWThermobar(OWWidget):
         #         self.Error.value_error(f"Error in Plag-Kspar Barometry: {e}")
         #         self.Outputs.data.send(None)
         #         return
+
+        elif self.calculation_type == 11:  # Plag-Liq Thermometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_plag_liq_temp(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Plag-Liq Thermometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        elif self.calculation_type == 12:  # Plag-Liq Barometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_plag_liq_press(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Plag-Liq Barometry: {e}")
+                self.Outputs.data.send(None)
+                return
 
         # Prepare output if calculation was successful
         if not result_df.empty:
