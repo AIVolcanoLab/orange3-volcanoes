@@ -290,7 +290,7 @@ MODELS_KSPAR_ONLY_TEMPERATURE = [
 ]
 
 MODELS_KSPAR_LIQ_TEMPERATURE = [
-    (T_Put2008_eq24b', 'T_Put2008_eq24b', True,False),
+    ('T_Put2008_eq24b', 'T_Put2008_eq24b', True,False),
 
 
 ]
@@ -456,6 +456,28 @@ class OWThermobar(OWWidget):
     plag_liq_press_fixed_h2o = ContextSetting(False)
     plag_liq_press_fixed_h2o_value_str = ContextSetting("1.0")
 
+    # kspar-Liq Thermometry settings
+    kspar_thermometry_mode = ContextSetting(0)  # 0=Kspar-Liq, 1=Kspar-only
+    kspar_liq_temp_model_idx = ContextSetting(0)
+    kspar_liq_temp_pressure_type = ContextSetting(0)
+    kspar_liq_temp_pressure_value = ContextSetting(1.0)
+    kspar_liq_temp_barometer_choice = ContextSetting(1)  # 0=kspar-only, 1=kspar-Liq
+    kspar_liq_temp_barometer_model_idx_co = ContextSetting(0)
+    kspar_liq_temp_barometer_model_idx_cl = ContextSetting(0)
+    kspar_liq_temp_fixed_h2o = ContextSetting(False)
+    kspar_liq_temp_fixed_h2o_value_str = ContextSetting("1.0")
+
+    # kspar-Liq Barometry settings
+    kspar_barometry_mode = ContextSetting(0)  # 0=kspar-Liq, 1=kspar-only
+    kspar_liq_press_model_idx = ContextSetting(0)
+    kspar_liq_press_temp_type = ContextSetting(0)
+    kspar_liq_press_temp_value = ContextSetting(900.0)
+    kspar_liq_press_thermometer_choice = ContextSetting(1)  # 0=kspar-only, 1=kspar-Liq
+    kspar_liq_press_thermometer_model_idx_co = ContextSetting(0)
+    kspar_liq_press_thermometer_model_idx_cl = ContextSetting(0)
+    kspar_liq_press_fixed_h2o = ContextSetting(False)
+    kspar_liq_press_fixed_h2o_value_str = ContextSetting("1.0")
+
 
 
 
@@ -493,7 +515,8 @@ class OWThermobar(OWWidget):
                 "Liq±Ol Thermometry", #9
                 "Plag-Kspar Thermometry",#10
                 "Plag-Liq Thermometry", # 11
-                "Plag-Liq Barometry", # 12
+                "Plag-Liq Barometry", # 12,
+                'Kspar-Liq Thermometry' #13
                 #"Liq±Ol Barometry", #10
             ],
             callback=self._update_controls)
@@ -558,6 +581,15 @@ class OWThermobar(OWWidget):
         self.plag_liq_press_box = gui.vBox(self.controlArea, "Plag±Liq Barometry Settings")
         self._build_plag_liq_press_gui(self.plag_liq_press_box)
         self.plag_liq_press_box.setVisible(False)
+
+        self.kspar_liq_temp_box = gui.vBox(self.controlArea, "Kspar±Liq Thermometry Settings")
+        self._build_kspar_liq_temp_gui(self.kspar_liq_temp_box)
+        self.kspar_liq_temp_box.setVisible(False)
+
+        self.kspar_liq_press_box = gui.vBox(self.controlArea, "Kspar±Liq Barometry Settings")
+        self._build_kspar_liq_press_gui(self.kspar_liq_press_box)
+        self.kspar_liq_press_box.setVisible(False)
+
 
 
 
@@ -2831,6 +2863,387 @@ class OWThermobar(OWWidget):
 
         return results_df, "PlagLiq", "T_K", "P_kbar"
 
+
+
+
+
+
+
+    ## Kspar-only and Kspar-Liq stuff
+
+    def _build_kspar_liq_temp_gui(self, parent_box):
+        """Build GUI for Kspar Thermometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Thermometry Mode:")
+        self.kspar_thermometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "kspar_thermometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.kspar_thermometry_mode_buttons, "Kspar-Liq")
+        gui.appendRadioButton(self.kspar_thermometry_mode_buttons, "Kspar-only")
+
+        # Models selection
+        temp_model_box = gui.vBox(parent_box, "Models")
+        self.kspar_liq_temp_models_combo = gui.comboBox(
+            temp_model_box, self, "kspar_liq_temp_model_idx",
+            items=[],  # Populated later
+            callback=self._update_controls)
+
+        # Pressure settings
+        self.kspar_liq_temp_pressure_box = gui.radioButtons(
+            parent_box, self, "kspar_liq_temp_pressure_type", box="Pressure Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.kspar_liq_temp_pressure_box, "Dataset as Pressure (kbar)")
+
+        rb_fixed_p = gui.appendRadioButton(self.kspar_liq_temp_pressure_box, "Fixed Pressure")
+
+
+        self.kspar_liq_temp_pressure_value_box = gui.doubleSpin(
+            gui.indentedBox(self.kspar_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_fixed_p)), self,
+            "kspar_liq_temp_pressure_value", 0, 1000, step=1.0, label="Pressure Value (kbar)",
+            alignment=Qt.AlignRight, callback=self.commit.deferred, controlWidth=80, decimals=0)
+
+        rb_model_p = gui.appendRadioButton(self.kspar_liq_temp_pressure_box, "Model as Pressure")
+        model_as_p_box = gui.indentedBox(self.kspar_liq_temp_pressure_box, gui.checkButtonOffsetHint(rb_model_p))
+
+        self.kspar_liq_temp_barometer_choice_buttons = gui.radioButtons(
+            model_as_p_box, self, "kspar_liq_temp_barometer_choice",
+            callback=self._update_controls)
+
+        rb_co = gui.appendRadioButton(self.kspar_liq_temp_barometer_choice_buttons, "Use Kspar-only barometer")
+        self.kspar_liq_temp_barometer_model_box_co = gui.comboBox(
+            gui.indentedBox(self.kspar_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_co)),
+            self, "kspar_liq_temp_barometer_model_idx_co",
+            items=[m[0] for m in MODELS_KSPAR_ONLY_PRESSURE],
+            callback=self._update_controls)
+
+        rb_cl = gui.appendRadioButton(self.kspar_liq_temp_barometer_choice_buttons, "Use Kspar-Liq barometer")
+        self.kspar_liq_temp_barometer_model_box_cl = gui.comboBox(
+            gui.indentedBox(self.kspar_liq_temp_barometer_choice_buttons, gui.checkButtonOffsetHint(rb_cl)),
+            self, "kspar_liq_temp_barometer_model_idx_cl",
+            items=[m[0] for m in MODELS_KSPAR_LIQ_PRESSURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.kspar_liq_temp_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "kspar_liq_temp_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.kspar_liq_temp_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "kspar_liq_temp_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _build_kspar_liq_press_gui(self, parent_box):
+        """Build GUI for Kspar Barometry"""
+        # Mode selection
+        mode_box = gui.hBox(parent_box)
+        gui.label(mode_box, self, "Barometry Mode:")
+        self.kspar_barometry_mode_buttons = gui.radioButtons(
+            mode_box, self, "kspar_barometry_mode",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.kspar_barometry_mode_buttons, "Kspar-Liq")
+        gui.appendRadioButton(self.kspar_barometry_mode_buttons, "Kspar-only")
+
+        # Models selection
+        press_model_box = gui.vBox(parent_box, "Models")
+        self.kspar_liq_press_models_combo = gui.comboBox(
+            press_model_box, self, "kspar_liq_press_model_idx",
+            items=[],  # Populated later
+            callback=self._update_controls)
+
+        # Temperature settings
+        self.kspar_liq_press_temp_box = gui.radioButtons(
+            parent_box, self, "kspar_liq_press_temp_type", box="Temperature Input",
+            callback=self._update_controls)
+        gui.appendRadioButton(self.kspar_liq_press_temp_box, "Dataset as Temperature (K)")
+
+        rb_fixed_t = gui.appendRadioButton(self.kspar_liq_press_temp_box, "Fixed Temperature")
+        self.kspar_liq_press_temp_value_box = gui.doubleSpin(
+            gui.indentedBox(self.kspar_liq_press_temp_box, gui.checkButtonOffsetHint(rb_fixed_t)), self,
+            "kspar_liq_press_temp_value", 500.0, 2000.0, step=1.0, label="Temperature Value (K)",
+            alignment=Qt.AlignRight, callback=self._update_controls, controlWidth=80, decimals=0)
+
+        rb_model_t = gui.appendRadioButton(self.kspar_liq_press_temp_box, "Model as Temperature")
+        model_as_t_box = gui.indentedBox(self.kspar_liq_press_temp_box, gui.checkButtonOffsetHint(rb_model_t))
+
+        self.kspar_liq_press_thermometer_choice_buttons = gui.radioButtons(
+            model_as_t_box, self, "kspar_liq_press_thermometer_choice",
+            callback=self._update_controls)
+
+        rb_co = gui.appendRadioButton(self.kspar_liq_press_thermometer_choice_buttons, "Use Kspar-only thermometer")
+        self.kspar_liq_press_thermometer_model_box_co = gui.comboBox(
+            gui.indentedBox(self.kspar_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_co)),
+            self, "kspar_liq_press_thermometer_model_idx_co",
+            items=[m[0] for m in MODELS_KSPAR_ONLY_TEMPERATURE],
+            callback=self._update_controls)
+
+        rb_cl = gui.appendRadioButton(self.kspar_liq_press_thermometer_choice_buttons, "Use Kspar-Liq thermometer")
+        self.kspar_liq_press_thermometer_model_box_cl = gui.comboBox(
+            gui.indentedBox(self.kspar_liq_press_thermometer_choice_buttons, gui.checkButtonOffsetHint(rb_cl)),
+            self, "kspar_liq_press_thermometer_model_idx_cl",
+            items=[m[0] for m in MODELS_KSPAR_LIQ_TEMPERATURE],
+            callback=self._update_controls)
+
+        # H2O settings
+        h2o_box = gui.vBox(parent_box, "H₂O Settings")
+        self.kspar_liq_press_fixed_h2o_checkbox = gui.checkBox(
+            h2o_box, self, "kspar_liq_press_fixed_h2o", "Fixed H₂O", callback=self._update_controls)
+        self.kspar_liq_press_fixed_h2o_input = gui.lineEdit(
+            h2o_box, self, "kspar_liq_press_fixed_h2o_value_str", label="H₂O (wt%)",
+            orientation=Qt.Horizontal, callback=self.commit.deferred)
+
+
+    def _update_kspar_liq_temp_controls(self):
+        """Update controls for Kspar-Liq/Kspar-only Thermometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'kspar_thermometry_mode') and self.kspar_thermometry_mode == 1:  # Kspar-only mode
+            model_list = MODELS_KSPAR_ONLY_TEMPERATURE
+        else:  # Default to Kspar-Liq mode
+            model_list = MODELS_KSPAR_LIQ_TEMPERATURE
+
+        _, _, requires_press, requires_h2o = model_list[self.kspar_liq_temp_model_idx]
+
+        # Enable/disable pressure input group
+        self.kspar_liq_temp_pressure_box.setEnabled(requires_press)
+
+        # Enable/disable pressure value box
+        self.kspar_liq_press_temp_value_box.setEnabled(
+            requires_press and self.kspar_liq_temp_pressure_type == 1)
+
+        # Enable/disable barometer choice and model boxes
+        model_as_p_active = requires_press and self.kspar_liq_temp_pressure_type == 2
+        self.kspar_liq_temp_barometer_choice_buttons.setEnabled(model_as_p_active)
+
+        if model_as_p_active:
+            self.kspar_liq_temp_barometer_model_box_co.setEnabled(
+                self.kspar_liq_temp_barometer_choice == 0)
+            self.kspar_liq_temp_barometer_model_box_cl.setEnabled(
+                self.kspar_liq_temp_barometer_choice == 1)
+        else:
+            self.kspar_liq_temp_barometer_model_box_co.setEnabled(False)
+            self.kspar_liq_temp_barometer_model_box_cl.setEnabled(False)
+
+        # Enable/disable H2O controls
+        self.kspar_liq_temp_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.kspar_liq_temp_fixed_h2o_input.setEnabled(
+            requires_h2o and self.kspar_liq_temp_fixed_h2o)
+
+    def _update_kspar_liq_press_controls(self):
+        """Update controls for Kspar-Liq/Kspar-only Barometry"""
+        # Get the appropriate model list based on current mode
+        if hasattr(self, 'kspar_barometry_mode') and self.kspar_barometry_mode == 1:  # Kspar-only mode
+            model_list = MODELS_KSPAR_ONLY_PRESSURE
+        else:  # Default to Kspar-Liq mode
+            model_list = MODELS_KSPAR_LIQ_PRESSURE
+
+        _, _, requires_temp, requires_h2o = model_list[self.kspar_liq_press_model_idx]
+
+        # Enable/disable temperature input group
+        self.kspar_liq_press_temp_box.setEnabled(requires_temp)
+
+        # Enable/disable temperature value box
+        self.kspar_liq_press_temp_value_box.setEnabled(
+            requires_temp and self.kspar_liq_press_temp_type == 1)
+
+        # Enable/disable thermometer choice and model boxes
+        model_as_t_active = requires_temp and self.kspar_liq_press_temp_type == 2
+        self.kspar_liq_press_thermometer_choice_buttons.setEnabled(model_as_t_active)
+
+        if model_as_t_active:
+            self.kspar_liq_press_thermometer_model_box_co.setEnabled(
+                self.kspar_liq_press_thermometer_choice == 0)
+            self.kspar_liq_press_thermometer_model_box_cl.setEnabled(
+                self.kspar_liq_press_thermometer_choice == 1)
+        else:
+            self.kspar_liq_press_thermometer_model_box_co.setEnabled(False)
+            self.kspar_liq_press_thermometer_model_box_cl.setEnabled(False)
+
+        # Enable/disable H2O controls
+        self.kspar_liq_press_fixed_h2o_checkbox.setEnabled(requires_h2o)
+        self.kspar_liq_press_fixed_h2o_input.setEnabled(
+            requires_h2o and self.kspar_liq_press_fixed_h2o)
+
+
+
+
+
+
+
+
+
+
+
+    def _calculate_kspar_liq_press(self, df):
+        """Calculate Kspar-Liq or Kspar-only pressures based on current mode"""
+        # Determine which model set to use
+        if hasattr(self, 'kspar_barometry_mode') and self.kspar_barometry_mode == 1:  # Kspar-only mode
+            model_list = MODELS_KSPAR_ONLY_PRESSURE
+            mode_name = "Kspar-only Barometry"
+            print(f"DEBUG: Using Kspar-only mode with model index {self.kspar_liq_press_model_idx}")
+        else:  # Default to Kspar-Liq mode
+            model_list = MODELS_KSPAR_LIQ_PRESSURE
+            mode_name = "Kspar-Liq Barometry"
+            print(f"DEBUG: Using Kspar-Liq mode with model index {self.kspar_liq_press_model_idx}")
+
+        _, current_model_func_name, requires_temp, requires_h2o = model_list[self.kspar_liq_press_model_idx]
+        print(f"DEBUG: Selected model function: {current_model_func_name}")
+
+        # Determine thermometer function if using model temperature
+        if requires_temp and self.kspar_liq_press_temp_type == 2:
+            if self.kspar_liq_press_thermometer_choice == 0:  # Kspar-only
+                current_thermometer_func_name = MODELS_KSPAR_ONLY_TEMPERATURE[self.kspar_liq_press_thermometer_model_idx_co][1]
+                print(f"DEBUG: Using Kspar-only thermometer model: {current_thermometer_func_name}")
+            else:  # Kspar-Liq
+                current_thermometer_func_name = MODELS_KSPAR_LIQ_TEMPERATURE[self.kspar_liq_press_thermometer_model_idx_cl][1]
+                print(f"DEBUG: Using Kspar-Liq thermometer model: {current_thermometer_func_name}")
+
+        df = dm.preprocessing(df, my_output='kspar_liq')
+
+        water = self._get_h2o_value(df, requires_h2o,
+                                self.kspar_liq_press_fixed_h2o,
+                                self.kspar_liq_press_fixed_h2o_value_str,
+                                mode_name)
+        if water is None:
+            return pd.DataFrame(), "", "", ""
+
+        T_input = self._get_temperature_value(df, requires_temp,
+                                            self.kspar_liq_press_temp_type,
+                                            self.kspar_liq_press_temp_value,
+                                            mode_name)
+
+        pressure = None
+        temperature_output = None
+
+        if requires_temp and self.kspar_liq_press_temp_type == 2:  # Model as Temperature
+            if self.kspar_barometry_mode == 1:  # Kspar-only mode
+                calc = calculate_fspar_liq_press_temp(
+                    kspar_comps=df[kspar_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name)
+            else:  # Kspar-Liq mode
+                calc = calculate_fspar_liq_press_temp(
+                    kspar_comps=df[kspar_cols], liq_comps=df[liq_cols],
+                    equationP=current_model_func_name,
+                    equationT=current_thermometer_func_name,
+                    H2O_Liq=water)
+            pressure = calc['P_kbar_calc']
+            temperature_output = calc['T_K_calc']
+        else:  # Fixed or dataset temperature
+            if self.kspar_barometry_mode == 1:  # Kspar-only mode
+                pressure_result = calculate_fspar_only_press(
+                    kspar_comps=df[kspar_cols],
+                    equationP=current_model_func_name,
+                    T=T_input)
+                # Handle cases where the function returns a DataFrame (like Ridolfi2021)
+                if isinstance(pressure_result, pd.DataFrame):
+                    pressure = pressure_result['P_kbar_calc']
+                else:
+                    pressure = pressure_result
+            else:  # Kspar-Liq mode
+                pressure = calculate_fspar_liq_press(
+                    kspar_comps=df[kspar_cols], liq_comps=df[liq_cols],
+                    equationP=current_model_func_name,
+                    T=T_input,
+                    H2O_Liq=water)
+
+        results_df = pd.DataFrame()
+        results_df['P_kbar_calc'] = pressure
+
+        if temperature_output is not None:
+            results_df['T_K_calc'] = temperature_output
+        elif T_input is not None:
+            results_df['T_K_input'] = T_input
+        else:
+            results_df['T_K_input'] = np.full(len(df), np.nan)
+
+        return results_df, "KsparLiq", "T_K", "P_kbar"
+
+    def _calculate_kspar_liq_temp(self, df):
+        """Calculate Kspar-Liq or Kspar-only temperatures based on current mode"""
+
+
+
+        # Determine which model set to use
+        if hasattr(self, 'kspar_thermometry_mode') and self.kspar_thermometry_mode == 1:  # Kspar-only mode
+            model_list = MODELS_KSPAR_ONLY_TEMPERATURE
+            mode_name = "Kspar-only Thermometry"
+        else:  # Default to Kspar-Liq mode
+            model_list = MODELS_KSPAR_LIQ_TEMPERATURE
+            mode_name = "Kspar-Liq Thermometry"
+
+        _, current_model_func_name, requires_pressure, requires_h2o = model_list[self.kspar_liq_temp_model_idx]
+
+        print(">>> Entered _calculate_kspar_liq_temp")
+        print(f"Model index: {self.kspar_liq_temp_model_idx}")
+        print(f"Mode: {'Kspar-only' if self.kspar_thermometry_mode == 1 else 'Kspar-Liq'}")
+        print(f"Returned df length: {len(df)}")
+        print(f"Requires pressure: {requires_pressure}, requires H2O: {requires_h2o}")
+
+
+        # Determine barometer function if using model pressure
+        if requires_pressure and self.kspar_liq_temp_pressure_type == 2:
+            if self.kspar_liq_temp_barometer_choice == 0:  # Kspar-only
+                current_barometer_func_name = MODELS_KSPAR_ONLY_PRESSURE[self.kspar_liq_temp_barometer_model_idx_co][1]
+            else:  # Kspar-Liq
+                current_barometer_func_name = MODELS_KSPAR_LIQ_PRESSURE[self.kspar_liq_temp_barometer_model_idx_cl][1]
+
+        df = dm.preprocessing(df, my_output='kspar_liq')
+
+        water = self._get_h2o_value(df, requires_h2o,
+                                self.kspar_liq_temp_fixed_h2o,
+                                self.kspar_liq_temp_fixed_h2o_value_str,
+                                mode_name)
+        if water is None: return pd.DataFrame(), "", "", ""
+
+        P_input = self._get_pressure_value(df, requires_pressure,
+                                        self.kspar_liq_temp_pressure_type,
+                                        self.kspar_liq_temp_pressure_value,
+                                        mode_name)
+
+
+        temperature = None
+        pressure_output = None
+
+        if requires_pressure and self.kspar_liq_temp_pressure_type == 2:  # Model as Pressure
+            if self.kspar_thermometry_mode == 1:  # Kspar-only mode
+                calc = calculate_fspar_only_press_temp(
+                    kspar_comps=df[kspar_cols],
+                    equationT=current_model_func_name,
+                    equationP=current_barometer_func_name)
+            else:  # Kspar-Liq mode
+                calc = calculate_fspar_liq_press_temp(
+                    kspar_comps=df[kspar_cols], liq_comps=df[liq_cols],
+                    equationT=current_model_func_name,
+                    equationP=current_barometer_func_name,
+                    H2O_Liq=water)
+            temperature = calc['T_K_calc']
+            pressure_output = calc['P_kbar_calc']
+        else:  # Fixed or dataset pressure
+            if self.kspar_thermometry_mode == 1:  # Kspar-only mode
+                temperature = calculate_fspar_only_temp(
+                    kspar_comps=df[kspar_cols],
+                    equationT=current_model_func_name,
+                    P=P_input)
+            else:  # Kspar-Liq mode
+                temperature = calculate_fspar_liq_temp(
+                    kspar_comps=df[kspar_cols], liq_comps=df[liq_cols],
+                    equationT=current_model_func_name,
+                    P=P_input,
+                    H2O_Liq=water)
+
+        results_df = pd.DataFrame()
+        results_df['T_K_calc'] = temperature
+
+        if pressure_output is not None:
+            results_df['P_kbar_calc'] = pressure_output
+        elif P_input is not None:
+            results_df['P_kbar_input'] = P_input
+        else:
+            results_df['P_kbar_input'] = np.full(len(df), np.nan)
+
+        print(">>> Result columns:", results_df.columns)
+
+        return results_df, "KsparLiq", "T_K", "P_kbar"
 ## Updating controls
     def _update_controls(self):
         """Update all controls based on current settings"""
@@ -2849,8 +3262,8 @@ class OWThermobar(OWWidget):
         self.plag_kspar_press_box.setVisible(False)
         self.plag_liq_temp_box.setVisible(False)
         self.plag_liq_press_box.setVisible(False)
-        # self.kspar_liq_temp_box.setVisible(False)
-        # self.kspar_liq_press_box.setVisible(False)
+        self.kspar_liq_temp_box.setVisible(False)
+        self.kspar_liq_press_box.setVisible(False)
         # Show the selected calculation box
         if self.calculation_type == 1:  # Cpx-Opx Thermometry
             self.cpx_opx_temp_box.setVisible(True)
@@ -3086,6 +3499,54 @@ class OWThermobar(OWWidget):
 
             self._update_plag_liq_press_controls()
 
+        elif self.calculation_type == 13:  # Kspar-Liq/Kspar-only Thermometry
+            self.kspar_liq_temp_box.setVisible(True)
+
+            # Add Kspar thermometry model update (similar to Opx)
+            if hasattr(self, 'kspar_thermometry_mode'):
+                if self.kspar_thermometry_mode == 0:  # Kspar-Liq mode
+                    models = MODELS_KSPAR_LIQ_TEMPERATURE
+                else:  # Kspar-only mode
+                    models = MODELS_KSPAR_ONLY_TEMPERATURE
+
+                current_idx = self.kspar_liq_temp_model_idx
+                self.kspar_liq_temp_models_combo.blockSignals(True)
+                self.kspar_liq_temp_models_combo.clear()
+                self.kspar_liq_temp_models_combo.addItems([m[0] for m in models])
+
+                if current_idx < len(models):
+                    self.kspar_liq_temp_model_idx = current_idx
+                else:
+                    self.kspar_liq_temp_model_idx = 0
+
+                self.kspar_liq_temp_models_combo.blockSignals(False)
+
+            self._update_kspar_liq_temp_controls()
+
+        # elif self.calculation_type == 8:  # Kspar-Liq/Kspar-only Barometry
+        #     self.kspar_liq_press_box.setVisible(True)
+        #
+        #     # Add Kspar barometry model update (similar to Opx)
+        #     if hasattr(self, 'kspar_barometry_mode'):
+        #         if self.kspar_barometry_mode == 0:  # Kspar-Liq mode
+        #             models = MODELS_KSPAR_LIQ_PRESSURE
+        #         else:  # Kspar-only mode
+        #             models = MODELS_KSPAR_ONLY_PRESSURE
+        #
+        #         current_idx = self.kspar_liq_press_model_idx
+        #         self.kspar_liq_press_models_combo.blockSignals(True)
+        #         self.kspar_liq_press_models_combo.clear()
+        #         self.kspar_liq_press_models_combo.addItems([m[0] for m in models])
+        #
+        #         if current_idx < len(models):
+        #             self.kspar_liq_press_model_idx = current_idx
+        #         else:
+        #             self.kspar_liq_press_model_idx = 0
+        #
+        #         self.kspar_liq_press_models_combo.blockSignals(False)
+        #
+        #     self._update_kspar_liq_press_controls()
+
         # elif self.calculation_type == 2:  # Cpx-Opx Barometry
         #     self.cpx_opx_press_box.setVisible(True)
         #     self._update_cpx_opx_press_controls()
@@ -3244,6 +3705,22 @@ class OWThermobar(OWWidget):
                 self.Error.value_error(f"Error in Plag-Liq Barometry: {e}")
                 self.Outputs.data.send(None)
                 return
+
+        elif self.calculation_type == 13:  # Kspar-Liq Thermometry
+            try:
+                result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_kspar_liq_temp(df.copy())
+            except Exception as e:
+                self.Error.value_error(f"Error in Kspar-Liq Thermometry: {e}")
+                self.Outputs.data.send(None)
+                return
+
+        # elif self.calculation_type == 8:  # Kspar-Liq Barometry
+        #     try:
+        #         result_df, prefix, temp_col_name_suffix, press_col_name_suffix = self._calculate_kspar_liq_press(df.copy())
+        #     except Exception as e:
+        #         self.Error.value_error(f"Error in Kspar-Liq Barometry: {e}")
+        #         self.Outputs.data.send(None)
+        #         return
 
         # Prepare output if calculation was successful
         if not result_df.empty:
