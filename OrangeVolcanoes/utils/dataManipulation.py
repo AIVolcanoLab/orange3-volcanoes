@@ -186,7 +186,8 @@ def preprocessing(my_input, my_output='cpx_liq', sample_label=None, GEOROC=False
         output = pd.concat([myKspars1, myLiquids1], axis=1)
     elif my_output == 'cpx_opx':
         output = pd.concat([myCPXs1, myOPXs1], axis=1)
-
+    elif my_output == 'ol_sp':
+        output = pd.concat([myOls1, mySps1], axis=1)
 
     # Maintain all columns
     my_input_filt = my_input[[col for col in my_input.columns if col not in output.columns]]
