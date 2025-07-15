@@ -524,7 +524,7 @@ class OWThermobar(OWWidget):
         self.data = None
 
         # Info label
-        gui.label(self.controlArea, self, "<i>Calculations performed using Thermobar. Wieser, P., Petrelli, M., Lubbers, J., Wieser, E., Ozaydin, S., Kent, A., & Till, C. (2022). Thermobar: an open-source Python3 tool for thermobarometry and hygrometry. Volcanica 5, 349–384. https://doi.org/10.30909/vol.05.02.349384.</i>")
+        gui.label(self.controlArea, self, "<i>Calculations performed using Thermobar. Wieser et al., 2022. https://doi.org/10.30909/vol.05.02.349384.</i>")
         gui.separator(self.controlArea)
 
         # Calculation type selection
