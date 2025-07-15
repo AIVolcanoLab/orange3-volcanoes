@@ -309,9 +309,9 @@ MODELS_OL_SP_PRESSURE = [
 
 ## Actual class calling Thermobar
 class OWThermobar(OWWidget):
-    name = "Thermobar Calculations"
+    name = "Thermobarometers"
     description = "Perform various thermobarometric calculations on mineral data."
-    icon = "icons/thermobar.png"
+    icon = "icons/Thermobarometer.png"
     priority = 5
     keywords = ['Thermobar', 'Cpx', 'Opx', 'Amp', 'Liquid', 'Plag', 'Kspar', 'Spinel', 'Temperature', 'Pressure']
 
@@ -524,7 +524,7 @@ class OWThermobar(OWWidget):
         self.data = None
 
         # Info label
-        gui.label(self.controlArea, self, "<i>Calculations performed using Thermobar...</i>")
+        gui.label(self.controlArea, self, "<i>Calculations performed using Thermobar. Wieser, P., Petrelli, M., Lubbers, J., Wieser, E., Ozaydin, S., Kent, A., & Till, C. (2022). Thermobar: an open-source Python3 tool for thermobarometry and hygrometry. Volcanica 5, 349–384. https://doi.org/10.30909/vol.05.02.349384.</i>")
         gui.separator(self.controlArea)
 
         # Calculation type selection
